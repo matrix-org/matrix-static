@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    <style>
+        li {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <ol>
+            {{ range $message := .Messages.Chunk }}
+                {{ if $message.Content.body }}
+                    <li>
+                        <div>
+                            {{$message.Sender}}
+                        </div>
+                        <div>
+                            {{$message.Content.body}}
+                        </div>
+                    </li>
+                {{ end }}
+            {{end}}
+        </ol>
+    </div>
+</body>
+</html>

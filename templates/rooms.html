@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    <style>
+        li {
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <ol>
+        {{ range $room := .Chunk }}
+            <li>
+                <div>
+                    <img src="{{$room.AvatarUrl | mxcToUrl}}" />
+                </div>
+                <div>
+                    <a href="/{{$room.RoomId}}">
+                        {{$room.Name}} - {{$room.WorldReadable}}
+                    </a>
+                    [{{$room.CanonicalAlias}}]
+                    - {{$room.NumJoinedMembers}} members
+                    - {{$room.Topic}}
+                </div>
+            </li>
+        {{end}}
+    </ol>
+    <div>
+        {{if .PrevBatch}}<a href="?batch={{.PrevBatch}}">Prev Page</a>{{end}}
+        {{if .NextBatch}}<a href="?batch={{.NextBatch}}">Next Page</a>{{end}}
+    </div>
+</body>
+</html>
