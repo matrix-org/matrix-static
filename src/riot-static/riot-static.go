@@ -6,8 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/matrix-org/gomatrix"
+	"io/ioutil"
+	"net/url"
+	"os"
+	"path"
 )
 
 type RespInitialSync struct {
@@ -82,6 +88,7 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 
 var cli *gomatrix.Client
 var tpl *template.Template
+var config *gomatrix.RespRegister
 
 func main() {
 	funcMap := template.FuncMap{
@@ -92,15 +99,62 @@ func main() {
 			mxc = strings.TrimPrefix(mxc, "mxc://")
 			split := strings.SplitN(mxc, "/", 2)
 
-			return cli.BuildBaseURL("_matrix", "media", "r0", "thumbnail", split[0], split[1], "?width=50&height=50&method=crop")
+			hsURL, _ := url.Parse(cli.HomeserverURL.String())
+			parts := []string{hsURL.Path}
+			parts = append(parts, "_matrix", "media", "r0", "thumbnail", split[0], split[1])
+			hsURL.Path = path.Join(parts...)
 
-			//return cli.BuildURL("download", split[0], split[1])
+			q := hsURL.Query()
+			q.Set("width", "50")
+			q.Set("height", "50")
+			q.Set("method", "crop")
+
+			hsURL.RawQuery = q.Encode()
+
+			return hsURL.String()
 		},
 	}
 
 	tpl = template.Must(template.New("main").Funcs(funcMap).ParseGlob("templates/*.html"))
 
-	cli, _ = gomatrix.NewClient("https://matrix.org", "", "")
+	if _, err := os.Stat("./config.json"); err == nil {
+		file, e := ioutil.ReadFile("./config.json")
+		if e != nil {
+			fmt.Printf("File error: %v\n", e)
+			os.Exit(1)
+		}
+
+		json.Unmarshal(file, &config)
+	}
+
+	if config == nil {
+		config = new(gomatrix.RespRegister)
+	}
+
+	if config.HomeServer == "" {
+		config.HomeServer = "https://matrix.org"
+	}
+
+	cli, _ = gomatrix.NewClient(config.HomeServer, "", "")
+
+	if config.AccessToken == "" || config.UserID == "" {
+		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
+
+		if err == nil && inter == nil && register != nil {
+			config = register
+		} else {
+			fmt.Println("Error encountered during guest registration")
+			os.Exit(1)
+		}
+
+		configJson, _ := json.Marshal(config)
+		err = ioutil.WriteFile("./config.json", configJson, 0600)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	cli.SetCredentials(config.UserID, config.AccessToken)
 
 	r := mux.NewRouter()
 

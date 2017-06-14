@@ -4,29 +4,31 @@
     <meta charset="UTF-8">
     <title>Spiders Welcome</title>
     <style>
-        li {
-            list-style: none;
-        }
+
     </style>
 </head>
 <body>
-    <ol>
+
+    <table>
+
         {{ range $room := .Chunk }}
-            <li>
-                <div>
-                    <img src="{{$room.AvatarUrl | mxcToUrl}}" />
-                </div>
-                <div>
-                    <a href="/{{$room.RoomId}}">
-                        {{$room.Name}} - {{$room.WorldReadable}}
-                    </a>
-                    [{{$room.CanonicalAlias}}]
-                    - {{$room.NumJoinedMembers}} members
-                    - {{$room.Topic}}
-                </div>
-            </li>
+        <tr>
+            <td>
+                <img src="{{$room.AvatarUrl | mxcToUrl}}" />
+            </td>
+            <td>
+                <a href="/{{$room.RoomId}}">
+                    {{$room.Name}} - {{$room.WorldReadable}}
+                </a>
+                [{{$room.CanonicalAlias}}]
+                - {{$room.NumJoinedMembers}} members
+                - {{$room.Topic}}
+            </td>
+        </tr>
         {{end}}
-    </ol>
+
+    </table>
+
     <div>
         {{if .PrevBatch}}<a href="?batch={{.PrevBatch}}">Prev Page</a>{{end}}
         {{if .NextBatch}}<a href="?batch={{.NextBatch}}">Next Page</a>{{end}}

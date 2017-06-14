@@ -16,3 +16,4 @@
 .idea/
 bin/
 pkg/
+config.json
