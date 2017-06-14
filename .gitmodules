@@ -1,6 +1,6 @@
-[submodule "vendor\\src\\github.com\\gorilla\\mux"]
-	path = vendor\\src\\github.com\\gorilla\\mux
+[submodule "vendor/src/github.com/gorilla/mux"]
+	path = vendor/src/github.com/gorilla/mux
 	url = https://github.com/gorilla/mux
-[submodule "vendor\\src\\github.com\\matrix-org\\gomatrix"]
-	path = vendor\\src\\github.com\\matrix-org\\gomatrix
+[submodule "vendor/src/github.com/matrix-org/gomatrix"]
+	path = vendor/src/github.com/matrix-org/gomatrix
 	url = https://github.com/t3chguy/gomatrix
