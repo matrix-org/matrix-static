@@ -50,6 +50,10 @@ type TemplateRooms struct {
 }
 
 func paginate(x []gomatrix.PublicRoomsChunk, page int, size int) []gomatrix.PublicRoomsChunk {
+	if page <= 0 {
+		page = 1
+	}
+
 	skip := (page - 1) * size
 
 	if skip > len(x) {
@@ -71,10 +75,6 @@ func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	if query["page"] != nil {
 		page, _ = strconv.Atoi(query["page"][0])
-	}
-
-	if page <= 0 {
-		page = 1
 	}
 
 	pageSize := 20
@@ -124,12 +124,14 @@ func LoadPublicRooms() {
 	if err == nil {
 		b := resp.Chunk[:0]
 
+		// filter on actually WorldReadable rooms
 		for _, x := range resp.Chunk {
 			if x.WorldReadable {
 				b = append(b, x)
 			}
 		}
 
+		// copy them so we don't encounter slice hell
 		rooms.NumRooms = len(b)
 		rooms.List = make([]gomatrix.PublicRoomsChunk, rooms.NumRooms)
 		copy(rooms.List, b)

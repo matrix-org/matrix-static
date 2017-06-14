@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <title>Spiders Welcome</title>
     <style>
-
+        tr {
+            height: 56px;
+        }
+        img {
+            height: 50px;
+        }
     </style>
 </head>
 <body>
@@ -13,29 +18,52 @@
 
     <table>
 
+        <thead>
+            <tr>
+                <td>Logo</td>
+                <td>Name</td>
+                <td>Canonical Alias</td>
+                <td>#Members</td>
+                <td>Topic</td>
+            </tr>
+        </thead>
+
         {{ range $room := .Rooms }}
         <tr>
             <td>
-                <img src="{{$room.AvatarUrl | mxcToUrl}}" />
+                {{ if $room.AvatarUrl }}
+                    <img src="{{$room.AvatarUrl | mxcToUrl}}" />
+                {{ else }}
+                    N/A
+                {{ end }}
             </td>
             <td>
                 <a href="/{{$room.RoomId}}">
-                    {{$room.Name}} [{{$room.CanonicalAlias}}]
+                    {{$room.Name}}
                 </a>
-                - {{$room.NumJoinedMembers}} members
-                - {{$room.Topic}}
+            </td>
+            <td>
+                <a href="/{{$room.RoomId}}">
+                    {{$room.CanonicalAlias}}
+                </a>
+            </td>
+            <td>
+                {{$room.NumJoinedMembers}}
+            </td>
+            <td>
+                {{$room.Topic}}
             </td>
         </tr>
         {{end}}
 
     </table>
 
-    <div>
+    <footer>
         {{ if gt .Page 1 }}
             <span><a href="?page={{ minus .Page 1 }}">Previous Page</a></span>
         {{ end }}
         <span><a href="?page={{ plus  .Page 1 }}">Next Page</a></span>
-    </div>
+    </footer>
 
 </body>
 </html>
