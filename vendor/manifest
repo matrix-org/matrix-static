@@ -1,0 +1,17 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/gorilla/mux",
+			"repository": "https://github.com/gorilla/mux",
+			"revision": "18fca31550181693b3a834a15b74b564b3605876",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/matrix-org/gomatrix",
+			"repository": "https://github.com/t3chguy/gomatrix",
+			"revision": "edf1a799867bbf7b610809ed0ac4330dc9c3e0e0",
+			"branch": "master"
+		}
+	]
+}
