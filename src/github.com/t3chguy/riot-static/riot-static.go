@@ -18,7 +18,7 @@ import (
 
 type RespInitialSync struct {
 	AccountData []gomatrix.Event `json:"account_data"`
-	//Presence
+
 	Messages   gomatrix.RespMessages `json:"messages"`
 	Membership string                `json:"membership"`
 	State      []gomatrix.Event      `json:"state"`
@@ -68,9 +68,7 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(r)
 
-	//log.Print(vars["roomId"])
-
-	urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "20"})
+	urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "50"})
 	//urlPath := cli.BuildURL("rooms", vars["roomId"], "initialSync")
 	print(urlPath)
 	var resp RespInitialSync
@@ -141,6 +139,7 @@ func main() {
 		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
 
 		if err == nil && inter == nil && register != nil {
+			register.HomeServer = config.HomeServer
 			config = register
 		} else {
 			fmt.Println("Error encountered during guest registration")

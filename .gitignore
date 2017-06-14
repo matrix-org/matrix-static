@@ -16,4 +16,5 @@
 .idea/
 bin/
 pkg/
-config.json
+/config.json
+/vendor/src/github.com/constabulary

@@ -4,27 +4,25 @@
     <meta charset="UTF-8">
     <title>Spiders Welcome</title>
     <style>
-        li {
-            list-style: none;
-        }
+
     </style>
 </head>
 <body>
-    <div>
-        <ol>
-            {{ range $message := .Messages.Chunk }}
-                {{ if $message.Content.body }}
-                    <li>
-                        <div>
-                            {{$message.Sender}}
-                        </div>
-                        <div>
-                            {{$message.Content.body}}
-                        </div>
-                    </li>
-                {{ end }}
-            {{end}}
-        </ol>
-    </div>
+    <table>
+
+        {{ range $message := .Messages.Chunk }}
+            {{ if $message.Content.body }}
+                <tr>
+                    <td>
+                        {{$message.Sender}}
+                    </td>
+                    <td>
+                        {{$message.Content.body}}
+                    </td>
+                </tr>
+            {{ end }}
+        {{end}}
+
+    </table>
 </body>
 </html>
