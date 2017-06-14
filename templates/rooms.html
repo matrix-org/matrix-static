@@ -9,18 +9,19 @@
 </head>
 <body>
 
+    <span>Page {{ .Page }}</span>
+
     <table>
 
-        {{ range $room := .Chunk }}
+        {{ range $room := .Rooms }}
         <tr>
             <td>
                 <img src="{{$room.AvatarUrl | mxcToUrl}}" />
             </td>
             <td>
                 <a href="/{{$room.RoomId}}">
-                    {{$room.Name}} - {{$room.WorldReadable}}
+                    {{$room.Name}} [{{$room.CanonicalAlias}}]
                 </a>
-                [{{$room.CanonicalAlias}}]
                 - {{$room.NumJoinedMembers}} members
                 - {{$room.Topic}}
             </td>
@@ -30,8 +31,11 @@
     </table>
 
     <div>
-        {{if .PrevBatch}}<a href="?batch={{.PrevBatch}}">Prev Page</a>{{end}}
-        {{if .NextBatch}}<a href="?batch={{.NextBatch}}">Next Page</a>{{end}}
+        {{ if gt .Page 1 }}
+            <span><a href="?page={{ minus .Page 1 }}">Previous Page</a></span>
+        {{ end }}
+        <span><a href="?page={{ plus  .Page 1 }}">Next Page</a></span>
     </div>
+
 </body>
 </html>

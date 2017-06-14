@@ -14,6 +14,8 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strconv"
+	"sync"
 )
 
 type RespInitialSync struct {
@@ -31,32 +33,60 @@ type RespGetRoomAlias struct {
 	Servers []string `json:"servers"`
 }
 
+type PublicRooms struct {
+	sync.RWMutex
+	NumRooms int
+	List     []gomatrix.PublicRoomsChunk
+}
+
 func ErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 	panic(err)
+}
+
+type TemplateRooms struct {
+	Rooms    []gomatrix.PublicRoomsChunk
+	NumRooms int
+	Page     int
+}
+
+func paginate(x []gomatrix.PublicRoomsChunk, page int, size int) []gomatrix.PublicRoomsChunk {
+	skip := (page - 1) * size
+
+	if skip > len(x) {
+		skip = len(x)
+	}
+
+	end := skip + size
+	if end > len(x) {
+		end = len(x)
+	}
+
+	return x[skip:end]
 }
 
 func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	var batch string
-
+	var page int
 	query := r.URL.Query()
-	if query["batch"] != nil {
-		batch = query["batch"][0]
+	if query["page"] != nil {
+		page, _ = strconv.Atoi(query["page"][0])
 	}
 
-	resp, err := cli.PublicRooms(30, batch, "")
-
-	if err == nil {
-		b := resp.Chunk[:0]
-		for _, x := range resp.Chunk {
-			if x.WorldReadable {
-				b = append(b, x)
-			}
-		}
-		resp.Chunk = b
-		err = tpl.ExecuteTemplate(w, "rooms.html", resp)
+	if page <= 0 {
+		page = 1
 	}
+
+	pageSize := 20
+
+	rooms.RWMutex.RLock()
+	numRooms := rooms.NumRooms
+	someRooms := paginate(rooms.List, page, pageSize)
+	rooms.RWMutex.RUnlock()
+
+	templateRooms := TemplateRooms{someRooms, numRooms, page}
+
+	err := tpl.ExecuteTemplate(w, "rooms.html", templateRooms)
 
 	if err != nil {
 		ErrorHandler(w, r, err)
@@ -84,11 +114,40 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var rooms *PublicRooms
+
+func LoadPublicRooms() {
+	rooms.RWMutex.Lock()
+	fmt.Println("Loading public rooms")
+	resp, err := cli.PublicRooms(0, "", "")
+
+	if err == nil {
+		b := resp.Chunk[:0]
+
+		for _, x := range resp.Chunk {
+			if x.WorldReadable {
+				b = append(b, x)
+			}
+		}
+
+		rooms.NumRooms = len(b)
+		rooms.List = make([]gomatrix.PublicRoomsChunk, rooms.NumRooms)
+		copy(rooms.List, b)
+	}
+	rooms.RWMutex.Unlock()
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 var cli *gomatrix.Client
 var tpl *template.Template
 var config *gomatrix.RespRegister
 
 func main() {
+	rooms = new(PublicRooms)
+
 	funcMap := template.FuncMap{
 		"mxcToUrl": func(mxc string) string {
 			if !strings.HasPrefix(mxc, "mxc://") {
@@ -110,6 +169,12 @@ func main() {
 			hsURL.RawQuery = q.Encode()
 
 			return hsURL.String()
+		},
+		"plus": func(a, b int) int {
+			return a + b
+		},
+		"minus": func(a, b int) int {
+			return a - b
 		},
 	}
 
@@ -154,6 +219,8 @@ func main() {
 	}
 
 	cli.SetCredentials(config.UserID, config.AccessToken)
+
+	go LoadPublicRooms()
 
 	r := mux.NewRouter()
 

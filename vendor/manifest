@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/ahmetb/go-linq",
+			"repository": "https://github.com/ahmetb/go-linq",
+			"revision": "67424dce7b47e42b7f2373557878fd6e3f2d8c44",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
 			"revision": "18fca31550181693b3a834a15b74b564b3605876",
