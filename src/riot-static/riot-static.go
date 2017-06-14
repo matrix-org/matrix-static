@@ -100,7 +100,7 @@ func main() {
 
 	tpl = template.Must(template.New("main").Funcs(funcMap).ParseGlob("templates/*.html"))
 
-	cli, _ = gomatrix.NewClient("https://matrix.org", "webdevguru", "MDAxOGxvY2F0aW9uIG1hdHJpeC5vcmcKMDAxM2lkZW50aWZpZXIga2V5CjAwMTBjaWQgZ2VuID0gMQowMDI5Y2lkIHVzZXJfaWQgPSBAd2ViZGV2Z3VydTptYXRyaXgub3JnCjAwMTZjaWQgdHlwZSA9IGFjY2VzcwowMDIxY2lkIG5vbmNlID0gR19GOm5YWW1pZ3lfNS12JgowMDJmc2lnbmF0dXJlII-NXFAvCBratOq0DEVhDuitrNSSJt69Vny0Ch1vHC1oCg")
+	cli, _ = gomatrix.NewClient("https://matrix.org", "", "")
 
 	r := mux.NewRouter()
 
