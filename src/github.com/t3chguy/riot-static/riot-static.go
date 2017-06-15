@@ -229,5 +229,10 @@ func main() {
 	r.HandleFunc("/", GetPublicRoomsList)
 	r.HandleFunc("/!{roomId}", GetPublicRoom)
 
-	log.Fatal(http.ListenAndServe(":8000", r))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
