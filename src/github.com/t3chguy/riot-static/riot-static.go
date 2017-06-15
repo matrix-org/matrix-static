@@ -79,14 +79,14 @@ func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 
 	pageSize := 20
 
-	rooms.RWMutex.RLock()
-	numRooms := rooms.NumRooms
-	someRooms := paginate(rooms.List, page, pageSize)
-	rooms.RWMutex.RUnlock()
+	publicRooms.RWMutex.RLock()
+	numRooms := publicRooms.NumRooms
+	someRooms := paginate(publicRooms.List, page, pageSize)
+	publicRooms.RWMutex.RUnlock()
 
 	templateRooms := TemplateRooms{someRooms, numRooms, page}
 
-	err := tpl.ExecuteTemplate(w, "rooms.html", templateRooms)
+	err := tpl.ExecuteTemplate(w, "publicRooms.html", templateRooms)
 
 	if err != nil {
 		ErrorHandler(w, r, err)
@@ -98,8 +98,8 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(r)
 
-	urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "50"})
-	//urlPath := cli.BuildURL("rooms", vars["roomId"], "initialSync")
+	urlPath := cli.BuildURLWithQuery([]string{"publicRooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "50"})
+	//urlPath := cli.BuildURL("publicRooms", vars["roomId"], "initialSync")
 	print(urlPath)
 	var resp RespInitialSync
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
@@ -114,17 +114,22 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var rooms *PublicRooms
+var publicRooms = new(PublicRooms)
+var rooms = map[string]struct {
+	sync.RWMutex
+	InitialSync RespInitialSync
+	Alias       RespGetRoomAlias
+}{}
 
 func LoadPublicRooms() {
-	rooms.RWMutex.Lock()
-	fmt.Println("Loading public rooms")
+	publicRooms.RWMutex.Lock()
+	fmt.Println("Loading public publicRooms")
 	resp, err := cli.PublicRooms(0, "", "")
 
 	if err == nil {
 		b := resp.Chunk[:0]
 
-		// filter on actually WorldReadable rooms
+		// filter on actually WorldReadable publicRooms
 		for _, x := range resp.Chunk {
 			if x.WorldReadable {
 				b = append(b, x)
@@ -132,11 +137,11 @@ func LoadPublicRooms() {
 		}
 
 		// copy them so we don't encounter slice hell
-		rooms.NumRooms = len(b)
-		rooms.List = make([]gomatrix.PublicRoomsChunk, rooms.NumRooms)
-		copy(rooms.List, b)
+		publicRooms.NumRooms = len(b)
+		publicRooms.List = make([]gomatrix.PublicRoomsChunk, publicRooms.NumRooms)
+		copy(publicRooms.List, b)
 	}
-	rooms.RWMutex.Unlock()
+	publicRooms.RWMutex.Unlock()
 
 	if err != nil {
 		panic(err)
@@ -148,8 +153,6 @@ var tpl *template.Template
 var config *gomatrix.RespRegister
 
 func main() {
-	rooms = new(PublicRooms)
-
 	funcMap := template.FuncMap{
 		"mxcToUrl": func(mxc string) string {
 			if !strings.HasPrefix(mxc, "mxc://") {
