@@ -24,7 +24,7 @@ type RespInitialSync struct {
 	Messages   gomatrix.RespMessages `json:"messages"`
 	Membership string                `json:"membership"`
 	State      []gomatrix.Event      `json:"state"`
-	RoomId     string                `json:"room_id"`
+	RoomID     string                `json:"room_id"`
 	Receipts   []gomatrix.Event      `json:"receipts"`
 }
 
