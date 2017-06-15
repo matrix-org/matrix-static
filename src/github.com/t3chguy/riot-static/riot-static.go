@@ -98,7 +98,7 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(r)
 
-	urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "50"})
+	urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "64"})
 	//urlPath := cli.BuildURL("publicRooms", vars["roomId"], "initialSync")
 	print(urlPath)
 	var resp RespInitialSync
