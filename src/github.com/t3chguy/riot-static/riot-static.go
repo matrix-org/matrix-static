@@ -86,7 +86,7 @@ func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 
 	templateRooms := TemplateRooms{someRooms, numRooms, page}
 
-	err := tpl.ExecuteTemplate(w, "publicRooms.html", templateRooms)
+	err := tpl.ExecuteTemplate(w, "rooms.html", templateRooms)
 
 	if err != nil {
 		ErrorHandler(w, r, err)
@@ -98,7 +98,7 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(r)
 
-	urlPath := cli.BuildURLWithQuery([]string{"publicRooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "50"})
+	urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "50"})
 	//urlPath := cli.BuildURL("publicRooms", vars["roomId"], "initialSync")
 	print(urlPath)
 	var resp RespInitialSync
