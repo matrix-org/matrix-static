@@ -177,7 +177,7 @@ func main() {
 			return hsURL.String()
 		},
 		"time": func(timestamp int) string {
-			return time.Unix(int64(timestamp), 0).Format(time.RFC822Z)
+			return time.Unix(int64(timestamp), 0).Format(time.RFC822)
 		},
 		"plus": func(a, b int) int {
 			return a + b
