@@ -15,7 +15,7 @@
             {{ if $message.Content.body }}
                 <tr>
                     <td>
-                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp}}</a>
+                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                     </td>
                     <td>
                         {{$message.Sender}}

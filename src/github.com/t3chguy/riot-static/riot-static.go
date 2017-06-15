@@ -16,6 +16,7 @@ import (
 	"path"
 	"strconv"
 	"sync"
+	"time"
 )
 
 type RespInitialSync struct {
@@ -174,6 +175,9 @@ func main() {
 			hsURL.RawQuery = q.Encode()
 
 			return hsURL.String()
+		},
+		"time": func(timestamp int) string {
+			return time.Unix(int64(timestamp), 0).Format(time.RFC822Z)
 		},
 		"plus": func(a, b int) int {
 			return a + b
