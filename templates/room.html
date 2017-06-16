@@ -11,10 +11,18 @@
 {{.RoomID}}
     <table>
 
+        <thead>
+            <tr>
+                <td>Timestamp</td>
+                <td>Sender</td>
+                <td>Message</td>
+            </tr>
+        </thead>
+
         {{ range $message := .Messages.Chunk }}
             {{ if $message.Content.body }}
                 <tr>
-                    <td>
+                    <td class="timestamp">
                         <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                     </td>
                     <td>
