@@ -74,10 +74,10 @@ func GetPublicRoomsList(c *gin.Context) {
 
 	pageSize := 20
 
-	data.RWMutex.RLock()
+	data.RLock()
 	numRooms := data.NumRooms
 	someRooms := paginate(data.Ordered, page, pageSize)
-	data.RWMutex.RUnlock()
+	data.RUnlock()
 
 	templateRooms := TemplateRooms{someRooms, numRooms, page}
 
@@ -91,7 +91,9 @@ func GetPublicRoomsList(c *gin.Context) {
 
 func GetPublicRoom(c *gin.Context) {
 	roomId := c.Param("roomId")
+	data.RLock()
 	err := tpl.ExecuteTemplate(c.Writer, "room.html", data.Rooms[roomId])
+	data.RUnlock()
 
 	if err != nil {
 		ErrorHandler(c, err)
@@ -99,12 +101,16 @@ func GetPublicRoom(c *gin.Context) {
 }
 
 func GetPublicRoomServers(c *gin.Context) {
-	//roomId := c.Param("roomId")
+	roomId := c.Param("roomId")
+	data.RLock()
+	err := tpl.ExecuteTemplate(c.Writer, "room_servers.html", data.Rooms[roomId])
+	data.RUnlock()
 
-	//data.Rooms[roomId].Once.Do(func() { FetchRoom(roomId) })
+	if err != nil {
+		ErrorHandler(c, err)
+	}
 }
 
-//var publicRooms = new(PublicRooms)
 var data = struct {
 	sync.Once
 	sync.RWMutex
@@ -130,14 +136,14 @@ func LoadPublicRooms() {
 			}
 		}
 
-		data.RWMutex.Lock()
+		data.Lock()
 		data.Rooms = c
 		data.NumRooms = len(b)
 		// copy order so we don't encounter slice hell
 		data.Ordered = make([]*Room, data.NumRooms)
 		copy(data.Ordered, b)
 
-		data.RWMutex.Unlock()
+		data.Unlock()
 	}
 
 	if err != nil {

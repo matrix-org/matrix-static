@@ -19,9 +19,9 @@ func (room *Room) fetch() {
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
 	if err == nil {
-		data.RWMutex.Lock()
+		data.Lock()
 		data.Rooms[room.RoomID].InitialSync = resp
-		data.RWMutex.Unlock()
+		data.Unlock()
 	}
 }
 
