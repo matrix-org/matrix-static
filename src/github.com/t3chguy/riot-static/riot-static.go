@@ -89,23 +89,9 @@ func GetPublicRoomsList(c *gin.Context) {
 
 }
 
-func FetchRoom(roomId string) {
-
-}
-
 func GetPublicRoom(c *gin.Context) {
 	roomId := c.Param("roomId")
-
-	//urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "64"})
-	urlPath := cli.BuildURL("rooms", roomId, "initialSync")
-	//fmt.Println(urlPath)
-	var resp RespInitialSync
-	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
-
-	if err == nil {
-		err = tpl.ExecuteTemplate(c.Writer, "room.html", resp)
-
-	}
+	err := tpl.ExecuteTemplate(c.Writer, "room.html", data.Rooms[roomId])
 
 	if err != nil {
 		ErrorHandler(c, err)
@@ -138,7 +124,7 @@ func LoadPublicRooms() {
 		// filter on actually WorldReadable publicRooms
 		for _, x := range resp.Chunk {
 			if x.WorldReadable {
-				room := NewRoom(x)
+				room := NewRoom(x.RoomId, x)
 				b = append(b, room)
 				c[x.RoomId] = room
 			}
@@ -162,6 +148,13 @@ func LoadPublicRooms() {
 var cli *gomatrix.Client
 var tpl *template.Template
 var config *gomatrix.RespRegister
+
+func FetchRoom() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roomId := c.Param("roomId")
+		data.Rooms[roomId].Fetch()
+	}
+}
 
 func main() {
 	funcMap := template.FuncMap{
@@ -245,8 +238,14 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/", GetPublicRoomsList)
-	router.GET("/:roomId", GetPublicRoom)
-	router.GET("/:roomId/servers", GetPublicRoomServers)
+
+	roomRouter := router.Group("/room/")
+	{
+		roomRouter.Use(FetchRoom())
+
+		roomRouter.GET("/:roomId", GetPublicRoom)
+		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {

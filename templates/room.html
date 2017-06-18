@@ -21,7 +21,7 @@
             </tr>
         </thead>
 
-        {{ range $message := .Messages.Chunk }}
+        {{ range $message := .InitialSync.Messages.Chunk }}
             {{ if $message.Content.body }}
                 <tr>
                     <td class="timestamp">

@@ -7,25 +7,34 @@ import (
 
 type Room struct {
 	sync.Once
+	RoomID         string
 	Servers        []string
 	InitialSync    RespInitialSync
 	PublicRoomInfo gomatrix.PublicRoomsChunk
 }
 
 func (room *Room) fetch() {
-	data.RWMutex.Lock()
+	urlPath := cli.BuildURL("rooms", room.RoomID, "initialSync")
+	var resp RespInitialSync
+	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
-	data.RWMutex.Unlock()
+	if err == nil {
+		data.RWMutex.Lock()
+		data.Rooms[room.RoomID].InitialSync = resp
+		data.RWMutex.Unlock()
+	}
 }
 
 func (room *Room) Fetch() {
 	room.Once.Do(room.fetch)
 }
 
-func NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) (room *Room) {
+func NewRoom(roomId string, publicRoomInfo gomatrix.PublicRoomsChunk) (room *Room) {
 
-	room = &Room{}
-	room.PublicRoomInfo = publicRoomInfo
+	room = &Room{
+		RoomID:         roomId,
+		PublicRoomInfo: publicRoomInfo,
+	}
 
 	return
 }
