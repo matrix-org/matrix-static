@@ -45,12 +45,12 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
 }
 
 type TemplateRooms struct {
-	Rooms    []gomatrix.PublicRoomsChunk
+	Rooms    []*Room
 	NumRooms int
 	Page     int
 }
 
-func paginate(x []gomatrix.PublicRoomsChunk, page int, size int) []gomatrix.PublicRoomsChunk {
+func paginate(x []*Room, page int, size int) []*Room {
 	skip := (page - 1) * size
 
 	if skip > len(x) {
@@ -66,6 +66,8 @@ func paginate(x []gomatrix.PublicRoomsChunk, page int, size int) []gomatrix.Publ
 }
 
 func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
+	data.Once.Do(LoadPublicRooms)
+
 	w.Header().Set("Content-Type", "text/html")
 
 	var page int
@@ -80,10 +82,10 @@ func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 
 	pageSize := 20
 
-	publicRooms.RWMutex.RLock()
-	numRooms := publicRooms.NumRooms
-	someRooms := paginate(publicRooms.List, page, pageSize)
-	publicRooms.RWMutex.RUnlock()
+	data.RWMutex.RLock()
+	numRooms := data.NumRooms
+	someRooms := paginate(data.Ordered, page, pageSize)
+	data.RWMutex.RUnlock()
 
 	templateRooms := TemplateRooms{someRooms, numRooms, page}
 
@@ -95,13 +97,21 @@ func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func FetchRoom(roomId string) {
+
+}
+
 func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(r)
 
+	roomId := "!" + vars["roomId"]
+
+	fmt.Println(vars["roomId"])
+
 	//urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "64"})
-	urlPath := cli.BuildURL("publicRooms", vars["roomId"], "initialSync")
-	print(urlPath)
+	urlPath := cli.BuildURL("rooms", roomId, "initialSync")
+	//fmt.Println(urlPath)
 	var resp RespInitialSync
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
@@ -115,34 +125,48 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var publicRooms = new(PublicRooms)
-var rooms = map[string]struct {
+func GetPublicRoomServers(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	//roomId := mux.Vars(r)["roomId"]
+
+	//data.Rooms[roomId].Once.Do(func() { FetchRoom(roomId) })
+}
+
+//var publicRooms = new(PublicRooms)
+var data = struct {
+	sync.Once
 	sync.RWMutex
-	InitialSync RespInitialSync
-	Alias       RespGetRoomAlias
+	NumRooms int
+	Ordered  []*Room
+	Rooms    map[string]*Room
 }{}
 
 func LoadPublicRooms() {
-	publicRooms.RWMutex.Lock()
 	fmt.Println("Loading public publicRooms")
 	resp, err := cli.PublicRooms(0, "", "")
 
 	if err == nil {
-		b := resp.Chunk[:0]
+		b := []*Room{}
+		c := map[string]*Room{}
 
 		// filter on actually WorldReadable publicRooms
 		for _, x := range resp.Chunk {
 			if x.WorldReadable {
-				b = append(b, x)
+				room := NewRoom(x)
+				b = append(b, room)
+				c[x.RoomId] = room
 			}
 		}
 
-		// copy them so we don't encounter slice hell
-		publicRooms.NumRooms = len(b)
-		publicRooms.List = make([]gomatrix.PublicRoomsChunk, publicRooms.NumRooms)
-		copy(publicRooms.List, b)
+		data.RWMutex.Lock()
+		data.Rooms = c
+		data.NumRooms = len(b)
+		// copy order so we don't encounter slice hell
+		data.Ordered = make([]*Room, data.NumRooms)
+		copy(data.Ordered, b)
+
+		data.RWMutex.Unlock()
 	}
-	publicRooms.RWMutex.Unlock()
 
 	if err != nil {
 		panic(err)
@@ -229,12 +253,14 @@ func main() {
 
 	cli.SetCredentials(config.UserID, config.AccessToken)
 
-	go LoadPublicRooms()
+	//go LoadPublicRooms()
+	data.Once.Do(LoadPublicRooms)
 
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", GetPublicRoomsList)
 	r.HandleFunc("/!{roomId}", GetPublicRoom)
+	r.HandleFunc("/!{roomId}/servers", GetPublicRoomServers)
 
 	port := os.Getenv("PORT")
 	if port == "" {

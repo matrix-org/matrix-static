@@ -31,29 +31,29 @@
         {{ range $room := .Rooms }}
         <tr>
             <td>
-                <a href="./{{$room.RoomId}}">
-                    {{ if $room.AvatarUrl }}
-                        <img src="{{$room.AvatarUrl | mxcToUrl}}" />
+                <a href="./{{$room.PublicRoomInfo.RoomId}}">
+                    {{ if $room.PublicRoomInfo.AvatarUrl }}
+                        <img src="{{$room.PublicRoomInfo.AvatarUrl | mxcToUrl}}" />
                     {{ else }}
                         N/A
                     {{ end }}
                 </a>
             </td>
             <td>
-                <a href="./{{$room.RoomId}}">
-                    {{$room.Name}}
+                <a href="./{{$room.PublicRoomInfo.RoomId}}">
+                    {{$room.PublicRoomInfo.Name}}
                 </a>
             </td>
             <td>
-                <a href="./{{$room.RoomId}}">
-                    {{$room.CanonicalAlias}}
+                <a href="./{{$room.PublicRoomInfo.RoomId}}">
+                    {{$room.PublicRoomInfo.CanonicalAlias}}
                 </a>
             </td>
             <td>
-                {{$room.NumJoinedMembers}}
+                {{$room.PublicRoomInfo.NumJoinedMembers}}
             </td>
             <td>
-                {{$room.Topic}}
+                {{$room.PublicRoomInfo.Topic}}
             </td>
         </tr>
         {{end}}
