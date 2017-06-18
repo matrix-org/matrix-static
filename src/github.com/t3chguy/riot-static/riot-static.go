@@ -2,13 +2,11 @@ package main
 
 import (
 	"html/template"
-	"log"
-	"net/http"
 	"strings"
 
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/matrix-org/gomatrix"
 	"io/ioutil"
 	"net/url"
@@ -40,7 +38,7 @@ type PublicRooms struct {
 	List     []gomatrix.PublicRoomsChunk
 }
 
-func ErrorHandler(w http.ResponseWriter, r *http.Request, err error) {
+func ErrorHandler(c *gin.Context, err error) {
 	panic(err)
 }
 
@@ -65,18 +63,12 @@ func paginate(x []*Room, page int, size int) []*Room {
 	return x[skip:end]
 }
 
-func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
+func GetPublicRoomsList(c *gin.Context) {
 	data.Once.Do(LoadPublicRooms)
 
-	w.Header().Set("Content-Type", "text/html")
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 
-	var page int
-	query := r.URL.Query()
-	if query["page"] != nil {
-		page, _ = strconv.Atoi(query["page"][0])
-	}
-
-	if page <= 0 {
+	if err != nil {
 		page = 1
 	}
 
@@ -89,10 +81,10 @@ func GetPublicRoomsList(w http.ResponseWriter, r *http.Request) {
 
 	templateRooms := TemplateRooms{someRooms, numRooms, page}
 
-	err := tpl.ExecuteTemplate(w, "rooms.html", templateRooms)
+	err = tpl.ExecuteTemplate(c.Writer, "rooms.html", templateRooms)
 
 	if err != nil {
-		ErrorHandler(w, r, err)
+		ErrorHandler(c, err)
 	}
 
 }
@@ -101,13 +93,8 @@ func FetchRoom(roomId string) {
 
 }
 
-func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	vars := mux.Vars(r)
-
-	roomId := "!" + vars["roomId"]
-
-	fmt.Println(vars["roomId"])
+func GetPublicRoom(c *gin.Context) {
+	roomId := c.Param("roomId")
 
 	//urlPath := cli.BuildURLWithQuery([]string{"rooms", "!" + vars["roomId"], "initialSync"}, map[string]string{"limit": "64"})
 	urlPath := cli.BuildURL("rooms", roomId, "initialSync")
@@ -116,18 +103,17 @@ func GetPublicRoom(w http.ResponseWriter, r *http.Request) {
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
 	if err == nil {
-		err = tpl.ExecuteTemplate(w, "room.html", resp)
+		err = tpl.ExecuteTemplate(c.Writer, "room.html", resp)
 
 	}
 
 	if err != nil {
-		ErrorHandler(w, r, err)
+		ErrorHandler(c, err)
 	}
 }
 
-func GetPublicRoomServers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	//roomId := mux.Vars(r)["roomId"]
+func GetPublicRoomServers(c *gin.Context) {
+	//roomId := c.Param("roomId")
 
 	//data.Rooms[roomId].Once.Do(func() { FetchRoom(roomId) })
 }
@@ -256,16 +242,17 @@ func main() {
 	//go LoadPublicRooms()
 	data.Once.Do(LoadPublicRooms)
 
-	r := mux.NewRouter()
+	router := gin.Default()
 
-	r.HandleFunc("/", GetPublicRoomsList)
-	r.HandleFunc("/!{roomId}", GetPublicRoom)
-	r.HandleFunc("/!{roomId}/servers", GetPublicRoomServers)
+	router.GET("/", GetPublicRoomsList)
+	router.GET("/:roomId", GetPublicRoom)
+	router.GET("/:roomId/servers", GetPublicRoomServers)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8000"
 	}
 
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	//log.Fatal(http.ListenAndServe(":"+port, r))
+	router.Run(":" + port)
 }
