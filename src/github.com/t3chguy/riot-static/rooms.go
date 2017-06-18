@@ -13,7 +13,9 @@ type Room struct {
 	PublicRoomInfo gomatrix.PublicRoomsChunk
 }
 
-func (room *Room) fetch() {
+func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	urlPath := cli.BuildURL("rooms", room.RoomID, "initialSync")
 	var resp RespInitialSync
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
@@ -23,6 +25,16 @@ func (room *Room) fetch() {
 		data.Rooms[room.RoomID].InitialSync = resp
 		data.Unlock()
 	}
+}
+
+func (room *Room) fetch() {
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+
+	go room.fetchInitialSync(&wg)
+
+	wg.Wait()
 }
 
 func (room *Room) Fetch() {
