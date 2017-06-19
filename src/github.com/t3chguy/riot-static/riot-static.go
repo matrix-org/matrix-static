@@ -129,19 +129,15 @@ func FetchRoom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomId := c.Param("roomId")
 		data.Rooms[roomId].Fetch()
-		c.Next()
 	}
 }
 
 func FailIfNoRoom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomId := c.Param("roomId")
-		fmt.Println("FailIfNoRoom", roomId, data.Rooms[roomId])
 		if data.Rooms[roomId] == nil {
 			c.String(http.StatusNotFound, "Room Not Found")
 			c.Abort()
-		} else {
-			c.Next()
 		}
 	}
 }

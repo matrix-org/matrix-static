@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/matrix-org/gomatrix"
 	"sync"
 )
@@ -27,6 +28,7 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	urlPath := cli.BuildURL("rooms", room.RoomID, "initialSync")
+	fmt.Println(urlPath)
 	var resp RespInitialSync
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
