@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 	"sync"
 	"time"
@@ -151,20 +152,24 @@ func FailIfNoRoom() gin.HandlerFunc {
 	}
 }
 
+var mxcRegex = regexp.MustCompile(`mxc://(.+)/(.+)(?:#.+)?`)
+
+func unpackTwoRegexVals(val []string) (string, string) {
+	return val[1], val[2]
+}
+
 func main() {
 	funcMap := template.FuncMap{
 		"mxcToUrl": func(mxc string) string {
 			if !strings.HasPrefix(mxc, "mxc://") {
 				return ""
 			}
-			mxc = strings.TrimPrefix(mxc, "mxc://")
-			mxc = strings.TrimSuffix(mxc, "#auto")
 
-			split := strings.SplitN(mxc, "/", 2)
+			serverName, mediaId := unpackTwoRegexVals(mxcRegex.FindStringSubmatch(mxc))
 
 			hsURL, _ := url.Parse(cli.HomeserverURL.String())
 			parts := []string{hsURL.Path}
-			parts = append(parts, "_matrix", "media", "r0", "thumbnail", split[0], split[1])
+			parts = append(parts, "_matrix", "media", "r0", "thumbnail", serverName, mediaId)
 			hsURL.Path = path.Join(parts...)
 
 			q := hsURL.Query()
