@@ -4,11 +4,9 @@ import (
 	"html/template"
 	"strings"
 
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/matrix-org/gomatrix"
-	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -17,29 +15,10 @@ import (
 	"time"
 )
 
-type RespInitialSync struct {
-	AccountData []gomatrix.Event `json:"account_data"`
-
-	Messages   gomatrix.RespMessages `json:"messages"`
-	Membership string                `json:"membership"`
-	State      []gomatrix.Event      `json:"state"`
-	RoomID     string                `json:"room_id"`
-	Receipts   []gomatrix.Event      `json:"receipts"`
-}
-
-type RespGetRoomAlias struct {
-	RoomID  string   `json:"room_id"`
-	Servers []string `json:"servers"`
-}
-
-type PublicRooms struct {
-	sync.RWMutex
-	NumRooms int
-	List     []gomatrix.PublicRoomsChunk
-}
-
 func ErrorHandler(c *gin.Context, err error) {
-	panic(err)
+	if err != nil {
+		panic(err)
+	}
 }
 
 type TemplateRooms struct {
@@ -83,10 +62,7 @@ func GetPublicRoomsList(c *gin.Context) {
 
 	err = tpl.ExecuteTemplate(c.Writer, "rooms.html", templateRooms)
 
-	if err != nil {
-		ErrorHandler(c, err)
-	}
-
+	ErrorHandler(c, err)
 }
 
 func GetPublicRoom(c *gin.Context) {
@@ -95,9 +71,7 @@ func GetPublicRoom(c *gin.Context) {
 	err := tpl.ExecuteTemplate(c.Writer, "room.html", data.Rooms[roomId])
 	data.RUnlock()
 
-	if err != nil {
-		ErrorHandler(c, err)
-	}
+	ErrorHandler(c, err)
 }
 
 func GetPublicRoomServers(c *gin.Context) {
@@ -106,9 +80,7 @@ func GetPublicRoomServers(c *gin.Context) {
 	err := tpl.ExecuteTemplate(c.Writer, "room_servers.html", data.Rooms[roomId])
 	data.RUnlock()
 
-	if err != nil {
-		ErrorHandler(c, err)
-	}
+	ErrorHandler(c, err)
 }
 
 var data = struct {
@@ -151,14 +123,26 @@ func LoadPublicRooms() {
 	}
 }
 
-var cli *gomatrix.Client
 var tpl *template.Template
-var config *gomatrix.RespRegister
 
 func FetchRoom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomId := c.Param("roomId")
 		data.Rooms[roomId].Fetch()
+		c.Next()
+	}
+}
+
+func FailIfNoRoom() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roomId := c.Param("roomId")
+		fmt.Println("FailIfNoRoom", roomId, data.Rooms[roomId])
+		if data.Rooms[roomId] == nil {
+			c.String(http.StatusNotFound, "Room Not Found")
+			c.Abort()
+		} else {
+			c.Next()
+		}
 	}
 }
 
@@ -198,47 +182,10 @@ func main() {
 
 	tpl = template.Must(template.New("main").Funcs(funcMap).ParseGlob("templates/*.html"))
 
-	if _, err := os.Stat("./config.json"); err == nil {
-		file, e := ioutil.ReadFile("./config.json")
-		if e != nil {
-			fmt.Printf("File error: %v\n", e)
-			os.Exit(1)
-		}
-
-		json.Unmarshal(file, &config)
-	}
-
-	if config == nil {
-		config = new(gomatrix.RespRegister)
-	}
-
-	if config.HomeServer == "" {
-		config.HomeServer = "https://matrix.org"
-	}
-
-	cli, _ = gomatrix.NewClient(config.HomeServer, "", "")
-
-	if config.AccessToken == "" || config.UserID == "" {
-		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
-
-		if err == nil && inter == nil && register != nil {
-			register.HomeServer = config.HomeServer
-			config = register
-		} else {
-			fmt.Println("Error encountered during guest registration")
-			os.Exit(1)
-		}
-
-		configJson, _ := json.Marshal(config)
-		err = ioutil.WriteFile("./config.json", configJson, 0600)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	cli.SetCredentials(config.UserID, config.AccessToken)
+	setupCli()
 
 	//go LoadPublicRooms()
+	// Synchronous cache fill
 	data.Once.Do(LoadPublicRooms)
 
 	router := gin.Default()
@@ -247,6 +194,7 @@ func main() {
 
 	roomRouter := router.Group("/room/")
 	{
+		roomRouter.Use(FailIfNoRoom())
 		roomRouter.Use(FetchRoom())
 
 		roomRouter.GET("/:roomId", GetPublicRoom)
@@ -258,6 +206,5 @@ func main() {
 		port = "8000"
 	}
 
-	//log.Fatal(http.ListenAndServe(":"+port, r))
 	router.Run(":" + port)
 }
