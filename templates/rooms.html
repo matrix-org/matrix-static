@@ -32,8 +32,8 @@
         <tr>
             <td>
                 <a href="./room/{{$room.RoomID}}">
-                    {{ if $room.PublicRoomInfo.AvatarUrl }}
-                        <img src="{{$room.PublicRoomInfo.AvatarUrl | mxcToUrl}}" />
+                    {{ if $room.AvatarUrl }}
+                        <img src="{{$room.AvatarUrl | mxcToUrl}}" />
                     {{ else }}
                         N/A
                     {{ end }}
@@ -41,19 +41,19 @@
             </td>
             <td>
                 <a href="./room/{{$room.RoomID}}">
-                    {{$room.PublicRoomInfo.Name}}
+                    {{$room.Name}}
                 </a>
             </td>
             <td>
                 <a href="./room/{{$room.RoomID}}">
-                    {{$room.PublicRoomInfo.CanonicalAlias}}
+                    {{$room.CanonicalAlias}}
                 </a>
             </td>
             <td>
-                {{$room.PublicRoomInfo.NumJoinedMembers}}
+                {{$room.NumJoinedMembers}}
             </td>
             <td>
-                {{$room.PublicRoomInfo.Topic}}
+                {{$room.Topic}}
             </td>
         </tr>
         {{end}}

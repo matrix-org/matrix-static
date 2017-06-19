@@ -83,6 +83,15 @@ func GetPublicRoomServers(c *gin.Context) {
 	ErrorHandler(c, err)
 }
 
+func GetPublicRoomMembers(c *gin.Context) {
+	roomId := c.Param("roomId")
+	data.RLock()
+	err := tpl.ExecuteTemplate(c.Writer, "room_members.html", data.Rooms[roomId])
+	data.RUnlock()
+
+	ErrorHandler(c, err)
+}
+
 var data = struct {
 	sync.Once
 	sync.RWMutex
@@ -102,7 +111,7 @@ func LoadPublicRooms() {
 		// filter on actually WorldReadable publicRooms
 		for _, x := range resp.Chunk {
 			if x.WorldReadable {
-				room := NewRoom(x.RoomId, x)
+				room := NewRoom(x)
 				b = append(b, room)
 				c[x.RoomId] = room
 			}
@@ -149,6 +158,8 @@ func main() {
 				return ""
 			}
 			mxc = strings.TrimPrefix(mxc, "mxc://")
+			mxc = strings.TrimSuffix(mxc, "#auto")
+
 			split := strings.SplitN(mxc, "/", 2)
 
 			hsURL, _ := url.Parse(cli.HomeserverURL.String())
@@ -195,6 +206,7 @@ func main() {
 
 		roomRouter.GET("/:roomId", GetPublicRoom)
 		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)
+		roomRouter.GET("/:roomId/members", GetPublicRoomMembers)
 	}
 
 	port := os.Getenv("PORT")

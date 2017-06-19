@@ -10,7 +10,10 @@
     </style>
 </head>
 <body>
-{{.RoomID}}
+{{.RoomID}} -
+<a href="./{{.RoomID}}/members">{{ .NumJoinedMembers }} Members</a>
+participating in this Room over
+<a href="./{{.RoomID}}/servers">{{ len .Servers }} Servers.</a>
     <table>
 
         <thead>

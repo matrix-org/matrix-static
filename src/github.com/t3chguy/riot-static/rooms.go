@@ -8,10 +8,31 @@ import (
 
 type Room struct {
 	sync.Once
-	RoomID         string
-	Servers        []string
-	InitialSync    RespInitialSync
-	PublicRoomInfo gomatrix.PublicRoomsChunk
+	RoomID  string
+	Servers []string
+
+	InitialSync RespInitialSync
+
+	CanonicalAlias   string
+	Name             string
+	WorldReadable    bool
+	Topic            string
+	NumJoinedMembers int
+	AvatarUrl        string
+	GuestCanJoin     bool
+	Aliases          []string
+}
+
+// Event represents a single Matrix event.
+type StateEvent struct {
+	StateKey   *string                `json:"state_key,omitempty"` // The state key for the event. Only present on State Events.
+	Sender     string                 `json:"sender"`              // The user ID of the sender of the event
+	Type       string                 `json:"type"`                // The event type
+	Timestamp  int                    `json:"origin_server_ts"`    // The unix timestamp when this message was sent by the origin server
+	ID         string                 `json:"event_id"`            // The unique ID of this event
+	RoomID     string                 `json:"room_id"`             // The room the event was sent to. May be nil (e.g. for presence)
+	Content    map[string]interface{} `json:"content"`             // The JSON content of the event.
+	Membership string                 `json:"membership"`
 }
 
 type RespInitialSync struct {
@@ -19,7 +40,7 @@ type RespInitialSync struct {
 
 	Messages   gomatrix.RespMessages `json:"messages"`
 	Membership string                `json:"membership"`
-	State      []gomatrix.Event      `json:"state"`
+	State      []StateEvent          `json:"state"`
 	RoomID     string                `json:"room_id"`
 	Receipts   []gomatrix.Event      `json:"receipts"`
 }
@@ -47,7 +68,7 @@ type RespGetRoomAlias struct {
 func (room *Room) fetchRoomAliasInfo(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	urlPath := cli.BuildURL("directory", "room", room.PublicRoomInfo.CanonicalAlias)
+	urlPath := cli.BuildURL("directory", "room", room.CanonicalAlias)
 	var resp RespGetRoomAlias
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
@@ -64,7 +85,7 @@ func (room *Room) fetch() {
 	wg.Add(1)
 	go room.fetchInitialSync(&wg)
 
-	if room.PublicRoomInfo.CanonicalAlias != "" {
+	if room.CanonicalAlias != "" {
 		wg.Add(1)
 		go room.fetchRoomAliasInfo(&wg)
 	}
@@ -76,11 +97,18 @@ func (room *Room) Fetch() {
 	room.Once.Do(room.fetch)
 }
 
-func NewRoom(roomId string, publicRoomInfo gomatrix.PublicRoomsChunk) (room *Room) {
+func NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) (room *Room) {
 
 	room = &Room{
-		RoomID:         roomId,
-		PublicRoomInfo: publicRoomInfo,
+		RoomID:           publicRoomInfo.RoomId,
+		CanonicalAlias:   publicRoomInfo.CanonicalAlias,
+		Name:             publicRoomInfo.Name,
+		WorldReadable:    publicRoomInfo.WorldReadable,
+		Topic:            publicRoomInfo.Topic,
+		NumJoinedMembers: publicRoomInfo.NumJoinedMembers,
+		AvatarUrl:        publicRoomInfo.AvatarUrl,
+		GuestCanJoin:     publicRoomInfo.GuestCanJoin,
+		Aliases:          publicRoomInfo.Aliases,
 	}
 
 	return
