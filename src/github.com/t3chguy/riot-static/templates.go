@@ -11,7 +11,7 @@ import (
 
 func unpack3Values(val []string) (string, string, string) { return val[0], val[1], val[2] }
 
-var mxcRegex = regexp.MustCompile(`mxc://(.+)/(.+)(?:#.+)?`)
+var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
 
 var tpl *template.Template = template.Must(template.New("main").Funcs(template.FuncMap{
 	"mxcToUrl": func(mxc string) string {
