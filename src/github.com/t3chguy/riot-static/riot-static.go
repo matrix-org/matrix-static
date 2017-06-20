@@ -1,31 +1,23 @@
 package main
 
 import (
-	"html/template"
-	"strings"
-
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"net/url"
 	"os"
-	"path"
-	"regexp"
 	"strconv"
 	"sync"
-	"time"
 )
 
 func paginate(x []*Room, page int, size int) []*Room {
-	skip := (page - 1) * size
+	var skip, end int
+	length := len(x)
 
-	if skip > len(x) {
-		skip = len(x)
+	if skip = (page - 1) * size; skip > length {
+		skip = length
 	}
-
-	end := skip + size
-	if end > len(x) {
-		end = len(x)
+	if end = skip + size; end > length {
+		end = length
 	}
 
 	return x[skip:end]
@@ -126,39 +118,6 @@ func LoadPublicRooms() {
 	}
 }
 
-var tpl *template.Template = template.Must(template.New("main").Funcs(template.FuncMap{
-	"mxcToUrl": func(mxc string) string {
-		if !strings.HasPrefix(mxc, "mxc://") {
-			return ""
-		}
-
-		_, serverName, mediaId := unpackThreeVals(mxcRegex.FindStringSubmatch(mxc))
-
-		hsURL, _ := url.Parse(cli.HomeserverURL.String())
-		parts := []string{hsURL.Path}
-		parts = append(parts, "_matrix", "media", "r0", "thumbnail", serverName, mediaId)
-		hsURL.Path = path.Join(parts...)
-
-		q := hsURL.Query()
-		q.Set("width", "50")
-		q.Set("height", "50")
-		q.Set("method", "crop")
-
-		hsURL.RawQuery = q.Encode()
-
-		return hsURL.String()
-	},
-	"time": func(timestamp int) string {
-		return time.Unix(int64(timestamp), 0).Format(time.RFC822)
-	},
-	"plus": func(a, b int) int {
-		return a + b
-	},
-	"minus": func(a, b int) int {
-		return a - b
-	},
-}).ParseGlob("templates/*.html"))
-
 func FetchRoom() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomId := c.Param("roomId")
@@ -175,10 +134,6 @@ func FailIfNoRoom() gin.HandlerFunc {
 		}
 	}
 }
-
-var mxcRegex = regexp.MustCompile(`mxc://(.+)/(.+)(?:#.+)?`)
-
-func unpackThreeVals(val []string) (string, string, string) { return val[0], val[1], val[2] }
 
 func main() {
 	setupCli()
