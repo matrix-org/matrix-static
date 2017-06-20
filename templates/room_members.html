@@ -10,7 +10,7 @@
     </style>
 </head>
 <body>
-{{.RoomID}}
+{{.Room.RoomID}}
 
 <table>
 
@@ -22,7 +22,7 @@
         </tr>-->
     </thead>
 
-    {{ range $state := .InitialSync.State }}
+    {{ range $state := .Room.InitialSync.State }}
         {{ if eq $state.Type "m.room.member" }}
             {{ if eq $state.Membership "join" }}
                 <tr>
@@ -46,6 +46,6 @@
 
 </table>
 
-<a href="../{{.RoomID}}">Go Back</a>
+<a href="../{{.Room.RoomID}}">Go Back</a>
 </body>
 </html>

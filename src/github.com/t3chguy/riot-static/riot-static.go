@@ -16,18 +16,6 @@ import (
 	"time"
 )
 
-func ErrorHandler(c *gin.Context, err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-type TemplateRooms struct {
-	Rooms    []*Room
-	NumRooms int
-	Page     int
-}
-
 func paginate(x []*Room, page int, size int) []*Room {
 	skip := (page - 1) * size
 
@@ -46,51 +34,51 @@ func paginate(x []*Room, page int, size int) []*Room {
 func GetPublicRoomsList(c *gin.Context) {
 	data.Once.Do(LoadPublicRooms)
 
-	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-
-	if err != nil {
+	var page int
+	var err error
+	if page, err = strconv.Atoi(c.DefaultQuery("page", "1")); err != nil {
 		page = 1
 	}
 
 	pageSize := 20
 
 	data.RLock()
-	numRooms := data.NumRooms
-	someRooms := paginate(data.Ordered, page, pageSize)
+	c.HTML(http.StatusOK, "rooms.html", gin.H{
+		"Rooms":    paginate(data.Ordered, page, pageSize),
+		"NumRooms": data.NumRooms,
+		"Page":     page,
+	})
 	data.RUnlock()
-
-	templateRooms := TemplateRooms{someRooms, numRooms, page}
-
-	err = tpl.ExecuteTemplate(c.Writer, "rooms.html", templateRooms)
-
-	ErrorHandler(c, err)
 }
 
 func GetPublicRoom(c *gin.Context) {
 	roomId := c.Param("roomId")
-	data.RLock()
-	err := tpl.ExecuteTemplate(c.Writer, "room.html", data.Rooms[roomId])
-	data.RUnlock()
 
-	ErrorHandler(c, err)
+	data.RLock()
+	c.HTML(http.StatusOK, "room.html", gin.H{
+		"Room": &data.Rooms[roomId],
+	})
+	data.RUnlock()
 }
 
 func GetPublicRoomServers(c *gin.Context) {
 	roomId := c.Param("roomId")
-	data.RLock()
-	err := tpl.ExecuteTemplate(c.Writer, "room_servers.html", data.Rooms[roomId])
-	data.RUnlock()
 
-	ErrorHandler(c, err)
+	data.RLock()
+	c.HTML(http.StatusOK, "room_servers.html", gin.H{
+		"Room": &data.Rooms[roomId],
+	})
+	data.RUnlock()
 }
 
 func GetPublicRoomMembers(c *gin.Context) {
 	roomId := c.Param("roomId")
-	data.RLock()
-	err := tpl.ExecuteTemplate(c.Writer, "room_members.html", data.Rooms[roomId])
-	data.RUnlock()
 
-	ErrorHandler(c, err)
+	data.RLock()
+	c.HTML(http.StatusOK, "room_members.html", gin.H{
+		"Room": &data.Rooms[roomId],
+	})
+	data.RUnlock()
 }
 
 var data = struct {
@@ -200,6 +188,7 @@ func main() {
 	data.Once.Do(LoadPublicRooms)
 
 	router := gin.Default()
+	router.SetHTMLTemplate(tpl)
 
 	router.GET("/", GetPublicRoomsList)
 

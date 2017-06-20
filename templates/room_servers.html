@@ -10,15 +10,15 @@
     </style>
 </head>
 <body>
-{{.RoomID}}
+{{.Room.RoomID}}
 
 Servers:
 <ul>
-    {{ range $server := .Servers }}
+    {{ range $server := .Room.Servers }}
         <li>{{$server}}</li>
     {{ end }}
 </ul>
 
-<a href="../{{.RoomID}}">Go Back</a>
+<a href="../{{.Room.RoomID}}">Go Back</a>
 </body>
 </html>

@@ -10,10 +10,10 @@
     </style>
 </head>
 <body>
-{{.RoomID}} -
-<a href="./{{.RoomID}}/members">{{ .NumJoinedMembers }} Members</a>
+{{.Room.RoomID}} -
+<a href="./{{.Room.RoomID}}/members">{{ .Room.NumJoinedMembers }} Members</a>
 participating in this Room over
-<a href="./{{.RoomID}}/servers">{{ len .Servers }} Servers.</a>
+<a href="./{{.Room.RoomID}}/servers">{{ len .Room.Servers }} Servers.</a>
     <table>
 
         <thead>
@@ -24,7 +24,7 @@ participating in this Room over
             </tr>
         </thead>
 
-        {{ range $message := .InitialSync.Messages.Chunk }}
+        {{ range $message := .Room.InitialSync.Messages.Chunk }}
             {{ if $message.Content.body }}
                 <tr>
                     <td class="timestamp">
