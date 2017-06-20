@@ -112,7 +112,12 @@ func LoadPublicRooms() {
 		// filter on actually WorldReadable publicRooms
 		for _, x := range resp.Chunk {
 			if x.WorldReadable {
-				room := NewRoom(x)
+				var room *Room
+				if data.Rooms[x.RoomId] != nil {
+					room = data.Rooms[x.RoomId]
+				} else {
+					room = NewRoom(x)
+				}
 				b = append(b, room)
 				c[x.RoomId] = room
 			}
@@ -133,7 +138,38 @@ func LoadPublicRooms() {
 	}
 }
 
-var tpl *template.Template
+var tpl *template.Template = template.Must(template.New("main").Funcs(template.FuncMap{
+	"mxcToUrl": func(mxc string) string {
+		if !strings.HasPrefix(mxc, "mxc://") {
+			return ""
+		}
+
+		_, serverName, mediaId := unpackThreeVals(mxcRegex.FindStringSubmatch(mxc))
+
+		hsURL, _ := url.Parse(cli.HomeserverURL.String())
+		parts := []string{hsURL.Path}
+		parts = append(parts, "_matrix", "media", "r0", "thumbnail", serverName, mediaId)
+		hsURL.Path = path.Join(parts...)
+
+		q := hsURL.Query()
+		q.Set("width", "50")
+		q.Set("height", "50")
+		q.Set("method", "crop")
+
+		hsURL.RawQuery = q.Encode()
+
+		return hsURL.String()
+	},
+	"time": func(timestamp int) string {
+		return time.Unix(int64(timestamp), 0).Format(time.RFC822)
+	},
+	"plus": func(a, b int) int {
+		return a + b
+	},
+	"minus": func(a, b int) int {
+		return a - b
+	},
+}).ParseGlob("templates/*.html"))
 
 func FetchRoom() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -154,46 +190,9 @@ func FailIfNoRoom() gin.HandlerFunc {
 
 var mxcRegex = regexp.MustCompile(`mxc://(.+)/(.+)(?:#.+)?`)
 
-func unpackTwoRegexVals(val []string) (string, string) {
-	return val[1], val[2]
-}
+func unpackThreeVals(val []string) (string, string, string) { return val[0], val[1], val[2] }
 
 func main() {
-	funcMap := template.FuncMap{
-		"mxcToUrl": func(mxc string) string {
-			if !strings.HasPrefix(mxc, "mxc://") {
-				return ""
-			}
-
-			serverName, mediaId := unpackTwoRegexVals(mxcRegex.FindStringSubmatch(mxc))
-
-			hsURL, _ := url.Parse(cli.HomeserverURL.String())
-			parts := []string{hsURL.Path}
-			parts = append(parts, "_matrix", "media", "r0", "thumbnail", serverName, mediaId)
-			hsURL.Path = path.Join(parts...)
-
-			q := hsURL.Query()
-			q.Set("width", "50")
-			q.Set("height", "50")
-			q.Set("method", "crop")
-
-			hsURL.RawQuery = q.Encode()
-
-			return hsURL.String()
-		},
-		"time": func(timestamp int) string {
-			return time.Unix(int64(timestamp), 0).Format(time.RFC822)
-		},
-		"plus": func(a, b int) int {
-			return a + b
-		},
-		"minus": func(a, b int) int {
-			return a - b
-		},
-	}
-
-	tpl = template.Must(template.New("main").Funcs(funcMap).ParseGlob("templates/*.html"))
-
 	setupCli()
 
 	//go LoadPublicRooms()
