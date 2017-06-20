@@ -48,7 +48,7 @@ func GetPublicRoom(c *gin.Context) {
 
 	data.RLock()
 	c.HTML(http.StatusOK, "room.html", gin.H{
-		"Room": &data.Rooms[roomId],
+		"Room": data.Rooms[roomId],
 	})
 	data.RUnlock()
 }
@@ -58,7 +58,7 @@ func GetPublicRoomServers(c *gin.Context) {
 
 	data.RLock()
 	c.HTML(http.StatusOK, "room_servers.html", gin.H{
-		"Room": &data.Rooms[roomId],
+		"Room": data.Rooms[roomId],
 	})
 	data.RUnlock()
 }
@@ -68,7 +68,7 @@ func GetPublicRoomMembers(c *gin.Context) {
 
 	data.RLock()
 	c.HTML(http.StatusOK, "room_members.html", gin.H{
-		"Room": &data.Rooms[roomId],
+		"Room": data.Rooms[roomId],
 	})
 	data.RUnlock()
 }
