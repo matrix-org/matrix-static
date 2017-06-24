@@ -20,12 +20,20 @@ import (
 	"sync"
 )
 
+type MemberInfo struct {
+	Membership  string
+	DisplayName string
+	AvatarURL   string
+	PowerLevel  int
+}
+
 type Room struct {
 	sync.Once
 	RoomID  string
 	Servers []string
 
-	InitialSync RespInitialSync
+	InitialSync *RespInitialSync
+	MemberInfo  map[string]*MemberInfo
 
 	CanonicalAlias   string
 	Name             string
@@ -39,7 +47,7 @@ type Room struct {
 
 // Event represents a single Matrix event.
 type StateEvent struct {
-	StateKey   *string                `json:"state_key,omitempty"` // The state key for the event. Only present on State Events.
+	StateKey   string                 `json:"state_key,omitempty"` // The state key for the event. Only present on State Events.
 	Sender     string                 `json:"sender"`              // The user ID of the sender of the event
 	Type       string                 `json:"type"`                // The event type
 	Timestamp  int                    `json:"origin_server_ts"`    // The unix timestamp when this message was sent by the origin server
@@ -52,11 +60,11 @@ type StateEvent struct {
 type RespInitialSync struct {
 	AccountData []gomatrix.Event `json:"account_data"`
 
-	Messages   gomatrix.RespMessages `json:"messages"`
-	Membership string                `json:"membership"`
-	State      []StateEvent          `json:"state"`
-	RoomID     string                `json:"room_id"`
-	Receipts   []gomatrix.Event      `json:"receipts"`
+	Messages   *gomatrix.RespMessages `json:"messages"`
+	Membership string                 `json:"membership"`
+	State      []*StateEvent          `json:"state"`
+	RoomID     string                 `json:"room_id"`
+	Receipts   []*gomatrix.Event      `json:"receipts"`
 }
 
 func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
@@ -68,8 +76,23 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 	_, err := cli.MakeRequest("GET", urlPath, nil, &resp)
 
 	if err == nil {
+		memberInfo := make(map[string]*MemberInfo)
+		for _, stateEvent := range resp.State {
+			switch stateEvent.Type {
+			case "m.room.member":
+				if memberInfo[stateEvent.StateKey] == nil {
+					memberInfo[stateEvent.StateKey] = &MemberInfo{}
+				}
+
+				memberInfo[stateEvent.StateKey].AvatarURL = string(stateEvent.Content["avatar_url"])
+				memberInfo[stateEvent.StateKey].Membership = string(stateEvent.Content["membership"])
+				memberInfo[stateEvent.StateKey].DisplayName = string(stateEvent.Content["displayname"])
+			}
+		}
+
 		data.Lock()
-		data.Rooms[room.RoomID].InitialSync = resp
+		data.Rooms[room.RoomID].MemberInfo = memberInfo
+		data.Rooms[room.RoomID].InitialSync = &resp
 		data.Unlock()
 	}
 }
