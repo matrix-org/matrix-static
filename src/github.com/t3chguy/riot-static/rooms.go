@@ -84,11 +84,29 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 					memberInfo[stateEvent.StateKey] = &MemberInfo{}
 				}
 
-				memberInfo[stateEvent.StateKey].AvatarURL = string(stateEvent.Content["avatar_url"])
-				memberInfo[stateEvent.StateKey].Membership = string(stateEvent.Content["membership"])
-				memberInfo[stateEvent.StateKey].DisplayName = string(stateEvent.Content["displayname"])
+				var str string = stateEvent.StateKey
+
+				if avatarUrl := stateEvent.Content["avatar_url"]; avatarUrl != nil {
+					memberInfo[stateEvent.StateKey].AvatarURL = avatarUrl.(string)
+					str += " " + avatarUrl.(string)
+				}
+				if membership := stateEvent.Content["membership"]; memberInfo != nil {
+					memberInfo[stateEvent.StateKey].Membership = membership.(string)
+					str += " " + membership.(string)
+				}
+				if displayname := stateEvent.Content["displayname"]; displayname != nil {
+					memberInfo[stateEvent.StateKey].DisplayName = displayname.(string)
+					str += " " + displayname.(string)
+				}
+				fmt.Println(str)
 			}
 		}
+
+		fmt.Println(memberInfo["@JpRouault01:matrix.org"])
+
+		//for mxid, member := range memberInfo {
+		//	fmt.Println(mxid, member)
+		//}
 
 		data.Lock()
 		data.Rooms[room.RoomID].MemberInfo = memberInfo

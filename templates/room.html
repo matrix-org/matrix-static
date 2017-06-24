@@ -7,40 +7,129 @@
         td.timestamp {
             min-width: 150px;
         }
+        img {
+            height: 20px;
+        }
+        .float-left-area  {
+            width: 70%;
+            float: left;
+        }
+
+        .float-right-area {
+            width: 30%;
+            float: left;
+        }
+
+        .inner-left	  {
+            padding: 5px 5px 5px 5px;
+            margin-right: 10px;
+            border: #999999 1px solid;
+            min-height: 60px;
+        }
+
+        .inner-right	  {
+            font-size: 11px;
+            padding: 5px 5px 5px 5px;
+            border: #999999 1px solid;
+            min-height: 60px;
+        }
+
+        .clear-floated	  { clear: both; height: 1px; font-size: 1px; line-height: 1px; padding: 0; margin: 0; }
+
     </style>
 </head>
 <body>
-{{.Room.RoomID}} -
-<a href="./{{.Room.RoomID}}/members">{{ .Room.NumJoinedMembers }} Members</a>
-participating in this Room over
-<a href="./{{.Room.RoomID}}/servers">{{ len .Room.Servers }} Servers.</a>
-    <table>
 
-        <thead>
-            <tr>
-                <td>Timestamp</td>
-                <td>Sender</td>
-                <td>Message</td>
-            </tr>
-        </thead>
+    <div class="float-left-area">
+        <div class="inner-left">
 
-        {{ range $message := .Room.InitialSync.Messages.Chunk }}
-            {{ if $message.Content.body }}
+            {{.Room.RoomID}} -
+            <a href="./{{.Room.RoomID}}/members">{{ .Room.NumJoinedMembers }} Members</a>
+            participating in this Room over
+            <a href="./{{.Room.RoomID}}/servers">{{ len .Room.Servers }} Servers.</a>
+            <table>
+
+                <thead>
                 <tr>
-                    <td class="timestamp">
-                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
-                    </td>
-                    <td>
-                        {{$message.Sender}}
-                    </td>
-                    <td>
-                        {{$message.Content.body}}
-                    </td>
+                    <td>Timestamp</td>
+                    <td>Avatar</td>
+                    <td>Sender</td>
+                    <td>Message</td>
                 </tr>
-            {{ end }}
-        {{end}}
+                </thead>
 
-    </table>
+                {{ range $message := .Room.InitialSync.Messages.Chunk }}
+                    {{ if $message.Content.body }}
+
+                        {{ $memberInfo:= (index $.Room.MemberInfo $message.Sender) }}
+
+                        <tr>
+                            <td class="timestamp">
+                                <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
+                            </td>
+                            <td>
+                                {{ if $memberInfo.AvatarURL }}
+                                    <img src="{{$memberInfo.AvatarURL | mxcToUrl}}" />
+                                {{ else }}
+                                    N/A
+                                {{ end }}
+                            </td>
+                            <td>
+                                {{ if $memberInfo.DisplayName }}
+                                    {{ $memberInfo.DisplayName }}
+                                {{ else }}
+                                    {{ $message.Sender }}
+                                {{ end }}
+                            </td>
+                            <td>
+                                {{$message.Content.body}}
+                            </td>
+                        </tr>
+                    {{ end }}
+                {{ end }}
+
+            </table>
+
+        </div>
+    </div>
+
+    <div class="float-right-area">
+        <div class="inner-right">
+
+            <table>
+
+                <thead>
+                <tr>
+                    <td>Avatar</td>
+                    <td>Displayname</td>
+                    <td>MXID</td>
+                </tr>
+                </thead>
+
+                {{ range $state := .Room.InitialSync.State }}
+                    {{ if eq $state.Type "m.room.member" }}
+                        {{ if eq $state.Membership "join" }}
+                            <tr>
+                                <td>
+                                    {{ if $state.Content.avatar_url }}
+                                        <img src="{{$state.Content.avatar_url | mxcToUrl}}" />
+                                    {{ else }}
+                                        N/A
+                                    {{ end }}
+                                </td>
+                                <td>{{$state.Content.displayname}}</td>
+                                <td>{{$state.StateKey}}</td>
+                            </tr>
+                        {{ end }}
+                    {{ end }}
+                {{ end }}
+
+            </table>
+
+        </div>
+    </div>
+
+    <div class="clear-floated"></div>
 
     <a href="../">Go Back</a>
 </body>

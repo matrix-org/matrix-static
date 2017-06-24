@@ -96,6 +96,8 @@ var data = struct {
 }{}
 
 func LoadPublicRooms() {
+	// @TODO: fix this.
+	data.Lock()
 	fmt.Println("Loading public publicRooms")
 	resp, err := cli.PublicRooms(0, "", "")
 
@@ -117,7 +119,7 @@ func LoadPublicRooms() {
 			}
 		}
 
-		data.Lock()
+		//data.Lock()
 		data.Rooms = c
 		data.NumRooms = len(b)
 		// copy order so we don't encounter slice hell
