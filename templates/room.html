@@ -52,7 +52,6 @@
                 <thead>
                 <tr>
                     <td>Timestamp</td>
-                    <td>Avatar</td>
                     <td>Sender</td>
                     <td>Message</td>
                 </tr>
@@ -68,14 +67,13 @@
                                 <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                             </td>
                             <td>
-                                {{ if $memberInfo.AvatarURL }}
-                                    <img src="{{$memberInfo.AvatarURL | mxcToUrl}}" />
-                                {{ else }}
-                                    N/A
-                                {{ end }}
-                            </td>
-                            <td>
                                 <a href="./{{$.Room.RoomID}}/members/{{$message.Sender}}">
+                                    {{ if $memberInfo.AvatarURL }}
+                                        <img src="{{$memberInfo.AvatarURL | mxcToUrl}}" />
+                                    {{ else }}
+                                        N/A
+                                    {{ end }}
+
                                     {{ if $memberInfo.DisplayName }}
                                         {{ $memberInfo.DisplayName }}
                                     {{ else }}
