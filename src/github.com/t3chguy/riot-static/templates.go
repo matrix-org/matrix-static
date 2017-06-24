@@ -50,7 +50,7 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 		return hsURL.String()
 	},
 	"time": func(timestamp int) string {
-		return time.Unix(0, int64(timestamp)*int64(time.Millisecond)).Format("15:04:05")
+		return time.Unix(0, int64(timestamp)*int64(time.Millisecond)).Format("2 Jan 2006 15:04:05")
 	},
 	"plus": func(a, b int) int {
 		return a + b
