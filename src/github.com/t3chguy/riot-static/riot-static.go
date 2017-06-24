@@ -87,6 +87,23 @@ func GetPublicRoomMembers(c *gin.Context) {
 	data.RUnlock()
 }
 
+func GetPublicRoomMember(c *gin.Context) {
+	roomId := c.Param("roomId")
+	mxid := c.Param("mxid")
+
+	data.RLock()
+	if memberInfo := data.Rooms[roomId].MemberInfo[mxid]; memberInfo != nil {
+		c.HTML(http.StatusOK, "member_info.html", gin.H{
+			"RoomID":     roomId,
+			"MXID":       mxid,
+			"MemberInfo": memberInfo,
+		})
+	} else {
+		c.AbortWithStatus(http.StatusNotFound)
+	}
+	data.RUnlock()
+}
+
 var data = struct {
 	sync.Once
 	sync.RWMutex
@@ -171,6 +188,7 @@ func main() {
 		roomRouter.GET("/:roomId", GetPublicRoom)
 		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)
 		roomRouter.GET("/:roomId/members", GetPublicRoomMembers)
+		roomRouter.GET("/:roomId/members/:mxid", GetPublicRoomMember)
 	}
 
 	port := os.Getenv("PORT")

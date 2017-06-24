@@ -11,12 +11,12 @@
             height: 20px;
         }
         .float-left-area  {
-            width: 70%;
+            width: 85%;
             float: left;
         }
 
         .float-right-area {
-            width: 30%;
+            width: 15%;
             float: left;
         }
 
@@ -75,11 +75,13 @@
                                 {{ end }}
                             </td>
                             <td>
-                                {{ if $memberInfo.DisplayName }}
-                                    {{ $memberInfo.DisplayName }}
-                                {{ else }}
-                                    {{ $message.Sender }}
-                                {{ end }}
+                                <a href="./{{$.Room.RoomID}}/members/{{$message.Sender}}">
+                                    {{ if $memberInfo.DisplayName }}
+                                        {{ $memberInfo.DisplayName }}
+                                    {{ else }}
+                                        {{ $message.Sender }}
+                                    {{ end }}
+                                </a>
                             </td>
                             <td>
                                 {{$message.Content.body}}
@@ -102,7 +104,6 @@
                 <tr>
                     <td>Avatar</td>
                     <td>Displayname</td>
-                    <td>MXID</td>
                 </tr>
                 </thead>
 
@@ -117,8 +118,7 @@
                                         N/A
                                     {{ end }}
                                 </td>
-                                <td>{{$state.Content.displayname}}</td>
-                                <td>{{$state.StateKey}}</td>
+                                <td><a href="./{{$.Room.RoomID}}/members/{{$state.StateKey}}">{{$state.Content.displayname}}</a></td>
                             </tr>
                         {{ end }}
                     {{ end }}
