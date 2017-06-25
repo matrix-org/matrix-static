@@ -74,11 +74,7 @@
                                         N/A
                                     {{ end }}
 
-                                    {{ if $memberInfo.DisplayName }}
-                                        {{ $memberInfo.DisplayName }}
-                                    {{ else }}
-                                        {{ $message.Sender }}
-                                    {{ end }}
+                                    {{ fallback $memberInfo.DisplayName $message.Sender }}
                                 </a>
                             </td>
                             <td>
@@ -116,7 +112,11 @@
                                         N/A
                                     {{ end }}
                                 </td>
-                                <td><a href="./{{$.Room.RoomID}}/members/{{$state.StateKey}}">{{$state.Content.displayname}}</a></td>
+                                <td>
+                                    <a href="./{{$.Room.RoomID}}/members/{{$state.StateKey}}">
+                                        {{ fallback $state.Content.displayname $state.StateKey }}
+                                    </a>
+                                </td>
                             </tr>
                         {{ end }}
                     {{ end }}

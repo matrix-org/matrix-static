@@ -58,4 +58,14 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	"minus": func(a, b int) int {
 		return a - b
 	},
+	"fallback": func(args ...interface{}) string {
+		for _, strO := range args {
+			if strO != nil {
+				if str := strO.(string); str != "" {
+					return str
+				}
+			}
+		}
+		return ""
+	},
 }).ParseGlob("templates/*.html"))
