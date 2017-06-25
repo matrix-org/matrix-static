@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/matrix-org/gomatrix"
 	"net/url"
@@ -94,6 +95,8 @@ type Room struct {
 	InitialSync *RespInitialSync
 	MemberInfo  map[string]*MemberInfo
 
+	PowerLevels *PowerLevelsEvent
+
 	CanonicalAlias   string
 	Name             string
 	WorldReadable    bool
@@ -116,14 +119,15 @@ func (room *Room) GetName() string {
 
 // Event represents a single Matrix event.
 type StateEvent struct {
-	StateKey   string                 `json:"state_key,omitempty"` // The state key for the event. Only present on State Events.
-	Sender     string                 `json:"sender"`              // The user ID of the sender of the event
-	Type       string                 `json:"type"`                // The event type
-	Timestamp  int                    `json:"origin_server_ts"`    // The unix timestamp when this message was sent by the origin server
-	ID         string                 `json:"event_id"`            // The unique ID of this event
-	RoomID     string                 `json:"room_id"`             // The room the event was sent to. May be nil (e.g. for presence)
-	Content    map[string]interface{} `json:"content"`             // The JSON content of the event.
-	Membership string                 `json:"membership"`
+	StateKey    string                 `json:"state_key,omitempty"` // The state key for the event. Only present on State Events.
+	Sender      string                 `json:"sender"`              // The user ID of the sender of the event
+	Type        string                 `json:"type"`                // The event type
+	Timestamp   int                    `json:"origin_server_ts"`    // The unix timestamp when this message was sent by the origin server
+	ID          string                 `json:"event_id"`            // The unique ID of this event
+	RoomID      string                 `json:"room_id"`             // The room the event was sent to. May be nil (e.g. for presence)
+	Content     map[string]interface{} `json:"content"`             // The JSON content of the event.
+	Membership  string                 `json:"membership"`
+	PrevContent map[string]interface{} `json:"prev_content,omitempty"`
 }
 
 type RespInitialSync struct {
@@ -158,6 +162,7 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 
 	if err == nil {
 		memberInfo := make(map[string]*MemberInfo)
+		var powerLevelsEvent *PowerLevelsEvent
 
 		for _, stateEvent := range resp.State {
 			switch stateEvent.Type {
@@ -176,7 +181,12 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 					memberInfo[stateEvent.StateKey].DisplayName = displayname.(string)
 				}
 
+				fmt.Println(stateEvent.PrevContent)
+
 			case "m.room.power_levels":
+				data, _ := json.Marshal(stateEvent.Content)
+				json.Unmarshal(data, powerLevelsEvent)
+
 				if stateEvent.Content["users"] == nil {
 					break
 				}
@@ -194,6 +204,11 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 		}
 
 		data.Lock()
+
+		if powerLevelsEvent != nil {
+			data.Rooms[room.RoomID].PowerLevels = powerLevelsEvent
+		}
+
 		data.Rooms[room.RoomID].MemberInfo = memberInfo
 		data.Rooms[room.RoomID].InitialSync = &resp
 		data.Unlock()
