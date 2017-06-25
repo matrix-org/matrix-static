@@ -28,7 +28,7 @@
     {{ range $mxid, $memberInfo := .Room.MemberInfo }}
         {{ if eq $memberInfo.Membership "join" }}
             <tr>
-                <td>{{ $mxid }}</td>
+                <td><a href="./members/{{$mxid}}">{{ $mxid }}</a></td>
                 <td>
                     {{ if $memberInfo.AvatarURL }}
                         <img src="{{ $memberInfo.AvatarURL.ToUrl}}" />
