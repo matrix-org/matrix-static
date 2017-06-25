@@ -13,9 +13,9 @@
             <td>Avatar</td>
             <td>
                 {{ if .MemberInfo.AvatarURL }}
-                    <img src="{{.MemberInfo.AvatarURL | mxcToUrl}}" />
+                    <img src="{{.MemberInfo.AvatarURL.ToUrl}}" />
                 {{ else }}
-                    N/A
+                    <img src="../../../assets/logo_missing.png" />
                 {{ end }}
             </td>
         </tr>

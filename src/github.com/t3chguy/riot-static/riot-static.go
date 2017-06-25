@@ -177,6 +177,7 @@ func main() {
 
 	router := gin.Default()
 	router.SetHTMLTemplate(tpl)
+	router.Static("/assets", "./assets")
 
 	router.GET("/", GetPublicRoomsList)
 

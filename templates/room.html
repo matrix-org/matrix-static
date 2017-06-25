@@ -42,9 +42,9 @@
                     <td>
                         <a href="./{{$.Room.RoomID}}/members/{{$message.Sender}}">
                             {{ if $memberInfo.AvatarURL }}
-                                <img src="{{$memberInfo.AvatarURL | mxcToUrl}}" />
+                                <img src="{{$memberInfo.AvatarURL.ToUrl}}" />
                             {{ else }}
-                                N/A
+                                <img src="../assets/logo_missing.png" />
                             {{ end }}
 
                             {{ $memberInfo.GetName }}

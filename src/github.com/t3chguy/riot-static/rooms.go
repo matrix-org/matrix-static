@@ -17,14 +17,43 @@ package main
 import (
 	"fmt"
 	"github.com/matrix-org/gomatrix"
+	"net/url"
+	"path"
+	"strings"
 	"sync"
 )
+
+type MxcUrl string
+
+func (mxcUrl MxcUrl) ToUrl() string {
+	mxc := string(mxcUrl)
+
+	if !strings.HasPrefix(mxc, "mxc://") {
+		return ""
+	}
+
+	_, serverName, mediaId := unpack3Values(mxcRegex.FindStringSubmatch(mxc))
+
+	hsURL, _ := url.Parse(cli.HomeserverURL.String())
+	parts := []string{hsURL.Path}
+	parts = append(parts, "_matrix", "media", "r0", "thumbnail", serverName, mediaId)
+	hsURL.Path = path.Join(parts...)
+
+	q := hsURL.Query()
+	q.Set("width", "50")
+	q.Set("height", "50")
+	q.Set("method", "crop")
+
+	hsURL.RawQuery = q.Encode()
+
+	return hsURL.String()
+}
 
 type MemberInfo struct {
 	MXID        string
 	Membership  string
 	DisplayName string
-	AvatarURL   string
+	AvatarURL   MxcUrl
 	PowerLevel  int
 }
 
@@ -49,7 +78,7 @@ type Room struct {
 	WorldReadable    bool
 	Topic            string
 	NumJoinedMembers int
-	AvatarUrl        string
+	AvatarUrl        MxcUrl
 	GuestCanJoin     bool
 	Aliases          []string
 }
@@ -110,14 +139,14 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 		memberInfo := make(map[string]*MemberInfo)
 
 		for _, stateEvent := range resp.State {
-			if memberInfo[stateEvent.StateKey] == nil {
-				memberInfo[stateEvent.StateKey] = &MemberInfo{MXID: stateEvent.StateKey}
-			}
-
 			switch stateEvent.Type {
 			case "m.room.member":
+				if memberInfo[stateEvent.StateKey] == nil {
+					memberInfo[stateEvent.StateKey] = &MemberInfo{MXID: stateEvent.StateKey}
+				}
+
 				if avatarUrl := stateEvent.Content["avatar_url"]; avatarUrl != nil {
-					memberInfo[stateEvent.StateKey].AvatarURL = avatarUrl.(string)
+					memberInfo[stateEvent.StateKey].AvatarURL = MxcUrl(avatarUrl.(string))
 				}
 				if membership := stateEvent.Content["membership"]; memberInfo != nil {
 					memberInfo[stateEvent.StateKey].Membership = membership.(string)
@@ -126,18 +155,22 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 					memberInfo[stateEvent.StateKey].DisplayName = displayname.(string)
 				}
 
-				//case "m.room.power_levels":
-				//	for mxid, powerLevel := range {
-				//
-				//	}
+			case "m.room.power_levels":
+				if stateEvent.Content["users"] == nil {
+					break
+				}
+
+				for mxid, powerLevel := range stateEvent.Content["users"].(map[string]interface{}) {
+					if memberInfo[mxid] == nil {
+						memberInfo[mxid] = &MemberInfo{MXID: mxid}
+					}
+
+					if powerLevel != nil {
+						memberInfo[mxid].PowerLevel = int(powerLevel.(float64))
+					}
+				}
 			}
 		}
-
-		fmt.Println(memberInfo["@JpRouault01:matrix.org"])
-
-		//for mxid, member := range memberInfo {
-		//	fmt.Println(mxid, member)
-		//}
 
 		data.Lock()
 		data.Rooms[room.RoomID].MemberInfo = memberInfo
@@ -192,7 +225,7 @@ func NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) (room *Room) {
 		WorldReadable:    publicRoomInfo.WorldReadable,
 		Topic:            publicRoomInfo.Topic,
 		NumJoinedMembers: publicRoomInfo.NumJoinedMembers,
-		AvatarUrl:        publicRoomInfo.AvatarUrl,
+		AvatarUrl:        MxcUrl(publicRoomInfo.AvatarUrl),
 		GuestCanJoin:     publicRoomInfo.GuestCanJoin,
 		Aliases:          publicRoomInfo.Aliases,
 	}

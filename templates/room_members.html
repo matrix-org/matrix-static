@@ -34,9 +34,9 @@
                 <td>{{ $mxid }}</td>
                 <td>
                     {{ if $memberInfo.AvatarURL }}
-                        <img src="{{ $memberInfo.AvatarURL | mxcToUrl }}" />
+                        <img src="{{ $memberInfo.AvatarURL.ToUrl}}" />
                     {{ else }}
-                        N/A
+                        <img src="../../../assets/logo_missing.png" />
                     {{ end }}
                 </td>
                 <td>{{ $memberInfo.DisplayName }}</td>
