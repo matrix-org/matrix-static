@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*
+	@TODO Show more than just textual events (Images etc)
+	@TODO Historical member info
+	@TODO make Peeking more useful (paginate etc)
+	@TODO investigate best practices for the spider to get the most out of it
+*/
+
 package main
 
 import (
