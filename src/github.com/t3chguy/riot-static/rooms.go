@@ -49,12 +49,33 @@ func (mxcUrl MxcUrl) ToUrl() string {
 	return hsURL.String()
 }
 
+type PowerLevel int
+
+func (powerLevel PowerLevel) GetString() string {
+	switch int(powerLevel) {
+	case 100:
+		return "Admin"
+	case 50:
+		return "Moderator"
+	case 0:
+		return "User"
+	case -1:
+		return "Muted"
+	default:
+		return "Custom"
+	}
+}
+
+func (powerLevel PowerLevel) ToInt() int {
+	return int(powerLevel)
+}
+
 type MemberInfo struct {
 	MXID        string
 	Membership  string
 	DisplayName string
 	AvatarURL   MxcUrl
-	PowerLevel  int
+	PowerLevel
 }
 
 func (memberInfo *MemberInfo) GetName() string {
@@ -166,7 +187,7 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 					}
 
 					if powerLevel != nil {
-						memberInfo[mxid].PowerLevel = int(powerLevel.(float64))
+						memberInfo[mxid].PowerLevel = PowerLevel(powerLevel.(float64))
 					}
 				}
 			}
