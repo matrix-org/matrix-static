@@ -13,37 +13,35 @@
     </style>
 </head>
 <body>
-{{.Room.RoomID}}
+{{ .Room.GetName }}
 
 <table>
 
     <thead>
-    <!--    <tr>
-            <td>Timestamp</td>
-            <td>Sender</td>
-            <td>Message</td>
-        </tr>-->
+        <tr>
+            <td>MXID</td>
+            <td>Avatar</td>
+            <td>Display Name</td>
+            <td>Power Level</td>
+        </tr>
     </thead>
 
-    {{ range $state := .Room.InitialSync.State }}
-        {{ if eq $state.Type "m.room.member" }}
-            {{ if eq $state.Membership "join" }}
-                <tr>
-                    <td>
-                        {{ if $state.Content.avatar_url }}
-                            <img src="{{$state.Content.avatar_url | mxcToUrl}}" />
-                        {{ else }}
-                            N/A
-                        {{ end }}
-                    </td>
-                    <td>
-                        {{$state.Sender}}
-                    </td>
-                    <td>
-                        {{$state.Content.displayname}}
-                    </td>
-                </tr>
-            {{ end }}
+    {{ len .Room.MemberInfo }} Users have interacted with this room.
+
+    {{ range $mxid, $memberInfo := .Room.MemberInfo }}
+        {{ if eq $memberInfo.Membership "join" }}
+            <tr>
+                <td>{{ $mxid }}</td>
+                <td>
+                    {{ if $memberInfo.AvatarURL }}
+                        <img src="{{ $memberInfo.AvatarURL | mxcToUrl }}" />
+                    {{ else }}
+                        N/A
+                    {{ end }}
+                </td>
+                <td>{{ $memberInfo.DisplayName }}</td>
+                <td>{{ $memberInfo.PowerLevel }}</td>
+            </tr>
         {{ end }}
     {{ end }}
 

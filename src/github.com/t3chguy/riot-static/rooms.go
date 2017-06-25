@@ -21,10 +21,19 @@ import (
 )
 
 type MemberInfo struct {
+	MXID        string
 	Membership  string
 	DisplayName string
 	AvatarURL   string
 	PowerLevel  int
+}
+
+func (memberInfo *MemberInfo) GetName() string {
+	if memberInfo.DisplayName != "" {
+		return memberInfo.DisplayName
+	} else {
+		return memberInfo.MXID
+	}
 }
 
 type Room struct {
@@ -43,6 +52,16 @@ type Room struct {
 	AvatarUrl        string
 	GuestCanJoin     bool
 	Aliases          []string
+}
+
+func (room *Room) GetName() string {
+	if room.Name != "" {
+		return room.Name
+	} else if room.CanonicalAlias != "" {
+		return room.CanonicalAlias
+	} else {
+		return room.RoomID
+	}
 }
 
 // Event represents a single Matrix event.
@@ -67,6 +86,18 @@ type RespInitialSync struct {
 	Receipts   []*gomatrix.Event      `json:"receipts"`
 }
 
+type PowerLevelsEvent struct {
+	Ban           int            `json:"ban"`
+	Events        map[string]int `json:"events"`
+	EventsDefault int            `json:"events_default"`
+	Invite        int            `json:"invite"`
+	Kick          int            `json:"kick"`
+	Redact        int            `json:"redact"`
+	StateDefault  int            `json:"state_default"`
+	Users         map[string]int `json:"users"`
+	UsersDefault  int            `json:"users_default"`
+}
+
 func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -77,28 +108,28 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 
 	if err == nil {
 		memberInfo := make(map[string]*MemberInfo)
+
 		for _, stateEvent := range resp.State {
+			if memberInfo[stateEvent.StateKey] == nil {
+				memberInfo[stateEvent.StateKey] = &MemberInfo{MXID: stateEvent.StateKey}
+			}
+
 			switch stateEvent.Type {
 			case "m.room.member":
-				if memberInfo[stateEvent.StateKey] == nil {
-					memberInfo[stateEvent.StateKey] = &MemberInfo{}
-				}
-
-				var str string = stateEvent.StateKey
-
 				if avatarUrl := stateEvent.Content["avatar_url"]; avatarUrl != nil {
 					memberInfo[stateEvent.StateKey].AvatarURL = avatarUrl.(string)
-					str += " " + avatarUrl.(string)
 				}
 				if membership := stateEvent.Content["membership"]; memberInfo != nil {
 					memberInfo[stateEvent.StateKey].Membership = membership.(string)
-					str += " " + membership.(string)
 				}
 				if displayname := stateEvent.Content["displayname"]; displayname != nil {
 					memberInfo[stateEvent.StateKey].DisplayName = displayname.(string)
-					str += " " + displayname.(string)
 				}
-				fmt.Println(str)
+
+				//case "m.room.power_levels":
+				//	for mxid, powerLevel := range {
+				//
+				//	}
 			}
 		}
 
