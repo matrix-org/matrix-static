@@ -95,6 +95,19 @@ func GetPublicRoomMembers(c *gin.Context) {
 	data.RUnlock()
 }
 
+func GetPublicRoomPowerLevels(c *gin.Context) {
+	roomId := c.Param("roomId")
+
+	data.RLock()
+
+	fmt.Println(data.Rooms[roomId].PowerLevels)
+
+	c.HTML(http.StatusOK, "power_levels.html", gin.H{
+		"PowerLevels": data.Rooms[roomId].PowerLevels,
+	})
+	data.RUnlock()
+}
+
 func GetPublicRoomMember(c *gin.Context) {
 	roomId := c.Param("roomId")
 	mxid := c.Param("mxid")
@@ -198,6 +211,7 @@ func main() {
 		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)
 		roomRouter.GET("/:roomId/members", GetPublicRoomMembers)
 		roomRouter.GET("/:roomId/members/:mxid", GetPublicRoomMember)
+		roomRouter.GET("/:roomId/power_levels", GetPublicRoomPowerLevels)
 	}
 
 	port := os.Getenv("PORT")

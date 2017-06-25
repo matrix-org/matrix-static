@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    <style>
+        tr {
+            height: 56px;
+        }
+        img {
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    Room Power Level Requirements
+    <table>
+
+        <tr>
+            <td>Ban</td>
+            <td>{{.PowerLevels.Ban}}</td>
+        </tr>
+
+        <tr>
+            <td>Kick</td>
+            <td>{{.PowerLevels.Kick}}</td>
+        </tr>
+
+        <tr>
+            <td>Redact</td>
+            <td>{{.PowerLevels.Redact}}</td>
+        </tr>
+
+        <tr>
+            <td>User Default</td>
+            <td>{{.PowerLevels.UsersDefault}}</td>
+        </tr>
+
+        <tr>
+            <td>State Default</td>
+            <td>{{.PowerLevels.StateDefault}}</td>
+        </tr>
+
+        <tr>
+            <td>Events Default</td>
+            <td>{{.PowerLevels.EventsDefault}}</td>
+        </tr>
+
+        <tr>
+            <td>Events</td>
+            <td>
+                <table>
+                    {{ range $type, $pl := .PowerLevels.Events }}
+                        <tr>
+                            <td>{{$type}}</td>
+                            <td>{{$pl}}</td>
+                        </tr>
+                    {{ end }}
+                </table>
+            </td>
+        </tr>
+
+    </table>
+
+    Users with set Power Levels:
+    <table>
+        {{ range $mxid, $pl := .PowerLevels.Users }}
+            <tr>
+                <td>{{$mxid}}</td>
+                <td>{{$pl}}</td>
+            </tr>
+        {{ end }}
+    </table>
+
+</body>
+</html>

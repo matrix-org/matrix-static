@@ -181,11 +181,13 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 					memberInfo[stateEvent.StateKey].DisplayName = displayname.(string)
 				}
 
-				fmt.Println(stateEvent.PrevContent)
+				//fmt.Println(stateEvent.PrevContent)
 
 			case "m.room.power_levels":
 				data, _ := json.Marshal(stateEvent.Content)
-				json.Unmarshal(data, powerLevelsEvent)
+				err := json.Unmarshal(data, &powerLevelsEvent)
+
+				fmt.Println(err)
 
 				if stateEvent.Content["users"] == nil {
 					break
@@ -205,6 +207,7 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 
 		data.Lock()
 
+		fmt.Println(powerLevelsEvent)
 		if powerLevelsEvent != nil {
 			data.Rooms[room.RoomID].PowerLevels = powerLevelsEvent
 		}
