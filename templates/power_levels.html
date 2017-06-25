@@ -63,13 +63,15 @@
 
     </table>
 
-    Users with set Power Levels:
+    Users with non-default Power Levels:
     <table>
         {{ range $mxid, $pl := .PowerLevels.Users }}
-            <tr>
-                <td>{{$mxid}}</td>
-                <td>{{$pl}}</td>
-            </tr>
+            {{ if ne $pl $.PowerLevels.UsersDefault }}
+                <tr>
+                    <td>{{$mxid}}</td>
+                    <td>{{$pl}}</td>
+                </tr>
+            {{ end }}
         {{ end }}
     </table>
 
