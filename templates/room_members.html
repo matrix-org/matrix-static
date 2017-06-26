@@ -23,7 +23,7 @@
         </tr>
     </thead>
 
-    {{ len .Room.MemberInfo }} - Users have interacted with this room.
+    {{ .NumMembers }} - Users have interacted with this room.
 
     {{ range $mxid, $memberInfo := .Room.MemberInfo }}
         {{ if eq $memberInfo.Membership "join" }}

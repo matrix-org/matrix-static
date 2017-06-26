@@ -15,11 +15,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/matrix-org/gomatrix"
 	"github.com/microcosm-cc/bluemonday"
+	"golang.org/x/net/html"
 	"html/template"
+	"log"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -139,7 +143,20 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 				p.AddTargetBlankToFullyQualifiedLinks(true)
 				p.AddSpaceWhenStrippingTag(true)
 
-				return template.HTML(p.Sanitize(event.Content["formatted_body"].(string)))
+				partiallySanitized := p.Sanitize(event.Content["formatted_body"].(string))
+
+				reader := strings.NewReader(partiallySanitized)
+				root, err := html.Parse(reader)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				var b bytes.Buffer
+				html.Render(&b, root)
+				sanitized := b.String()
+
+				return template.HTML(sanitized)
 			}
 			return event.Content["body"]
 		}

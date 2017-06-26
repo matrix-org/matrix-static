@@ -83,9 +83,21 @@ func GetPublicRoomServers(c *gin.Context) {
 func GetPublicRoomMembers(c *gin.Context) {
 	roomId := c.Param("roomId")
 
+	//var page int
+	//var err error
+	//if page, err = strconv.Atoi(c.DefaultQuery("page", "1")); err != nil {
+	//	page = 1
+	//}
+
+	//pageSize := 20
+
 	data.RLock()
+	length := len(data.Rooms[roomId].MemberInfo)
+	//skip, end := paginate(page, pageSize, length)
 	c.HTML(http.StatusOK, "room_members.html", gin.H{
 		"Room": data.Rooms[roomId],
+		//"MemberInfo": data.Rooms[roomId].Members[skip:end],
+		"NumMembers": length,
 	})
 	data.RUnlock()
 }
