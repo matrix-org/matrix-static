@@ -209,6 +209,13 @@ func main() {
 		roomRouter.GET("/:roomId/power_levels", GetPublicRoomPowerLevels)
 	}
 
+	router.GET("/clear", func(c *gin.Context) {
+		data.Once = sync.Once{}
+		for _, room := range data.Rooms {
+			room.Once = sync.Once{}
+		}
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8000"
