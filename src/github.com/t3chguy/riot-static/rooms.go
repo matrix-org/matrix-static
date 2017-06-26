@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/matrix-org/gomatrix"
+	"github.com/matryer/resync"
 	"net/url"
 	"path"
 	"strings"
@@ -88,7 +89,7 @@ func (memberInfo *MemberInfo) GetName() string {
 }
 
 type Room struct {
-	sync.Once
+	resync.Once
 	RoomID  string
 	Servers []string
 

@@ -25,6 +25,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/matryer/resync"
 	"net/http"
 	"os"
 	"strconv"
@@ -130,7 +131,7 @@ func GetPublicRoomMember(c *gin.Context) {
 }
 
 var data = struct {
-	sync.Once
+	resync.Once
 	sync.RWMutex
 	NumRooms int
 	Ordered  []*Room
@@ -210,9 +211,9 @@ func main() {
 	}
 
 	router.GET("/clear", func(c *gin.Context) {
-		data.Once = sync.Once{}
+		data.Once.Reset()
 		for _, room := range data.Rooms {
-			room.Once = sync.Once{}
+			room.Once.Reset()
 		}
 	})
 
