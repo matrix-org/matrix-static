@@ -127,8 +127,8 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 			fallthrough
 		default:
 			if event.Content["format"] == "org.matrix.custom.html" {
-				//p := bluemonday.NewPolicy()
-				p := bluemonday.UGCPolicy()
+				p := bluemonday.NewPolicy()
+				//p := bluemonday.UGCPolicy()
 
 				p.AllowElements("font", "del", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "p", "a", "ul", "ol", "nl", "li", "b", "i", "u", "strong", "em", "strike", "code", "hr", "br", "div", "table", "thead", "caption", "tbody", "tr", "th", "td", "pre", "span")
 
@@ -152,9 +152,8 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 
 				var b bytes.Buffer
 				html.Render(&b, root.FirstChild.LastChild)
-				partiallySanitized := b.String()
 
-				sanitized := p.Sanitize(partiallySanitized)
+				sanitized := p.SanitizeBytes(b.Bytes())
 
 				return template.HTML(sanitized)
 			}
