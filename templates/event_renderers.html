@@ -1,0 +1,15 @@
+{{ define "m.room.message:m.text" }}
+    {{ if .format }}
+        {{ if eq .format "org.matrix.custom.html" }}
+            {{ HTML .formatted_body }}
+        {{ else }}
+            {{ .body }}
+        {{ end }}
+    {{ else }}
+        {{ .body }}
+    {{ end }}
+{{ end }}
+
+{{ define "m.room.message:m.notice" }}
+    {{ .body }}
+{{ end }}

@@ -206,12 +206,7 @@ func (room *Room) fetchInitialSync(wg *sync.WaitGroup) {
 		}
 
 		data.Lock()
-
-		fmt.Println(powerLevelsEvent)
-		if powerLevelsEvent != nil {
-			data.Rooms[room.RoomID].PowerLevels = powerLevelsEvent
-		}
-
+		data.Rooms[room.RoomID].PowerLevels = powerLevelsEvent
 		data.Rooms[room.RoomID].MemberInfo = memberInfo
 		data.Rooms[room.RoomID].InitialSync = &resp
 		data.Unlock()

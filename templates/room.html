@@ -31,7 +31,7 @@
         </thead>
 
         {{ range $message := .Room.InitialSync.Messages.Chunk }}
-            {{ if $message.Content.body }}
+            {{ if eq $message.Type "m.room.message" }}
 
                 {{ $memberInfo:= (index $.Room.MemberInfo $message.Sender) }}
 
@@ -47,11 +47,13 @@
                                 <img src="../assets/logo_missing.png" />
                             {{ end }}
 
+                            {{ if eq $message.Content.msgtype "m.emote" }}* {{ end }}
+
                             {{ $memberInfo.GetName }}
                         </a>
                     </td>
                     <td>
-                        {{$message.Content.body}}
+                        {{ mRoomMessage $message }}
                     </td>
                 </tr>
             {{ end }}

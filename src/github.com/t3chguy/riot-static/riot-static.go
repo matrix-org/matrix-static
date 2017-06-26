@@ -31,23 +31,17 @@ import (
 	"sync"
 )
 
-func paginate(x []*Room, page int, size int) []*Room {
-	var skip, end int
-	length := len(x)
-
+func paginate(page int, size int, length int) (skip int, end int) {
 	if skip = (page - 1) * size; skip > length {
 		skip = length
 	}
 	if end = skip + size; end > length {
 		end = length
 	}
-
-	return x[skip:end]
+	return
 }
 
 func GetPublicRoomsList(c *gin.Context) {
-	data.Once.Do(LoadPublicRooms)
-
 	var page int
 	var err error
 	if page, err = strconv.Atoi(c.DefaultQuery("page", "1")); err != nil {
@@ -57,8 +51,9 @@ func GetPublicRoomsList(c *gin.Context) {
 	pageSize := 20
 
 	data.RLock()
+	skip, end := paginate(page, pageSize, data.NumRooms)
 	c.HTML(http.StatusOK, "rooms.html", gin.H{
-		"Rooms":    paginate(data.Ordered, page, pageSize),
+		"Rooms":    data.Ordered[skip:end],
 		"NumRooms": data.NumRooms,
 		"Page":     page,
 	})
@@ -99,9 +94,6 @@ func GetPublicRoomPowerLevels(c *gin.Context) {
 	roomId := c.Param("roomId")
 
 	data.RLock()
-
-	fmt.Println(data.Rooms[roomId].PowerLevels)
-
 	c.HTML(http.StatusOK, "power_levels.html", gin.H{
 		"PowerLevels": data.Rooms[roomId].PowerLevels,
 	})
@@ -172,40 +164,31 @@ func LoadPublicRooms() {
 	}
 }
 
-func FetchRoom() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		roomId := c.Param("roomId")
-		data.Rooms[roomId].Fetch()
-	}
-}
-
-func FailIfNoRoom() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		roomId := c.Param("roomId")
-		if data.Rooms[roomId] == nil {
-			c.String(http.StatusNotFound, "Room Not Found")
-			c.Abort()
-		}
-	}
-}
-
 func main() {
 	setupCli()
-
-	//go LoadPublicRooms()
-	// Synchronous cache fill
-	data.Once.Do(LoadPublicRooms)
 
 	router := gin.Default()
 	router.SetHTMLTemplate(tpl)
 	router.Static("/assets", "./assets")
 
+	router.Use(func(c *gin.Context) {
+		data.Once.Do(LoadPublicRooms)
+	})
+
 	router.GET("/", GetPublicRoomsList)
 
 	roomRouter := router.Group("/room/")
 	{
-		roomRouter.Use(FailIfNoRoom())
-		roomRouter.Use(FetchRoom())
+		roomRouter.Use(func(c *gin.Context) {
+			roomId := c.Param("roomId")
+			if data.Rooms[roomId] == nil {
+				c.String(http.StatusNotFound, "Room Not Found")
+				c.Abort()
+			} else {
+				data.Rooms[roomId].Fetch()
+				c.Next()
+			}
+		})
 
 		roomRouter.GET("/:roomId", GetPublicRoom)
 		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)

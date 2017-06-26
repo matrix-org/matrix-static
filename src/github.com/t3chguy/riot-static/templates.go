@@ -15,6 +15,8 @@
 package main
 
 import (
+	"github.com/matrix-org/gomatrix"
+	"github.com/microcosm-cc/bluemonday"
 	"html/template"
 	"regexp"
 	"time"
@@ -33,5 +35,39 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	},
 	"minus": func(a, b int) int {
 		return a - b
+	},
+	"HTML": func(str string) template.HTML {
+		return template.HTML(str)
+	},
+	"mRoomMessage": func(event *gomatrix.Event) interface{} {
+		switch event.Content["msgtype"] {
+		case "m.notice":
+			fallthrough
+		case "m.emote":
+			fallthrough
+		case "m.text":
+			fallthrough
+		default:
+			if event.Content["format"] == "org.matrix.custom.html" {
+				//p := bluemonday.NewPolicy()
+				p := bluemonday.UGCPolicy()
+
+				p.AllowElements("font", "del", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "p", "a", "ul", "ol", "nl", "li", "b", "i", "u", "strong", "em", "strike", "code", "hr", "br", "div", "table", "thead", "caption", "tbody", "tr", "th", "td", "pre", "span")
+
+				p.AllowAttrs("color", "data-mx-bg-color", "data-mx-color", "style").OnElements("font")
+				p.AllowAttrs("data-mx-bg-color", "data-mx-color", "style").OnElements("span")
+				p.AllowAttrs("href", "name", "target", "rel").OnElements("a")
+
+				p.AllowAttrs("src").OnElements("img")
+				p.AllowAttrs("start").OnElements("ol")
+
+				p.AllowURLSchemes("http", "https", "ftp", "mailto")
+				p.AddTargetBlankToFullyQualifiedLinks(true)
+				p.AddSpaceWhenStrippingTag(true)
+
+				return template.HTML(p.Sanitize(event.Content["formatted_body"].(string)))
+			}
+			return event.Content["body"]
+		}
 	},
 }).ParseGlob("templates/*.html"))
