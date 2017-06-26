@@ -46,7 +46,9 @@
                                 <img src="../assets/logo_missing.png" />
                             {{ end }}
 
-                            {{ if eq $message.Content.msgtype "m.emote" }}* {{ end }}
+                            {{ if $message.Content.msgtype }}
+                                {{ if eq $message.Content.msgtype "m.emote" }}* {{ end }}
+                            {{ end }}
 
                             {{ $memberInfo.GetName }}
                         </a>
