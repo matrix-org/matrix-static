@@ -31,10 +31,9 @@
         </thead>
 
         {{ range $message := .Room.InitialSync.Messages.Chunk }}
+            {{ $memberInfo:= (index $.Room.MemberInfo $message.Sender) }}
+
             {{ if eq $message.Type "m.room.message" }}
-
-                {{ $memberInfo:= (index $.Room.MemberInfo $message.Sender) }}
-
                 <tr>
                     <td class="timestamp">
                         <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
@@ -56,6 +55,17 @@
                         {{ mRoomMessage $message }}
                     </td>
                 </tr>
+            {{ else }}
+            {{ if eq $message.Type "m.room.member" }}
+                <tr>
+                    <td class="timestamp">
+                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
+                    </td>
+                    <td colspan="2">
+                        {{ mRoomMember $message }}
+                    </td>
+                </tr>
+            {{ end }}
             {{ end }}
         {{ end }}
 

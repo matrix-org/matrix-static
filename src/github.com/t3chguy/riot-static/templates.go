@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/matrix-org/gomatrix"
 	"github.com/microcosm-cc/bluemonday"
 	"html/template"
@@ -25,6 +26,12 @@ import (
 func unpack3Values(val []string) (string, string, string) { return val[0], val[1], val[2] }
 
 var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
+
+type MemberEventContent struct {
+	Membership  string `json:"membership,omitempty"`
+	AvatarURL   MxcUrl `json:"avatar_url,omitempty"`
+	DisplayName string `json:"displayname,omitempty"`
+}
 
 var tpl *template.Template = template.Must(template.New("main").Funcs(template.FuncMap{
 	"time": func(timestamp int) string {
@@ -38,6 +45,73 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	},
 	"HTML": func(str string) template.HTML {
 		return template.HTML(str)
+	},
+	"mRoomMember": func(event *gomatrix.Event) interface{} {
+		// join -> join = avatar/display name
+		// join -> quit = kick/leave
+		// * -> join = join
+		// * -> invite = invite
+		var content, prevContent *MemberEventContent
+
+		dataContent, _ := json.Marshal(event.Content)
+		if err := json.Unmarshal(dataContent, &content); err != nil {
+			content = &MemberEventContent{}
+		}
+
+		var effect string
+
+		dataPrevContent, _ := json.Marshal(event.PrevContent)
+		if err := json.Unmarshal(dataPrevContent, &prevContent); err != nil {
+			prevContent = &MemberEventContent{}
+		}
+
+		sender := event.Sender
+		target := *event.StateKey
+
+		switch content.Membership {
+		case "invite":
+			return sender + " invited " + target + "."
+		case "ban":
+			return sender + " banned " + target + "(" + event.Content["reason"].(string) + ")."
+		case "join":
+			if event.PrevContent != nil && prevContent.Membership == "join" {
+				if prevContent.DisplayName == "" && content.DisplayName != "" {
+					return sender + " set their display name to " + content.DisplayName + "."
+				} else if prevContent.DisplayName != "" && content.DisplayName == "" {
+					return sender + " removed their display name " + prevContent.DisplayName + "."
+				} else if prevContent.DisplayName != content.DisplayName {
+					return sender + " changed their display name from " + prevContent.DisplayName + " to " + content.DisplayName + "."
+				} else if prevContent.AvatarURL == "" && content.AvatarURL != "" {
+					return sender + " set a profile picture."
+				} else if prevContent.AvatarURL != "" && content.AvatarURL == "" {
+					return sender + " removed their profile picture."
+				} else if prevContent.AvatarURL != content.AvatarURL {
+					return sender + " changed their profile picture."
+				} else {
+					return ""
+				}
+			} else {
+				return target + " joined the room."
+			}
+		case "leave":
+			if sender == target {
+				if prevContent.Membership == "invite" {
+					return target + " rejected invite."
+				} else {
+					return target + " left the room."
+				}
+			} else if prevContent.Membership == "ban" {
+				return sender + " unbanned " + target + "."
+			} else if prevContent.Membership == "leave" {
+				return sender + " kicked " + target + "."
+			} else if prevContent.Membership == "invite" {
+				return sender + " withdrew " + target + "'s invite."
+			} else {
+				return target + " left the room"
+			}
+		}
+
+		return effect
 	},
 	"mRoomMessage": func(event *gomatrix.Event) interface{} {
 		switch event.Content["msgtype"] {
