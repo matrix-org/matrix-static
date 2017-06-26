@@ -143,9 +143,7 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 				p.AddTargetBlankToFullyQualifiedLinks(true)
 				p.AddSpaceWhenStrippingTag(true)
 
-				partiallySanitized := p.Sanitize(event.Content["formatted_body"].(string))
-
-				reader := strings.NewReader(partiallySanitized)
+				reader := strings.NewReader(event.Content["formatted_body"].(string))
 				root, err := html.Parse(reader)
 
 				if err != nil {
@@ -153,8 +151,10 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 				}
 
 				var b bytes.Buffer
-				html.Render(&b, root)
-				sanitized := b.String()
+				html.Render(&b, root.FirstChild.LastChild)
+				partiallySanitized := b.String()
+
+				sanitized := p.Sanitize(partiallySanitized)
 
 				return template.HTML(sanitized)
 			}
