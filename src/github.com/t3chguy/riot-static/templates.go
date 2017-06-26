@@ -136,8 +136,8 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 				p.AllowAttrs("data-mx-bg-color", "data-mx-color").OnElements("span")
 				p.AllowAttrs("href", "name", "target", "rel").OnElements("a")
 
-				p.AllowAttrs("src").OnElements("img")
-				p.AllowAttrs("start").OnElements("ol")
+				//p.AllowAttrs("src").OnElements("img")
+				//p.AllowAttrs("start").OnElements("ol")
 
 				p.AllowURLSchemes("http", "https", "ftp", "mailto")
 				p.AddTargetBlankToFullyQualifiedLinks(true)
