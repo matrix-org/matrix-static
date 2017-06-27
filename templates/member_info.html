@@ -12,8 +12,10 @@
         <tr>
             <td>Avatar</td>
             <td>
-                {{ if .MemberInfo.AvatarURL }}
-                    <img src="{{.MemberInfo.AvatarURL.ToUrl}}" />
+                {{ with .MemberInfo.AvatarURL }}
+                    <a href="{{.ToUrl}}">
+                        <img src="{{.ToThumbUrl}}" />
+                    </a>
                 {{ else }}
                     <img src="../../../assets/logo_missing.png" />
                 {{ end }}

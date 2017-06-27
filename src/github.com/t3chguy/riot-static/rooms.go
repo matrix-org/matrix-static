@@ -27,7 +27,7 @@ import (
 
 type MxcUrl string
 
-func (mxcUrl MxcUrl) ToUrl() string {
+func (mxcUrl MxcUrl) ToThumbUrl() string {
 	mxc := string(mxcUrl)
 
 	if !strings.HasPrefix(mxc, "mxc://") {
@@ -39,6 +39,29 @@ func (mxcUrl MxcUrl) ToUrl() string {
 	hsURL, _ := url.Parse(cli.HomeserverURL.String())
 	parts := []string{hsURL.Path}
 	parts = append(parts, "_matrix", "media", "r0", "thumbnail", serverName, mediaId)
+	hsURL.Path = path.Join(parts...)
+
+	q := hsURL.Query()
+	q.Set("width", "50")
+	q.Set("height", "50")
+	q.Set("method", "crop")
+
+	hsURL.RawQuery = q.Encode()
+
+	return hsURL.String()
+}
+func (mxcUrl MxcUrl) ToUrl() string {
+	mxc := string(mxcUrl)
+
+	if !strings.HasPrefix(mxc, "mxc://") {
+		return ""
+	}
+
+	_, serverName, mediaId := unpack3Values(mxcRegex.FindStringSubmatch(mxc))
+
+	hsURL, _ := url.Parse(cli.HomeserverURL.String())
+	parts := []string{hsURL.Path}
+	parts = append(parts, "_matrix", "media", "r0", "download", serverName, mediaId)
 	hsURL.Path = path.Join(parts...)
 
 	q := hsURL.Query()

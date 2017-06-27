@@ -32,8 +32,8 @@
         <tr>
             <td>
                 <a href="./room/{{$room.RoomID}}/chat">
-                    {{ if $room.AvatarUrl }}
-                        <img src="{{$room.AvatarUrl.ToUrl}}" />
+                    {{ with $room.AvatarUrl }}
+                        <img src="{{.ToThumbUrl}}" />
                     {{ else }}
                         <img src="./assets/logo_missing.png" />
                     {{ end }}

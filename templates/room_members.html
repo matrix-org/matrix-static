@@ -32,8 +32,8 @@
             <tr>
                 <td><a href="./members/{{$mxid}}">{{ $mxid }}</a></td>
                 <td>
-                    {{ if $memberInfo.AvatarURL }}
-                        <img src="{{ $memberInfo.AvatarURL.ToUrl}}" />
+                    {{ with $memberInfo.AvatarURL }}
+                        <img src="{{ .ToThumbUrl}}" />
                     {{ else }}
                         <img src="../../../assets/logo_missing.png" />
                     {{ end }}

@@ -39,7 +39,7 @@
                         <a href="./members/{{$message.Sender}}">
 
                             {{ with $memberInfo.AvatarURL }}
-                                <img src="{{.ToUrl}}" />
+                                <img src="{{.ToThumbUrl}}" />
                             {{ else }}
                                 <img src="../../assets/logo_missing.png" />
                             {{ end }}
