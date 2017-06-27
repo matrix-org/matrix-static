@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    <style>
+        td.timestamp {
+            min-width: 150px;
+        }
+        img {
+            height: 20px;
+        }
+    </style>
+    {{ template "room_header:css" }}
+</head>
+<body>
+
+    {{ template "room_header.html" .Room }}
+
+    <table>
+
+        <thead>
+        <tr>
+            <td>Timestamp</td>
+            <td>Sender</td>
+            <td>Message</td>
+        </tr>
+        </thead>
+
+        {{ range $message := .Room.InitialSync.Messages.Chunk }}
+            {{ $memberInfo:= (index $.Room.MemberInfo $message.Sender) }}
+
+            {{ if eq $message.Type "m.room.message" }}
+                <tr>
+                    <td class="timestamp">
+                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
+                    </td>
+                    <td>
+                        <a href="./members/{{$message.Sender}}">
+
+                            {{ with $memberInfo.AvatarURL }}
+                                <img src="{{.ToThumbUrl}}" />
+                            {{ else }}
+                                <img src="../../assets/logo_missing.png" />
+                            {{ end }}
+
+                            {{ with $message.Content.msgtype }}
+                                {{ if eq . "m.emote" }}* {{ end }}
+                            {{ end }}
+
+                            {{ $memberInfo.GetName }}
+                        </a>
+                    </td>
+                    <td>
+                        {{ mRoomMessage $message }}
+                    </td>
+                </tr>
+            {{ else }}
+            {{ if eq $message.Type "m.room.member" }}
+                <tr>
+                    <td class="timestamp">
+                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
+                    </td>
+                    <td colspan="2">
+                        {{ mRoomMember $message }}
+                    </td>
+                </tr>
+            {{ end }}
+            {{ end }}
+        {{ end }}
+
+    </table>
+
+    {{ template "back_to_room_list" }}
+</body>
+</html>

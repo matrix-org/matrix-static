@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    <style>
+        td.timestamp {
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+{{.Room.RoomID}}
+
+Servers:
+<ul>
+    {{ range $server := .Room.Servers }}
+        <li>{{$server}}</li>
+    {{ end }}
+</ul>
+
+<a href="../{{.Room.RoomID}}">Go Back</a>
+</body>
+</html>
