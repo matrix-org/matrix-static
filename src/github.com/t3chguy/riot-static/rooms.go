@@ -76,7 +76,7 @@ func (mxcUrl MxcUrl) ToUrl() string {
 
 type PowerLevel int
 
-func (powerLevel PowerLevel) GetString() string {
+func (powerLevel PowerLevel) String() string {
 	switch int(powerLevel) {
 	case 100:
 		return "Admin"
