@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    <style>
+        tr {
+            height: 56px;
+        }
+        img {
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <span>Page {{ .Page }}</span>
+
+    <table>
+
+        <thead>
+            <tr>
+                <td>Logo</td>
+                <td>Name</td>
+                <td>Canonical Alias</td>
+                <td>#Members</td>
+                <td>Topic</td>
+            </tr>
+        </thead>
+
+        {{ range $room := .Rooms }}
+        <tr>
+            <td>
+                <a href="./room/{{$room.RoomID}}/chat">
+                    {{ with $room.AvatarUrl }}
+                        <img src="{{.ToThumbUrl}}" />
+                    {{ else }}
+                        <img src="./assets/logo_missing.png" />
+                    {{ end }}
+                </a>
+            </td>
+            <td>
+                <a href="./room/{{$room.RoomID}}">
+                    {{$room.Name}}
+                </a>
+            </td>
+            <td>
+                <a href="./room/{{$room.RoomID}}">
+                    {{$room.CanonicalAlias}}
+                </a>
+            </td>
+            <td>
+                {{$room.NumJoinedMembers}}
+            </td>
+            <td>
+                {{$room.Topic}}
+            </td>
+        </tr>
+        {{end}}
+
+    </table>
+
+    <footer>
+        {{ if gt .Page 1 }}
+            <span><a href="?page={{ minus .Page 1 }}">Previous Page</a></span>
+        {{ end }}
+        <span><a href="?page={{ plus  .Page 1 }}">Next Page</a></span>
+    </footer>
+
+</body>
+</html>

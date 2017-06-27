@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+</head>
+<body>
+
+    MemberInfo of {{ .MXID }} in {{ .RoomID }}
+
+    <table>
+        <tr>
+            <td>Avatar</td>
+            <td>
+                {{ with .MemberInfo.AvatarURL }}
+                    <a href="{{.ToUrl}}">
+                        <img src="{{.ToThumbUrl}}" />
+                    </a>
+                {{ else }}
+                    <img src="../../../assets/logo_missing.png" />
+                {{ end }}
+            </td>
+        </tr>
+        <tr>
+            <td>MXID</td>
+            <td>{{ .MXID }}</td>
+        </tr>
+        <tr>
+            <td>Display Name</td>
+            <td>{{ .MemberInfo.DisplayName }}</td>
+        </tr>
+        <tr>
+            <td>Permalink</td>
+            <td><a href="https://matrix.to/#/{{.MXID}}">https://matrix.to/#/{{.MXID}}</a></td>
+        </tr>
+    </table>
+
+</body>

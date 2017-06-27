@@ -1,0 +1,1 @@
+web: riot-static
