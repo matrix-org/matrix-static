@@ -21,12 +21,9 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
 	"html/template"
-	"regexp"
 	"strings"
 	"time"
 )
-
-var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
 
 type MemberEventContent struct {
 	Membership  string `json:"membership,omitempty"`

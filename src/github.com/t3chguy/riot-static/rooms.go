@@ -21,8 +21,18 @@ import (
 	"github.com/matryer/resync"
 	"net/url"
 	"path"
+	"regexp"
 	"sync"
 )
+
+// mxcRegex allows splitting an mxc into a serverName and mediaId
+// FindStringSubmatch of which results in [_, serverName, mediaId] if valid
+// and [] if invalid mxc is provided.
+// Examples:
+// "mxc://foo/bar" => ["mxc://foo/bar", "foo", "bar"]
+// "mxc://bar/foo#auto" => ["mxc://bar/foo#auto", "bar", "foo"]
+// "invalidMxc://whatever" => [] (Invalid MXC Caught)
+var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
 
 type MxcUrl string
 
