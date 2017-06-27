@@ -198,6 +198,12 @@ func main() {
 				c.String(http.StatusNotFound, "Room Not Found")
 				c.Abort()
 			} else {
+				// Start of debug code
+				if clear := c.DefaultQuery("clear", "none"); clear != "none" {
+					fmt.Println("Clearing")
+					data.Rooms[roomId].Once.Reset()
+				}
+				// End of debug code
 				data.Rooms[roomId].Fetch()
 				c.Next()
 			}
