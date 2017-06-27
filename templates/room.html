@@ -19,6 +19,9 @@
         td.rightAlign {
             text-align: right;
         }
+        td.maxWidth {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -50,7 +53,7 @@
             </td>
         </tr>
         <tr>
-            <td colspan="2">{{ .Room.Topic }}</td>
+            <td colspan="2" class="maxWidth">{{ .Room.Topic }}</td>
         </tr>
     </table>
     <hr>
