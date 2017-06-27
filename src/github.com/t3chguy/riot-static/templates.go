@@ -121,11 +121,13 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	},
 	"mRoomMessage": func(event *gomatrix.Event) interface{} {
 		switch event.Content["msgtype"] {
-		case "m.notice":
-			fallthrough
-		case "m.emote":
-			fallthrough
-		case "m.text":
+		//case "m.image":
+		//case "m.file":
+		//case "m.location":
+		//case "m.video":
+		//case "m.audio":
+		case "m.notice", "m.emote", "m.text":
+			// These use the default HTML capable renderer
 			fallthrough
 		default:
 			if event.Content["format"] == "org.matrix.custom.html" {
