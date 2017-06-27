@@ -61,7 +61,7 @@ func GetPublicRoomsList(c *gin.Context) {
 	data.RUnlock()
 }
 
-func GetPublicRoom(c *gin.Context) {
+func GetPublicRoom(c *gin.Context) { // ~/room/:roomId/chat
 	roomId := c.Param("roomId")
 
 	data.RLock()
@@ -71,7 +71,7 @@ func GetPublicRoom(c *gin.Context) {
 	data.RUnlock()
 }
 
-func GetPublicRoomServers(c *gin.Context) {
+func GetPublicRoomServers(c *gin.Context) { // ~/room/:roomId/servers
 	roomId := c.Param("roomId")
 
 	data.RLock()
@@ -81,7 +81,7 @@ func GetPublicRoomServers(c *gin.Context) {
 	data.RUnlock()
 }
 
-func GetPublicRoomMembers(c *gin.Context) {
+func GetPublicRoomMembers(c *gin.Context) { // ~/room/:roomId/members
 	roomId := c.Param("roomId")
 
 	//var page int
@@ -103,7 +103,7 @@ func GetPublicRoomMembers(c *gin.Context) {
 	data.RUnlock()
 }
 
-func GetPublicRoomPowerLevels(c *gin.Context) {
+func GetPublicRoomPowerLevels(c *gin.Context) { // ~/room/:roomId/power_levels
 	roomId := c.Param("roomId")
 
 	data.RLock()
@@ -113,7 +113,7 @@ func GetPublicRoomPowerLevels(c *gin.Context) {
 	data.RUnlock()
 }
 
-func GetPublicRoomMember(c *gin.Context) {
+func GetPublicRoomMember(c *gin.Context) { // ~/room/:roomId/members/:mxid
 	roomId := c.Param("roomId")
 	mxid := c.Param("mxid")
 
@@ -203,7 +203,10 @@ func main() {
 			}
 		})
 
-		roomRouter.GET("/:roomId", GetPublicRoom)
+		roomRouter.GET("/:roomId/", func(c *gin.Context) {
+			c.Redirect(http.StatusTemporaryRedirect, "chat")
+		})
+		roomRouter.GET("/:roomId/chat", GetPublicRoom)
 		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)
 		roomRouter.GET("/:roomId/members", GetPublicRoomMembers)
 		roomRouter.GET("/:roomId/members/:mxid", GetPublicRoomMember)

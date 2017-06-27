@@ -10,53 +10,13 @@
         img {
             height: 20px;
         }
-        img.roomLogo {
-            height: 64px;
-        }
-        table#roomHeader {
-            width: 100%;
-        }
-        td.rightAlign {
-            text-align: right;
-        }
-        td.maxWidth {
-            width: 100%;
-        }
     </style>
+    {{ template "room_header:css" }}
 </head>
 <body>
 
-    <table id="roomHeader">
-        <tr>
-            <td rowspan="3">
-                {{ if .Room.AvatarUrl }}
-                    <img class="roomLogo" src="{{.Room.AvatarUrl.ToUrl}}" />
-                {{ else }}
-                    <img class="roomLogo" src="../assets/logo_missing.png" />
-                {{ end }}
-            </td>
-            <td>
-                {{ if .Room.Name }}
-                    {{ .Room.Name }}
-                {{ else }}
-                    No Name
-                {{ end }}
-            </td>
-            <td class="rightAlign">
-                <a href="./{{.Room.RoomID}}/members">{{ .Room.NumJoinedMembers }} Members</a>
-            </td>
-        </tr>
-        <tr>
-            <td>{{ .Room.CanonicalAlias }}</td>
-            <td class="rightAlign">
-                <a href="./{{.Room.RoomID}}/servers">{{ len .Room.Servers }} Servers</a>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" class="maxWidth">{{ .Room.Topic }}</td>
-        </tr>
-    </table>
-    <hr>
+    {{ template "room_header.html" .Room }}
+
     <table>
 
         <thead>
@@ -77,14 +37,15 @@
                     </td>
                     <td>
                         <a href="./{{$.Room.RoomID}}/members/{{$message.Sender}}">
-                            {{ if $memberInfo.AvatarURL }}
-                                <img src="{{$memberInfo.AvatarURL.ToUrl}}" />
+
+                            {{ with $memberInfo.AvatarURL }}
+                                <img src="{{.ToUrl}}" />
                             {{ else }}
-                                <img src="../assets/logo_missing.png" />
+                                <img src="../../assets/logo_missing.png" />
                             {{ end }}
 
-                            {{ if $message.Content.msgtype }}
-                                {{ if eq $message.Content.msgtype "m.emote" }}* {{ end }}
+                            {{ with $message.Content.msgtype }}
+                                {{ if eq . "m.emote" }}* {{ end }}
                             {{ end }}
 
                             {{ $memberInfo.GetName }}
@@ -110,7 +71,6 @@
 
     </table>
 
-
-    <a href="../">Go Back</a>
+    {{ template "back_to_room_list" }}
 </body>
 </html>

@@ -1,0 +1,56 @@
+<table id="roomHeader">
+    <tr>
+        <td rowspan="4">
+            {{ if .AvatarUrl }}
+                <img class="roomLogo" src="{{.AvatarUrl.ToUrl}}" />
+            {{ else }}
+                <img class="roomLogo" src="../../assets/logo_missing.png" />
+            {{ end }}
+        </td>
+        <td>
+            {{ if .Name }}
+                {{ .Name }}
+            {{ else }}
+                No Name
+            {{ end }} ({{.RoomID}})
+        </td>
+        <td class="rightAlign">
+            <a href="./members">{{ .NumJoinedMembers }} Members</a>
+        </td>
+    </tr>
+    <tr>
+        <td>{{ .CanonicalAlias }}</td>
+        <td class="rightAlign">
+            <a href="./servers">{{ len .Servers }} Servers</a>
+        </td>
+    </tr>
+    <tr>
+        <td class="maxWidth">{{ .Topic }}</td>
+        <td class="rightAlign">
+            <a href="./chat">Chat</a>
+        </td>
+    </tr>
+</table>
+<hr>
+
+{{ define "room_header:css" }}
+    <style>
+        img.roomLogo {
+            height: 64px;
+        }
+        table#roomHeader {
+            width: 100%;
+        }
+        td.rightAlign {
+            text-align: right;
+            min-width: 120px;
+        }
+        td.maxWidth {
+            width: 100%;
+        }
+    </style>
+{{ end }}
+
+{{ define "back_to_room_list" }}
+    <a href="../../">Back to Room List</a>
+{{ end }}

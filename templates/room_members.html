@@ -8,9 +8,11 @@
             height: 25px;
         }
     </style>
+    {{ template "room_header:css" }}
 </head>
 <body>
-{{ .Room.GetName }}
+
+{{ template "room_header.html" .Room }}
 
 <table>
 
@@ -44,6 +46,7 @@
 
 </table>
 
-<a href="../{{.Room.RoomID}}">Go Back</a>
+{{ template "back_to_room_list" }}
+
 </body>
 </html>

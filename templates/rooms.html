@@ -31,7 +31,7 @@
         {{ range $room := .Rooms }}
         <tr>
             <td>
-                <a href="./room/{{$room.RoomID}}">
+                <a href="./room/{{$room.RoomID}}/chat">
                     {{ if $room.AvatarUrl }}
                         <img src="{{$room.AvatarUrl.ToUrl}}" />
                     {{ else }}

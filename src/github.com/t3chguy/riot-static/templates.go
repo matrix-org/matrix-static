@@ -47,6 +47,9 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	"minus": func(a, b int) int {
 		return a - b
 	},
+	"URL": func(str string) template.URL {
+		return template.URL(str)
+	},
 	"HTML": func(str string) template.HTML {
 		return template.HTML(str)
 	},
