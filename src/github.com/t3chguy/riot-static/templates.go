@@ -78,7 +78,11 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 		case "invite":
 			return sender + " invited " + target + "."
 		case "ban":
-			return sender + " banned " + target + "(" + event.Content["reason"].(string) + ")."
+			var reasonString string
+			if reason, ok := event.Content["reason"].(string); ok {
+				reasonString = " (" + reason + ")"
+			}
+			return sender + " banned " + target + reasonString + "."
 		case "join":
 			if event.PrevContent != nil && prevContent.Membership == "join" {
 				if prevContent.DisplayName == "" && content.DisplayName != "" {
