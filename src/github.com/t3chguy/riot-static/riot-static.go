@@ -199,8 +199,7 @@ func main() {
 				c.Abort()
 			} else {
 				// Start of debug code
-				if clear := c.DefaultQuery("clear", "none"); clear != "none" {
-					fmt.Println("Clearing")
+				if _, exists := c.GetQuery("clear"); exists {
 					data.Rooms[roomId].Once.Reset()
 				}
 				// End of debug code
