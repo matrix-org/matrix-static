@@ -10,16 +10,50 @@
         img {
             height: 20px;
         }
+        img.roomLogo {
+            height: 64px;
+        }
+        table#roomHeader {
+            width: 100%;
+        }
+        td.rightAlign {
+            text-align: right;
+        }
     </style>
 </head>
 <body>
 
-    {{ .Room.GetName }} -
-    <a href="./{{.Room.RoomID}}/members">{{ .Room.NumJoinedMembers }} Members</a>
-    participating in this Room
-    {{ if .Room.CanonicalAlias }}
-        over <a href="./{{.Room.RoomID}}/servers">{{ len .Room.Servers }} Servers.</a>
-    {{ end }}
+    <table id="roomHeader">
+        <tr>
+            <td rowspan="3">
+                {{ if .Room.AvatarUrl }}
+                    <img class="roomLogo" src="{{.Room.AvatarUrl.ToUrl}}" />
+                {{ else }}
+                    <img class="roomLogo" src="../assets/logo_missing.png" />
+                {{ end }}
+            </td>
+            <td>
+                {{ if .Room.Name }}
+                    {{ .Room.Name }}
+                {{ else }}
+                    No Name
+                {{ end }}
+            </td>
+            <td class="rightAlign">
+                <a href="./{{.Room.RoomID}}/members">{{ .Room.NumJoinedMembers }} Members</a>
+            </td>
+        </tr>
+        <tr>
+            <td>{{ .Room.CanonicalAlias }}</td>
+            <td class="rightAlign">
+                <a href="./{{.Room.RoomID}}/servers">{{ len .Room.Servers }} Servers</a>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">{{ .Room.Topic }}</td>
+        </tr>
+    </table>
+    <hr>
     <table>
 
         <thead>
