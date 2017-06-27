@@ -36,7 +36,7 @@
                         <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                     </td>
                     <td>
-                        <a href="./{{$.Room.RoomID}}/members/{{$message.Sender}}">
+                        <a href="./members/{{$message.Sender}}">
 
                             {{ with $memberInfo.AvatarURL }}
                                 <img src="{{.ToUrl}}" />
