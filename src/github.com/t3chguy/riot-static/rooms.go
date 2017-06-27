@@ -21,7 +21,6 @@ import (
 	"github.com/matryer/resync"
 	"net/url"
 	"path"
-	"strings"
 	"sync"
 )
 
@@ -29,12 +28,14 @@ type MxcUrl string
 
 func (mxcUrl MxcUrl) ToThumbUrl() string {
 	mxc := string(mxcUrl)
+	matches := mxcRegex.FindStringSubmatch(mxc)
 
-	if !strings.HasPrefix(mxc, "mxc://") {
+	if len(matches) != 3 {
 		return ""
 	}
 
-	_, serverName, mediaId := unpack3Values(mxcRegex.FindStringSubmatch(mxc))
+	serverName := matches[1]
+	mediaId := matches[2]
 
 	hsURL, _ := url.Parse(cli.HomeserverURL.String())
 	parts := []string{hsURL.Path}
@@ -52,13 +53,14 @@ func (mxcUrl MxcUrl) ToThumbUrl() string {
 }
 func (mxcUrl MxcUrl) ToUrl() string {
 	mxc := string(mxcUrl)
+	matches := mxcRegex.FindStringSubmatch(mxc)
 
-	if !strings.HasPrefix(mxc, "mxc://") {
+	if len(matches) != 3 {
 		return ""
 	}
 
-	_, serverName, mediaId := unpack3Values(mxcRegex.FindStringSubmatch(mxc))
-
+	serverName := matches[1]
+	mediaId := matches[2]
 	hsURL, _ := url.Parse(cli.HomeserverURL.String())
 	parts := []string{hsURL.Path}
 	parts = append(parts, "_matrix", "media", "r0", "download", serverName, mediaId)

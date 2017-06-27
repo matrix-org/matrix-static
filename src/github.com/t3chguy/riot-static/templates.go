@@ -26,8 +26,6 @@ import (
 	"time"
 )
 
-func unpack3Values(val []string) (string, string, string) { return val[0], val[1], val[2] }
-
 var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
 
 type MemberEventContent struct {
