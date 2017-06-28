@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*
-	@TODO Show more than just textual events (Images etc)
-	@TODO Historical member info
-	@TODO make Peeking more useful (paginate etc)
-	@TODO investigate best practices for the spider to get the most out of it
-	@TODO make cache invalidate self after N requests of M minutes
-*/
-
 package main
 
 import (
@@ -30,6 +22,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 )
 
 func paginate(page int, size int, length int) (skip int, end int) {
@@ -230,5 +223,15 @@ func main() {
 		port = "8000"
 	}
 
-	router.Run(":" + port)
+	fmt.Println("Listening on port " + port)
+
+	srv := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+		Handler:      router,
+		Addr:         ":" + port,
+	}
+
+	panic(srv.ListenAndServe())
 }
