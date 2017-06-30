@@ -26,3 +26,11 @@ func calcPaginationPage(pageString string, size int) (page int, skip int, end in
 	end = skip + size
 	return
 }
+
+// min returns the minimum value of two ints
+func min(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

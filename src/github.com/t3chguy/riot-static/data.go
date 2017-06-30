@@ -61,19 +61,6 @@ func (data *DataStore) GetRoom(roomID string) (room Room, exists bool) {
 	return *roomPointer, true
 }
 
-func (data *DataStore) SetRoom(roomID string, room *Room) {
-	data.Lock()
-	defer data.Unlock()
-	data.roomMap[roomID] = room
-}
-
-func min(a int, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 func (data *DataStore) GetRoomList(start int, end int) []*Room {
 	data.RLock()
 	defer data.RUnlock()
