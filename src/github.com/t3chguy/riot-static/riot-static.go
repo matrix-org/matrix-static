@@ -17,158 +17,48 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/matryer/resync"
 	"net/http"
 	"os"
-	"strconv"
-	"sync"
 	"time"
 )
 
-func paginate(page int, size int, length int) (skip int, end int) {
-	if skip = (page - 1) * size; skip > length {
-		skip = length
-	}
-	if end = skip + size; end > length {
-		end = length
-	}
-	return
-}
+const PublicRoomsPageSize = 20
+const RoomMembersPageSize = 20
 
-func GetPublicRoomsList(c *gin.Context) {
-	var page int
-	var err error
-	if page, err = strconv.Atoi(c.DefaultQuery("page", "1")); err != nil {
-		page = 1
-	}
-
-	pageSize := 20
-
-	data.RLock()
-	skip, end := paginate(page, pageSize, data.NumRooms)
-	c.HTML(http.StatusOK, "rooms.html", gin.H{
-		"Rooms":    data.Ordered[skip:end],
-		"NumRooms": data.NumRooms,
-		"Page":     page,
-	})
-	data.RUnlock()
-}
-
-func GetPublicRoom(c *gin.Context) { // ~/room/:roomId/chat
-	roomId := c.Param("roomId")
-
-	data.RLock()
-	c.HTML(http.StatusOK, "room.html", gin.H{
-		"Room": data.Rooms[roomId],
-	})
-	data.RUnlock()
-}
-
-func GetPublicRoomServers(c *gin.Context) { // ~/room/:roomId/servers
-	roomId := c.Param("roomId")
-
-	data.RLock()
-	c.HTML(http.StatusOK, "room_servers.html", gin.H{
-		"Room": data.Rooms[roomId],
-	})
-	data.RUnlock()
-}
-
-func GetPublicRoomMembers(c *gin.Context) { // ~/room/:roomId/members
-	roomId := c.Param("roomId")
-
-	//var page int
-	//var err error
-	//if page, err = strconv.Atoi(c.DefaultQuery("page", "1")); err != nil {
-	//	page = 1
-	//}
-
-	//pageSize := 20
-
-	data.RLock()
-	length := len(data.Rooms[roomId].MemberInfo)
-	//skip, end := paginate(page, pageSize, length)
-	c.HTML(http.StatusOK, "room_members.html", gin.H{
-		"Room": data.Rooms[roomId],
-		//"MemberInfo": data.Rooms[roomId].Members[skip:end],
-		"NumMembers": length,
-	})
-	data.RUnlock()
-}
-
-func GetPublicRoomPowerLevels(c *gin.Context) { // ~/room/:roomId/power_levels
-	roomId := c.Param("roomId")
-
-	data.RLock()
-	c.HTML(http.StatusOK, "power_levels.html", gin.H{
-		"PowerLevels": data.Rooms[roomId].PowerLevels,
-	})
-	data.RUnlock()
-}
-
-func GetPublicRoomMember(c *gin.Context) { // ~/room/:roomId/members/:mxid
-	roomId := c.Param("roomId")
-	mxid := c.Param("mxid")
-
-	data.RLock()
-	if memberInfo := data.Rooms[roomId].MemberInfo[mxid]; memberInfo != nil {
-		c.HTML(http.StatusOK, "member_info.html", gin.H{
-			"RoomID":     roomId,
-			"MXID":       mxid,
-			"MemberInfo": memberInfo,
-		})
-	} else {
-		c.AbortWithStatus(http.StatusNotFound)
-	}
-	data.RUnlock()
-}
-
-var data = struct {
-	resync.Once
-	sync.RWMutex
-	NumRooms int
-	Ordered  []*Room
-	Rooms    map[string]*Room
-}{}
-
-func LoadPublicRooms() {
-	// @TODO: fix this.
-	data.Lock()
-	fmt.Println("Loading public publicRooms")
+func LoadPublicRooms(first bool) {
+	fmt.Println("Loading publicRooms")
 	resp, err := cli.PublicRooms(0, "", "")
 
-	if err == nil {
-		b := []*Room{}
-		c := map[string]*Room{}
-
-		// filter on actually WorldReadable publicRooms
-		for _, x := range resp.Chunk {
-			if x.WorldReadable {
-				var room *Room
-				if data.Rooms[x.RoomId] != nil {
-					room = data.Rooms[x.RoomId]
-				} else {
-					room = NewRoom(x)
-				}
-				b = append(b, room)
-				c[x.RoomId] = room
-			}
-		}
-
-		//data.Lock()
-		data.Rooms = c
-		data.NumRooms = len(b)
-		// copy order so we don't encounter slice hell
-		data.Ordered = make([]*Room, data.NumRooms)
-		copy(data.Ordered, b)
-
-		data.Unlock()
-	}
-
 	if err != nil {
-		panic(err)
+		// Only panic if first one fails, after that we only have outdated data (less important)
+		if first {
+			panic(err)
+		} else {
+			fmt.Println(err)
+		}
 	}
+
+	// Preallocate the maximum capacity possibly needed (if all rooms were world readable)
+	worldReadableRooms := make([]*Room, 0, len(resp.Chunk))
+
+	// filter on actually WorldReadable publicRooms
+	for _, x := range resp.Chunk {
+		if x.WorldReadable {
+			room := NewRoom(x)
+
+			if existingRoom, exists := data.GetRoom(x.RoomId); exists {
+				room.Cached = existingRoom.Cached
+				// Copy existing Cache
+			}
+
+			// Append world readable room to the filtered list.
+			worldReadableRooms = append(worldReadableRooms, room)
+		}
+	}
+	data.SetRoomList(worldReadableRooms)
 }
+
+var data = new(DataStore)
 
 func main() {
 	setupCli()
@@ -177,52 +67,89 @@ func main() {
 	router.SetHTMLTemplate(tpl)
 	router.Static("/assets", "./assets")
 
-	router.Use(func(c *gin.Context) {
-		data.Once.Do(LoadPublicRooms)
+	router.GET("/", func(c *gin.Context) {
+		page, skip, end := calcPaginationPage(c.DefaultQuery("page", "1"), PublicRoomsPageSize)
+		c.HTML(http.StatusOK, "rooms.html", gin.H{
+			"Rooms": data.GetRoomList(skip, end),
+			"Page":  page,
+		})
 	})
-
-	router.GET("/", GetPublicRoomsList)
 
 	roomRouter := router.Group("/room/")
 	{
 		roomRouter.Use(func(c *gin.Context) {
 			roomId := c.Param("roomId")
-			if data.Rooms[roomId] == nil {
+
+			if room, exists := data.GetRoom(roomId); exists {
+				// Start of debug code
+				//if _, exists := c.GetQuery("clear"); exists {
+				//	room.Once.Reset()
+				//}
+				// End of debug code
+
+				c.Set("Room", &room)
+				c.Next()
+			} else {
 				c.String(http.StatusNotFound, "Room Not Found")
 				c.Abort()
-			} else {
-				// Start of debug code
-				if _, exists := c.GetQuery("clear"); exists {
-					data.Rooms[roomId].Once.Reset()
-				}
-				// End of debug code
-				data.Rooms[roomId].Fetch()
-				c.Next()
 			}
 		})
 
 		roomRouter.GET("/:roomId/", func(c *gin.Context) {
 			c.Redirect(http.StatusTemporaryRedirect, "chat")
 		})
-		roomRouter.GET("/:roomId/chat", GetPublicRoom)
-		roomRouter.GET("/:roomId/servers", GetPublicRoomServers)
-		roomRouter.GET("/:roomId/members", GetPublicRoomMembers)
-		roomRouter.GET("/:roomId/members/:mxid", GetPublicRoomMember)
-		roomRouter.GET("/:roomId/power_levels", GetPublicRoomPowerLevels)
-	}
 
-	router.GET("/clear", func(c *gin.Context) {
-		data.Once.Reset()
-		for _, room := range data.Rooms {
-			room.Once.Reset()
-		}
-	})
+		roomRouter.GET("/:roomId/chat", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "room.html", gin.H{
+				"Room": c.MustGet("Room").(*Room),
+			})
+		})
+
+		roomRouter.GET("/:roomId/servers", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "room_servers.html", gin.H{
+				"Room": c.MustGet("Room").(*Room),
+			})
+		})
+
+		roomRouter.GET("/:roomId/members", func(c *gin.Context) {
+			page, skip, end := calcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
+			room := *c.MustGet("Room").(*Room)
+
+			c.HTML(http.StatusOK, "room_members.html", gin.H{
+				"Room":       room,
+				"MemberInfo": room.GetMemberList(skip, end),
+				"NumMembers": room.GetNumMembers(),
+				"Page":       page,
+			})
+		})
+
+		roomRouter.GET("/:roomId/members/:mxid", func(c *gin.Context) {
+			room := c.MustGet("Room").(*Room)
+			mxid := c.Param("mxid")
+
+			if memberInfo, exists := room.GetMember(mxid); exists {
+				c.HTML(http.StatusOK, "member_info.html", gin.H{
+					"MemberInfo": memberInfo,
+					"Room":       room,
+				})
+			} else {
+				c.AbortWithStatus(http.StatusNotFound)
+			}
+		})
+
+		roomRouter.GET("/:roomId/power_levels", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "power_levels.html", gin.H{
+				"Room": c.MustGet("Room").(*Room),
+			})
+		})
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8000"
 	}
 
+	go runCron()
 	fmt.Println("Listening on port " + port)
 
 	srv := &http.Server{
@@ -234,4 +161,15 @@ func main() {
 	}
 
 	panic(srv.ListenAndServe())
+}
+
+const LoadPublicRoomsPeriod = time.Hour
+
+func runCron() {
+	LoadPublicRooms(true)
+	t := time.NewTicker(LoadPublicRoomsPeriod)
+	for {
+		<-t.C
+		LoadPublicRooms(false)
+	}
 }

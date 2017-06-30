@@ -28,7 +28,7 @@
         </thead>
 
         {{ range $message := .Room.InitialSync.Messages.Chunk }}
-            {{ $memberInfo:= (index $.Room.MemberInfo $message.Sender) }}
+            {{ $memberInfo:= ($.Room.GetMemberIgnore $message.Sender) }}
 
             {{ if eq $message.Type "m.room.message" }}
                 <tr>

@@ -6,7 +6,7 @@
 </head>
 <body>
 
-    MemberInfo of {{ .MXID }} in {{ .RoomID }}
+    MemberInfo of {{ .MemberInfo.MXID }} in {{ .Room.RoomID }}
 
     <table>
         <tr>
@@ -23,7 +23,7 @@
         </tr>
         <tr>
             <td>MXID</td>
-            <td>{{ .MXID }}</td>
+            <td>{{ .MemberInfo.MXID }}</td>
         </tr>
         <tr>
             <td>Display Name</td>

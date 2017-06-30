@@ -64,7 +64,9 @@
         {{ if gt .Page 1 }}
             <span><a href="?page={{ minus .Page 1 }}">Previous Page</a></span>
         {{ end }}
-        <span><a href="?page={{ plus  .Page 1 }}">Next Page</a></span>
+        {{ if eq (len .Rooms) 20 }}
+            <span><a href="?page={{ plus  .Page 1 }}">Next Page</a></span>
+        {{ end }}
     </footer>
 
 </body>

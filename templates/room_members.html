@@ -27,7 +27,7 @@
 
     {{ .NumMembers }} - Users have interacted with this room.
 
-    {{ range $mxid, $memberInfo := .Room.MemberInfo }}
+    {{ range $mxid, $memberInfo := .MemberInfo }}
         {{ if eq $memberInfo.Membership "join" }}
             <tr>
                 <td><a href="./members/{{$mxid}}">{{ $mxid }}</a></td>
