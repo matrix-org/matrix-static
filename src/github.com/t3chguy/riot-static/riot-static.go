@@ -198,7 +198,7 @@ func main() {
 		port = "8000"
 	}
 
-	go runCron()
+	go startPublicRoomListTimer()
 	fmt.Println("Listening on port " + port)
 
 	srv := &http.Server{
@@ -214,7 +214,7 @@ func main() {
 
 const LoadPublicRoomsPeriod = time.Hour
 
-func runCron() {
+func startPublicRoomListTimer() {
 	LoadPublicRooms(true)
 	t := time.NewTicker(LoadPublicRoomsPeriod)
 	for {
