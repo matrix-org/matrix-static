@@ -30,27 +30,27 @@ type Cached struct {
 	numberOfHits    uint
 }
 
-func (cache *Cached) Hit() {
-	cache.Lock()
-	defer cache.Unlock()
-	cache.numberOfHits++
+func (c *Cached) Hit() {
+	c.Lock()
+	defer c.Unlock()
+	c.numberOfHits++
 }
 
-func (cache *Cached) CheckExpired() bool {
-	cache.RLock()
-	defer cache.RUnlock()
-	if cache.numberOfHits > CacheInvalidationNumHits {
+func (c *Cached) CheckExpired() bool {
+	c.RLock()
+	defer c.RUnlock()
+	if c.numberOfHits > CacheInvalidationNumHits {
 		return true
 	}
-	if time.Now().After(cache.cacheExpiryTime) {
+	if time.Now().After(c.cacheExpiryTime) {
 		return true
 	}
 	return false
 }
 
-func (cache *Cached) Reset() {
-	cache.Lock()
-	defer cache.Unlock()
-	cache.cacheExpiryTime = time.Now().Add(CacheInvalidationTime)
-	cache.numberOfHits = 0
+func (c *Cached) Reset() {
+	c.Lock()
+	defer c.Unlock()
+	c.cacheExpiryTime = time.Now().Add(CacheInvalidationTime)
+	c.numberOfHits = 0
 }
