@@ -64,7 +64,7 @@ func (data *DataStore) GetRoom(roomID string) (room Room, exists bool) {
 func (data *DataStore) GetRoomList(start int, end int) []*Room {
 	data.RLock()
 	defer data.RUnlock()
-	length := data.GetNumRooms()
+	length := len(data.roomList)
 
 	if end == 0 {
 		return data.roomList[min(start, length):]
