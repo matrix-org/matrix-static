@@ -43,7 +43,7 @@ type MemberInfo struct {
 	MXID        string
 	Membership  string
 	DisplayName string
-	AvatarURL   MxcUrl
+	AvatarURL   MXCURL
 	PowerLevel
 }
 
@@ -74,7 +74,7 @@ type Room struct {
 	WorldReadable    bool
 	Topic            string
 	NumJoinedMembers int
-	AvatarUrl        MxcUrl
+	AvatarUrl        MXCURL
 	GuestCanJoin     bool
 	Aliases          []string
 }
@@ -183,7 +183,7 @@ func NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) (room *Room) {
 		Name:             publicRoomInfo.Name,
 		Topic:            publicRoomInfo.Topic,
 		NumJoinedMembers: publicRoomInfo.NumJoinedMembers,
-		AvatarUrl:        MxcUrl(publicRoomInfo.AvatarUrl),
+		AvatarUrl:        MXCURL(publicRoomInfo.AvatarUrl),
 		Aliases:          publicRoomInfo.Aliases,
 	}
 

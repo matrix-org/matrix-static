@@ -29,10 +29,10 @@ import (
 // "invalidMxc://whatever" => [] (Invalid MXC Caught)
 var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
 
-type MxcUrl string
+type MXCURL string
 
-func (mxcUrl *MxcUrl) split() (ok bool, serverName string, mediaId string) {
-	mxc := string(*mxcUrl)
+func (m *MXCURL) split() (ok bool, serverName string, mediaId string) {
+	mxc := string(*m)
 	matches := mxcRegex.FindStringSubmatch(mxc)
 
 	ok = true
@@ -45,8 +45,8 @@ func (mxcUrl *MxcUrl) split() (ok bool, serverName string, mediaId string) {
 	return
 }
 
-func (mxcUrl *MxcUrl) getMxcUrl(kind string) string {
-	ok, serverName, mediaId := mxcUrl.split()
+func (m *MXCURL) getMxcUrl(kind string) string {
+	ok, serverName, mediaId := m.split()
 	if !ok {
 		return ""
 	}
@@ -66,9 +66,9 @@ func (mxcUrl *MxcUrl) getMxcUrl(kind string) string {
 	return hsURL.String()
 }
 
-func (mxcUrl MxcUrl) ToThumbUrl() string {
-	return mxcUrl.getMxcUrl("thumbnail")
+func (m MXCURL) ToThumbUrl() string {
+	return m.getMxcUrl("thumbnail")
 }
-func (mxcUrl MxcUrl) ToUrl() string {
-	return mxcUrl.getMxcUrl("download")
+func (m MXCURL) ToUrl() string {
+	return m.getMxcUrl("download")
 }

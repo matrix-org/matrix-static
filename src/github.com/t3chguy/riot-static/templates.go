@@ -27,7 +27,7 @@ import (
 
 type MemberEventContent struct {
 	Membership  string `json:"membership,omitempty"`
-	AvatarURL   MxcUrl `json:"avatar_url,omitempty"`
+	AvatarURL   MXCURL `json:"avatar_url,omitempty"`
 	DisplayName string `json:"displayname,omitempty"`
 }
 

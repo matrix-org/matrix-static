@@ -38,7 +38,7 @@ func (initialSync *RespInitialSync) ReadState() (memberInfo map[string]*MemberIn
 			}
 
 			if avatarUrl, ok := stateEvent.Content["avatar_url"].(string); ok {
-				memberInfo[stateKey].AvatarURL = MxcUrl(avatarUrl)
+				memberInfo[stateKey].AvatarURL = MXCURL(avatarUrl)
 			}
 			if membership, ok := stateEvent.Content["membership"].(string); ok {
 				memberInfo[stateKey].Membership = membership
