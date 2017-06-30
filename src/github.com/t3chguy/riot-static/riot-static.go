@@ -127,9 +127,9 @@ func main() {
 	roomRouter := router.Group("/room/")
 	{
 		roomRouter.Use(func(c *gin.Context) {
-			roomId := c.Param("roomId")
+			roomID := c.Param("roomID")
 
-			if room, exists := data.GetRoom(roomId); exists {
+			if room, exists := data.GetRoom(roomID); exists {
 				// Start of debug code
 				//if _, exists := c.GetQuery("clear"); exists {
 				//	room.Once.Reset()
@@ -144,23 +144,23 @@ func main() {
 			}
 		})
 
-		roomRouter.GET("/:roomId/", func(c *gin.Context) {
+		roomRouter.GET("/:roomID/", func(c *gin.Context) {
 			c.Redirect(http.StatusTemporaryRedirect, "chat")
 		})
 
-		roomRouter.GET("/:roomId/chat", func(c *gin.Context) {
+		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "room.html", gin.H{
 				"Room": c.MustGet("Room").(*Room),
 			})
 		})
 
-		roomRouter.GET("/:roomId/servers", func(c *gin.Context) {
+		roomRouter.GET("/:roomID/servers", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "room_servers.html", gin.H{
 				"Room": c.MustGet("Room").(*Room),
 			})
 		})
 
-		roomRouter.GET("/:roomId/members", func(c *gin.Context) {
+		roomRouter.GET("/:roomID/members", func(c *gin.Context) {
 			page, skip, end := calcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
 			room := *c.MustGet("Room").(*Room)
 
@@ -172,7 +172,7 @@ func main() {
 			})
 		})
 
-		roomRouter.GET("/:roomId/members/:mxid", func(c *gin.Context) {
+		roomRouter.GET("/:roomID/members/:mxid", func(c *gin.Context) {
 			room := c.MustGet("Room").(*Room)
 			mxid := c.Param("mxid")
 
@@ -186,7 +186,7 @@ func main() {
 			}
 		})
 
-		roomRouter.GET("/:roomId/power_levels", func(c *gin.Context) {
+		roomRouter.GET("/:roomID/power_levels", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "power_levels.html", gin.H{
 				"Room": c.MustGet("Room").(*Room),
 			})

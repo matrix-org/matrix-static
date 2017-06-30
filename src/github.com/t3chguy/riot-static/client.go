@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 )
 
-func /*(cli *client)*/ fetchRoomInitialSync(roomId string) (resp *RespInitialSync, err error) {
-	urlPath := cli.BuildURLWithQuery([]string{"rooms", roomId, "initialSync"}, map[string]string{
+func /*(cli *client)*/ fetchRoomInitialSync(roomID string) (resp *RespInitialSync, err error) {
+	urlPath := cli.BuildURLWithQuery([]string{"rooms", roomID, "initialSync"}, map[string]string{
 		"limit": "20",
 	})
 	//urlPath := cli.BuildURL("rooms", room.RoomID, "initialSync")
@@ -60,8 +60,8 @@ func (initialSync *RespInitialSync) ReadState() (memberInfo map[string]*MemberIn
 	return
 }
 
-func /*(cli *client)*/ peekRoom(roomId string) (initialSync *RespInitialSync, memberInfo map[string]*MemberInfo, powerLevels *PowerLevelsEvent, err error) {
-	initialSync, err = fetchRoomInitialSync(roomId)
+func /*(cli *client)*/ peekRoom(roomID string) (initialSync *RespInitialSync, memberInfo map[string]*MemberInfo, powerLevels *PowerLevelsEvent, err error) {
+	initialSync, err = fetchRoomInitialSync(roomID)
 	if err != nil {
 		return
 	}
