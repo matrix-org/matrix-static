@@ -46,17 +46,18 @@ func LoadPublicRooms(first bool) {
 
 	// filter on actually WorldReadable publicRooms
 	for _, x := range resp.Chunk {
-		if x.WorldReadable {
-			room := NewRoom(x)
-
-			if existingRoom, exists := data.GetRoom(x.RoomId); exists {
-				room.Cached = existingRoom.Cached
-				// Copy existing Cache
-			}
-
-			// Append world readable room to the filtered list.
-			worldReadableRooms = append(worldReadableRooms, room)
+		if !x.WorldReadable {
+			continue
 		}
+
+		room := NewRoom(x)
+		if existingRoom, exists := data.GetRoom(x.RoomId); exists {
+			room.Cached = existingRoom.Cached
+			// Copy existing Cache
+		}
+
+		// Append world readable room to the filtered list.
+		worldReadableRooms = append(worldReadableRooms, room)
 	}
 	data.SetRoomList(worldReadableRooms)
 }
@@ -90,13 +91,13 @@ func setupClient() {
 	if config.AccessToken == "" || config.UserID == "" {
 		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
 
-		if err == nil && inter == nil && register != nil {
-			register.HomeServer = config.HomeServer
-			config = register
-		} else {
+		if err != nil || inter != nil || register == nil {
 			fmt.Println("Error encountered during guest registration")
 			os.Exit(1)
 		}
+
+		register.HomeServer = config.HomeServer
+		config = register
 
 		configJson, _ := json.Marshal(config)
 		err = ioutil.WriteFile("./config.json", configJson, 0600)
