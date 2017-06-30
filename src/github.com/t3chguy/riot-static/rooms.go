@@ -161,7 +161,6 @@ func (room *Room) setPresence(presenceEvents []*PresenceEvent) {
 	room.presenceMap = presenceMap
 }
 
-// THIS METHOD SHOULD ONLY BE CALLED WHILE data is WRITE LOCKED
 func (room *Room) FetchAndSelfUpdate() bool {
 	initialSync, memberInfoMap, powerLevels, err := peekRoom(room.RoomID)
 	if err != nil {
