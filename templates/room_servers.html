@@ -8,17 +8,30 @@
             min-width: 150px;
         }
     </style>
+    {{ template "room_header:css" }}
 </head>
 <body>
-{{.Room.RoomID}}
 
-Servers:
-<ul>
-    {{ range $server := .Room.Servers }}
-        <li>{{$server}}</li>
-    {{ end }}
-</ul>
+{{ template "room_header.html" .Room }}
 
-<a href="../{{.Room.RoomID}}">Go Back</a>
+<table>
+    <thead>
+        <tr>
+            <th>Server</th>
+            <th>Number of Users in this Room</th>
+        </tr>
+    </thead>
+        {{ range $server, $numUsers := .Room.GetServers }}
+            <tr>
+                <td>{{$server}}</td>
+                <td>{{$numUsers}}</td>
+            </tr>
+        {{ end }}
+    <tbody>
+
+    </tbody>
+</table>
+
+<a href="../{{.Room.ID}}">Go Back</a>
 </body>
 </html>

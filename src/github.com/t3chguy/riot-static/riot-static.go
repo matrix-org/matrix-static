@@ -15,11 +15,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/matrix-org/gomatrix"
-	"io/ioutil"
+	"github.com/t3chguy/matrix-client"
+	"github.com/t3chguy/utils"
 	"net/http"
 	"os"
 	"time"
@@ -30,7 +29,7 @@ const RoomMembersPageSize = 20
 
 func LoadPublicRooms(first bool) {
 	fmt.Println("Loading publicRooms")
-	resp, err := cli.PublicRooms(0, "", "")
+	resp, err := client.PublicRooms(5, "", "")
 
 	if err != nil {
 		// Only panic if first one fails, after that we only have outdated data (less important)
@@ -42,7 +41,7 @@ func LoadPublicRooms(first bool) {
 	}
 
 	// Preallocate the maximum capacity possibly needed (if all rooms were world readable)
-	worldReadableRooms := make([]*Room, 0, len(resp.Chunk))
+	worldReadableRooms := make([]*matrixClient.Room, 0, len(resp.Chunk))
 
 	// filter on actually WorldReadable publicRooms
 	for _, x := range resp.Chunk {
@@ -50,93 +49,44 @@ func LoadPublicRooms(first bool) {
 			continue
 		}
 
-		room := NewRoom(x)
-		if existingRoom, exists := data.GetRoom(x.RoomId); exists {
-			room.Cached = existingRoom.Cached
-			// Copy existing Cache
+		var room *matrixClient.Room
+		if existingRoom := client.GetRoom(x.RoomId); existingRoom != nil {
+			room = existingRoom
+		} else {
+			room = client.NewRoom(x)
 		}
 
-		// Append world readable room to the filtered list.
+		// Append world readable r to the filtered list.
 		worldReadableRooms = append(worldReadableRooms, room)
 	}
-	data.SetRoomList(worldReadableRooms)
+	client.SetRoomList(worldReadableRooms)
 }
 
-var data = new(DataStore)
-
-var cli *gomatrix.Client
-var config *gomatrix.RespRegister
-
-func setupClient() {
-	if _, err := os.Stat("./config.json"); err == nil {
-		file, e := ioutil.ReadFile("./config.json")
-		if e != nil {
-			fmt.Printf("File error: %v\n", e)
-			os.Exit(1)
-		}
-
-		json.Unmarshal(file, &config)
-	}
-
-	if config == nil {
-		config = new(gomatrix.RespRegister)
-	}
-
-	if config.HomeServer == "" {
-		config.HomeServer = "https://matrix.org"
-	}
-
-	cli, _ = gomatrix.NewClient(config.HomeServer, "", "")
-
-	if config.AccessToken == "" || config.UserID == "" {
-		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
-
-		if err != nil || inter != nil || register == nil {
-			fmt.Println("Error encountered during guest registration")
-			os.Exit(1)
-		}
-
-		register.HomeServer = config.HomeServer
-		config = register
-
-		configJson, _ := json.Marshal(config)
-		err = ioutil.WriteFile("./config.json", configJson, 0600)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	cli.SetCredentials(config.UserID, config.AccessToken)
-}
+var client *matrixClient.Client
 
 func main() {
-	setupClient()
+	client = matrixClient.NewClient()
 
 	router := gin.Default()
 	router.SetHTMLTemplate(tpl)
 	router.Static("/assets", "./assets")
 
 	router.GET("/", func(c *gin.Context) {
-		page, skip, end := calcPaginationPage(c.DefaultQuery("page", "1"), PublicRoomsPageSize)
+		page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), PublicRoomsPageSize)
 		c.HTML(http.StatusOK, "rooms.html", gin.H{
-			"Rooms": data.GetRoomList(skip, end),
+			"Rooms": client.GetRoomList(skip, end),
 			"Page":  page,
 		})
 	})
 
 	roomRouter := router.Group("/room/")
 	{
+		// Load room into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
 
-			if room, exists := data.GetRoom(roomID); exists {
-				// Start of debug code
-				//if _, exists := c.GetQuery("clear"); exists {
-				//	room.Once.Reset()
-				//}
-				// End of debug code
-
-				c.Set("Room", &room)
+			if room := client.GetRoom(roomID); room != nil {
+				c.Set("Room", room)
 				c.Next()
 			} else {
 				c.String(http.StatusNotFound, "Room Not Found")
@@ -149,20 +99,41 @@ func main() {
 		})
 
 		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
+			room := c.MustGet("Room").(*matrixClient.Room)
+			_, forward := c.GetQuery("forward")
+
+			pageSize := 4
+			anchor := c.DefaultQuery("anchor", "")
+			events, nextAnchor := room.GetEvents(anchor, pageSize, !forward)
+
+			var prevPage string
+			if length := len(events); length > 0 {
+				prevPage = events[length-1].ID
+			}
+
 			c.HTML(http.StatusOK, "room.html", gin.H{
-				"Room": c.MustGet("Room").(*Room),
+				"Room":   room,
+				"Events": utils.ReverseEventsCopy(events),
+				//"PrevPage":  prevPage,
+				//"NextPage":  nextPage,
+				"PageSize": pageSize,
+				//"NumBefore": numBefore,
+				//"NumAfter":  numAfter,
+				"PrevAnchor":    prevPage,
+				"CurrentAnchor": anchor,
+				"NextAnchor":    nextAnchor,
 			})
 		})
 
 		roomRouter.GET("/:roomID/servers", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "room_servers.html", gin.H{
-				"Room": c.MustGet("Room").(*Room),
+				"Room": c.MustGet("Room").(*matrixClient.Room),
 			})
 		})
 
 		roomRouter.GET("/:roomID/members", func(c *gin.Context) {
-			page, skip, end := calcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
-			room := *c.MustGet("Room").(*Room)
+			page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
+			room := c.MustGet("Room").(*matrixClient.Room)
 
 			c.HTML(http.StatusOK, "room_members.html", gin.H{
 				"Room":       room,
@@ -173,7 +144,7 @@ func main() {
 		})
 
 		roomRouter.GET("/:roomID/members/:mxid", func(c *gin.Context) {
-			room := c.MustGet("Room").(*Room)
+			room := c.MustGet("Room").(*matrixClient.Room)
 			mxid := c.Param("mxid")
 
 			if memberInfo, exists := room.GetMember(mxid); exists {
@@ -188,7 +159,7 @@ func main() {
 
 		roomRouter.GET("/:roomID/power_levels", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "power_levels.html", gin.H{
-				"Room": c.MustGet("Room").(*Room),
+				"Room": c.MustGet("Room").(*matrixClient.Room),
 			})
 		})
 	}
@@ -198,6 +169,7 @@ func main() {
 		port = "8000"
 	}
 
+	LoadPublicRooms(true)
 	go startPublicRoomListTimer()
 	fmt.Println("Listening on port " + port)
 
@@ -215,7 +187,6 @@ func main() {
 const LoadPublicRoomsPeriod = time.Hour
 
 func startPublicRoomListTimer() {
-	LoadPublicRooms(true)
 	t := time.NewTicker(LoadPublicRoomsPeriod)
 	for {
 		<-t.C

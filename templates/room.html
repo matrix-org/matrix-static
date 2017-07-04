@@ -17,17 +17,21 @@
 
     {{ template "room_header.html" .Room }}
 
+    <div>
+        <a href="?anchor={{.NextAnchor}}">Load older messages</a>
+    </div>
+
     <table>
 
         <thead>
         <tr>
-            <td>Timestamp</td>
-            <td>Sender</td>
-            <td>Message</td>
+            <th>Timestamp</th>
+            <th>Sender</th>
+            <th>Message</th>
         </tr>
         </thead>
 
-        {{ range $message := .Room.InitialSync.Messages.Chunk }}
+        {{ range $message := .Events }}
             {{ $memberInfo:= ($.Room.GetMemberIgnore $message.Sender) }}
 
             {{ if eq $message.Type "m.room.message" }}
@@ -39,7 +43,7 @@
                         <a href="./members/{{$message.Sender}}">
 
                             {{ with $memberInfo.AvatarURL }}
-                                <img src="{{.ToThumbUrl}}" />
+                                <img src="{{MXCtoThumbUrl .}}" />
                             {{ else }}
                                 <img src="../../assets/logo_missing.png" />
                             {{ end }}
@@ -62,7 +66,7 @@
                         <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                     </td>
                     <td colspan="2">
-                        {{ mRoomMember $message }}
+                        {{ mRoomMember $.Room $message }}
                     </td>
                 </tr>
             {{ end }}
@@ -70,6 +74,8 @@
         {{ end }}
 
     </table>
+
+    <div><a href="?forward&anchor={{.PrevAnchor}}">Show newer messages</a></div>
 
     {{ template "back_to_room_list" }}
 </body>

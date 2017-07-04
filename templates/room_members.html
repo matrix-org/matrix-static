@@ -27,13 +27,13 @@
 
     {{ .NumMembers }} - Users have interacted with this room.
 
-    {{ range $mxid, $memberInfo := .MemberInfo }}
+    {{ range $memberInfo := .MemberInfo }}
         {{ if eq $memberInfo.Membership "join" }}
             <tr>
-                <td><a href="./members/{{$mxid}}">{{ $mxid }}</a></td>
+                <td><a href="./members/{{$memberInfo.MXID}}">{{ $memberInfo.MXID }}</a></td>
                 <td>
                     {{ with $memberInfo.AvatarURL }}
-                        <img src="{{ .ToThumbUrl}}" />
+                        <img src="{{ MXCtoThumbUrl . }}" />
                     {{ else }}
                         <img src="../../../assets/logo_missing.png" />
                     {{ end }}

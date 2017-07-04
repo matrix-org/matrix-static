@@ -12,75 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Notes
-// Reads should be done on clones
-// Treat Rooms as if Immutable
-// ONLY MUTATE DURING A FULL LOCK
-
-package main
+package matrixClient
 
 import (
+	"github.com/t3chguy/utils"
 	"sync"
 )
 
-type DataStore struct {
-	sync.RWMutex
+type RoomStore struct {
+	sync.RWMutex // Protects just this level, Rooms are self-protecting.
+	// The next two fields form an OrderedMap, roomList is the source of truth, map mirrors it with an r.ID => r mapping
 	roomList []*Room
 	roomMap  map[string]*Room
 }
 
-//func (data *DataStore) GetRoomPointer(roomID string) *Room {
-//	data.RLock()
-//	defer data.RUnlock()
-//	return data.roomMap[roomID]
-//}
-
-func (data *DataStore) GetRoom(roomID string) (room Room, exists bool) {
+func (data *RoomStore) GetRoom(roomID string) *Room {
 	data.RLock()
-	roomPointer := data.roomMap[roomID]
-	data.RUnlock()
-
-	if roomPointer == nil {
-		return Room{}, false
-	}
-	exists = true
-
-	data.RLock()
-	expired := roomPointer.Cached.CheckExpired()
-	data.RUnlock()
-
-	if expired {
-		data.Lock()
-		defer data.Unlock()
-		// Get the *REAL* room to update self
-		if !roomPointer.FetchAndSelfUpdate() {
-			return Room{}, false
-		}
-	}
-
-	return *roomPointer, true
+	defer data.RUnlock()
+	return data.roomMap[roomID]
 }
 
-func (data *DataStore) GetRoomList(start int, end int) []*Room {
+func (data *RoomStore) GetRoomList(start int, end int) []*Room {
 	data.RLock()
 	defer data.RUnlock()
 	length := len(data.roomList)
 
-	if end == 0 {
-		return data.roomList[min(start, length):]
+	if end == -1 {
+		return data.roomList[utils.Min(start, length):]
 	}
 
-	return data.roomList[min(start, length):min(end, length)]
+	return data.roomList[utils.Min(start, length):utils.Min(end, length)]
 }
 
-func (data *DataStore) SetRoomList(roomList []*Room) {
+func (data *RoomStore) SetRoomList(roomList []*Room) {
 	length := len(roomList)
 	newRoomList := make([]*Room, length, length)
 	newRoomMap := make(map[string]*Room)
 
 	copy(newRoomList, roomList)
 	for _, room := range roomList {
-		newRoomMap[room.RoomID] = room
+		newRoomMap[room.ID] = room
 	}
 
 	data.Lock()
@@ -90,8 +61,14 @@ func (data *DataStore) SetRoomList(roomList []*Room) {
 	data.roomMap = newRoomMap
 }
 
-func (data *DataStore) GetNumRooms() int {
+func (data *RoomStore) GetNumRooms() int {
 	data.RLock()
 	defer data.RUnlock()
 	return len(data.roomList)
+}
+
+func NewRoomStore() *RoomStore {
+	return &RoomStore{
+		roomMap: make(map[string]*Room),
+	}
 }

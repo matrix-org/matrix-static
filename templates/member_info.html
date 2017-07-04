@@ -6,15 +6,15 @@
 </head>
 <body>
 
-    MemberInfo of {{ .MemberInfo.MXID }} in {{ .Room.RoomID }}
+    MemberInfo of {{ .MemberInfo.MXID }} in {{ .Room.ID }}
 
     <table>
         <tr>
             <td>Avatar</td>
             <td>
                 {{ with .MemberInfo.AvatarURL }}
-                    <a href="{{.ToUrl}}">
-                        <img src="{{.ToThumbUrl}}" />
+                    <a href="{{MXCtoUrl .}}">
+                        <img src="{{MXCtoThumbUrl .}}" />
                     </a>
                 {{ else }}
                     <img src="../../../assets/logo_missing.png" />

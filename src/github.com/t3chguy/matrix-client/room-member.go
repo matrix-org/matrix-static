@@ -12,25 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package matrixClient
 
-import "strconv"
-
-func calcPaginationPage(pageString string, size int) (page int, skip int, end int) {
-	var err error
-	if page, err = strconv.Atoi(pageString); err != nil {
-		page = 1
-	}
-
-	skip = (page - 1) * size
-	end = skip + size
-	return
+type MemberInfo struct {
+	MXID        string
+	Membership  string
+	DisplayName string
+	AvatarURL   MXCURL
+	PowerLevel  PowerLevel
 }
 
-// min returns the minimum value of two ints
-func min(a int, b int) int {
-	if a < b {
-		return a
+func NewMemberInfo(mxid string) *MemberInfo {
+	return &MemberInfo{
+		MXID:       mxid,
+		Membership: "leave",
 	}
-	return b
+}
+
+func (memberInfo MemberInfo) GetName() string {
+	if memberInfo.DisplayName != "" {
+		return memberInfo.DisplayName
+	} else {
+		return memberInfo.MXID
+	}
 }

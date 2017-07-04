@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package matrixClient
 
 import (
+	"github.com/matrix-org/gomatrix"
 	"net/url"
 	"path"
 	"regexp"
@@ -45,7 +46,7 @@ func (m *MXCURL) split() (ok bool, serverName string, mediaId string) {
 	return
 }
 
-func (m *MXCURL) getMxcUrl(kind string) string {
+func (m *MXCURL) mapMxcUrl(cli *gomatrix.Client, kind string) string {
 	ok, serverName, mediaId := m.split()
 	if !ok {
 		return ""
@@ -66,9 +67,10 @@ func (m *MXCURL) getMxcUrl(kind string) string {
 	return hsURL.String()
 }
 
-func (m MXCURL) ToThumbUrl() string {
-	return m.getMxcUrl("thumbnail")
+func (m *Client) MXCToThumbUrl(mxcurl MXCURL) string {
+	return mxcurl.mapMxcUrl(m.Client, "thumbnail")
 }
-func (m MXCURL) ToUrl() string {
-	return m.getMxcUrl("download")
+
+func (m *Client) MXCToUrl(mxcurl MXCURL) string {
+	return mxcurl.mapMxcUrl(m.Client, "download")
 }

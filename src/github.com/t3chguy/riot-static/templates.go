@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"github.com/matrix-org/gomatrix"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/t3chguy/matrix-client"
 	"golang.org/x/net/html"
 	"html/template"
 	"strings"
@@ -26,9 +27,9 @@ import (
 )
 
 type MemberEventContent struct {
-	Membership  string `json:"membership,omitempty"`
-	AvatarURL   MXCURL `json:"avatar_url,omitempty"`
-	DisplayName string `json:"displayname,omitempty"`
+	Membership  string              `json:"membership,omitempty"`
+	AvatarURL   matrixClient.MXCURL `json:"avatar_url,omitempty"`
+	DisplayName string              `json:"displayname,omitempty"`
 }
 
 var tpl *template.Template = template.Must(template.New("main").Funcs(template.FuncMap{
@@ -47,7 +48,13 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	"HTML": func(str string) template.HTML {
 		return template.HTML(str)
 	},
-	"mRoomMember": func(event *gomatrix.Event) interface{} {
+	"MXCtoThumbUrl": func(mxc matrixClient.MXCURL) template.URL {
+		return template.URL(client.MXCToThumbUrl(mxc))
+	},
+	"MXCtoUrl": func(mxc matrixClient.MXCURL) template.URL {
+		return template.URL(client.MXCToUrl(mxc))
+	},
+	"mRoomMember": func(room *matrixClient.Room, event *gomatrix.Event) interface{} {
 		// join -> join = avatar/display name
 		// join -> quit = kick/leave
 		// * -> join = join
@@ -67,52 +74,54 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 		}
 
 		sender := event.Sender
+		senderPretty := room.GetMemberIgnore(event.Sender).GetName()
 		target := *event.StateKey
+		targetPretty := room.GetMemberIgnore(*event.StateKey).GetName()
 
 		switch content.Membership {
 		case "invite":
-			return sender + " invited " + target + "."
+			return senderPretty + " invited " + targetPretty + "."
 		case "ban":
 			var reasonString string
 			if reason, ok := event.Content["reason"].(string); ok {
 				reasonString = " (" + reason + ")"
 			}
-			return sender + " banned " + target + reasonString + "."
+			return senderPretty + " banned " + targetPretty + reasonString + "."
 		case "join":
 			if event.PrevContent != nil && prevContent.Membership == "join" {
 				if prevContent.DisplayName == "" && content.DisplayName != "" {
-					return sender + " set their display name to " + content.DisplayName + "."
+					return senderPretty + " set their display name to " + content.DisplayName + "."
 				} else if prevContent.DisplayName != "" && content.DisplayName == "" {
-					return sender + " removed their display name " + prevContent.DisplayName + "."
+					return senderPretty + " removed their display name " + prevContent.DisplayName + "."
 				} else if prevContent.DisplayName != content.DisplayName {
-					return sender + " changed their display name from " + prevContent.DisplayName + " to " + content.DisplayName + "."
+					return senderPretty + " changed their display name from " + prevContent.DisplayName + " to " + content.DisplayName + "."
 				} else if prevContent.AvatarURL == "" && content.AvatarURL != "" {
-					return sender + " set a profile picture."
+					return senderPretty + " set a profile picture."
 				} else if prevContent.AvatarURL != "" && content.AvatarURL == "" {
-					return sender + " removed their profile picture."
+					return senderPretty + " removed their profile picture."
 				} else if prevContent.AvatarURL != content.AvatarURL {
-					return sender + " changed their profile picture."
+					return senderPretty + " changed their profile picture."
 				} else {
 					return ""
 				}
 			} else {
-				return target + " joined the room."
+				return targetPretty + " joined the room."
 			}
 		case "leave":
 			if sender == target {
 				if prevContent.Membership == "invite" {
-					return target + " rejected invite."
+					return targetPretty + " rejected invite."
 				} else {
-					return target + " left the room."
+					return targetPretty + " left the room."
 				}
 			} else if prevContent.Membership == "ban" {
-				return sender + " unbanned " + target + "."
+				return senderPretty + " unbanned " + targetPretty + "."
 			} else if prevContent.Membership == "leave" {
-				return sender + " kicked " + target + "."
+				return senderPretty + " kicked " + targetPretty + "."
 			} else if prevContent.Membership == "invite" {
-				return sender + " withdrew " + target + "'s invite."
+				return senderPretty + " withdrew " + targetPretty + "'s invite."
 			} else {
-				return target + " left the room"
+				return targetPretty + " left the r"
 			}
 		}
 
@@ -136,7 +145,7 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 
 				p.AllowAttrs("color", "data-mx-bg-color", "data-mx-color").OnElements("font")
 				p.AllowAttrs("data-mx-bg-color", "data-mx-color").OnElements("span")
-				p.AllowAttrs("href", "name", "target", "rel").OnElements("a")
+				p.AllowAttrs("href", "name", "targetPretty", "rel").OnElements("a")
 
 				//p.AllowAttrs("src").OnElements("img")
 				//p.AllowAttrs("start").OnElements("ol")

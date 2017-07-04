@@ -20,32 +20,32 @@
 
         <thead>
             <tr>
-                <td>Logo</td>
-                <td>Name</td>
-                <td>Canonical Alias</td>
-                <td>#Members</td>
-                <td>Topic</td>
+                <th>Logo</th>
+                <th>Name</th>
+                <th>Primary Alias</th>
+                <th>#Members</th>
+                <th>Topic</th>
             </tr>
         </thead>
 
         {{ range $room := .Rooms }}
         <tr>
             <td>
-                <a href="./room/{{$room.RoomID}}/chat">
+                <a href="./room/{{$room.ID}}/chat">
                     {{ with $room.AvatarUrl }}
-                        <img src="{{.ToThumbUrl}}" />
+                        <img src="{{MXCtoThumbUrl .}}" />
                     {{ else }}
                         <img src="./assets/logo_missing.png" />
                     {{ end }}
                 </a>
             </td>
             <td>
-                <a href="./room/{{$room.RoomID}}">
-                    {{$room.Name}}
+                <a href="./room/{{$room.ID}}">
+                    {{$room.GetName}}
                 </a>
             </td>
             <td>
-                <a href="./room/{{$room.RoomID}}">
+                <a href="./room/{{$room.ID}}">
                     {{$room.CanonicalAlias}}
                 </a>
             </td>

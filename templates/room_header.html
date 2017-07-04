@@ -1,19 +1,13 @@
 <table id="roomHeader">
     <tr>
         <td rowspan="4">
-            {{ if .AvatarUrl }}
-                <img class="roomLogo" src="{{.AvatarUrl.ToThumbUrl}}" />
+            {{ with .AvatarUrl }}
+                <img class="roomLogo" src="{{MXCtoThumbUrl .}}" />
             {{ else }}
                 <img class="roomLogo" src="../../assets/logo_missing.png" />
             {{ end }}
         </td>
-        <td>
-            {{ if .Name }}
-                {{ .Name }}
-            {{ else }}
-                No Name
-            {{ end }} ({{.RoomID}})
-        </td>
+        <td>{{ .GetName }} ({{ .ID }})</td>
         <td class="rightAlign">
             <a href="./members">{{ .NumJoinedMembers }} Members</a>
         </td>
@@ -21,7 +15,7 @@
     <tr>
         <td>{{ .CanonicalAlias }}</td>
         <td class="rightAlign">
-            <a href="./servers">{{ len .Servers }} Servers</a>
+            <a href="./servers">{{ len .GetServers }} Servers</a>
         </td>
     </tr>
     <tr>
