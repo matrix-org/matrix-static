@@ -182,8 +182,13 @@ func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events
 		eventsO := r.getBackwardEventRange(eventIndex, amount)
 
 		var nextHistorical gomatrix.Event
-		lengthO := len(eventsO)
-		eventsO, nextHistorical = eventsO[:lengthO-1], eventsO[lengthO-1]
+		lastEventIndex := len(eventsO) - 1
+
+		if lastEventIndex >= amount {
+			eventsO, nextHistorical = eventsO[:lastEventIndex], eventsO[lastEventIndex]
+		} else {
+			nextHistorical = eventsO[lastEventIndex]
+		}
 
 		return eventsO, nextHistorical.ID
 	} else {
@@ -191,7 +196,7 @@ func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events
 	}
 }
 
-const RoomInitialSyncLimit = 10
+const RoomInitialSyncLimit = 100
 
 func (m *Client) NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) *Room {
 	newRoom := &Room{
@@ -211,26 +216,38 @@ func (m *Client) NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) *Room {
 		//eventList: make([]*gomatrix.Event, 0, RoomInitialSyncLimit),
 	}
 
-	fmt.Println("NewRoom Start", publicRoomInfo.RoomId)
-	resp, err := m.RoomInitialSync(publicRoomInfo.RoomId, RoomInitialSyncLimit)
+	//newRoom.latestRoomState.CalculateMemberList()
+	return newRoom
+}
+
+func (r *Room) LazyInitialSync() {
+	r.RLock()
+	hasInitialSynced := r.hasInitialSynced
+	r.RUnlock()
+
+	if hasInitialSynced {
+		return
+	}
+
+	resp, err := r.client.RoomInitialSync(r.ID, RoomInitialSyncLimit)
 
 	if err != nil {
 		panic(err)
 	}
 
+	r.Lock()
+	defer r.Unlock()
+
 	for _, event := range resp.State {
-		newRoom.latestRoomState.UpdateOnEvent(&event)
+		r.latestRoomState.UpdateOnEvent(&event)
 	}
 
-	newRoom.backPaginationToken = resp.Messages.Start
-	newRoom.forwardPaginationToken = resp.Messages.End
+	r.backPaginationToken = resp.Messages.Start
+	r.forwardPaginationToken = resp.Messages.End
 
-	newRoom.eventList = utils.ReverseEvents(resp.Messages.Chunk)
-
-	fmt.Println("NewRoom Finish", publicRoomInfo.RoomId)
-
-	newRoom.latestRoomState.CalculateMemberList()
-	return newRoom
+	utils.ReverseEvents(resp.Messages.Chunk)
+	r.eventList = resp.Messages.Chunk
+	r.hasInitialSynced = true
 }
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room

@@ -28,8 +28,13 @@ type RoomStore struct {
 
 func (data *RoomStore) GetRoom(roomID string) *Room {
 	data.RLock()
-	defer data.RUnlock()
-	return data.roomMap[roomID]
+	room := data.roomMap[roomID]
+	data.RUnlock()
+
+	if room != nil {
+		room.LazyInitialSync()
+	}
+	return room
 }
 
 func (data *RoomStore) GetRoomList(start int, end int) []*Room {

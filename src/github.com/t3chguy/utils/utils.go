@@ -77,14 +77,16 @@ func Concat(slices ...[]gomatrix.Event) []gomatrix.Event {
 
 func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
 	newEvents := make([]gomatrix.Event, len(events))
-	copy(newEvents, events)
-	return ReverseEvents(newEvents)
+	for i := 0; i < len(events)/2; i++ {
+		j := len(events) - i - 1
+		newEvents[i], newEvents[j] = events[j], events[i]
+	}
+	return newEvents
 }
 
-func ReverseEvents(events []gomatrix.Event) []gomatrix.Event {
+func ReverseEvents(events []gomatrix.Event) {
 	for i := 0; i < len(events)/2; i++ {
 		j := len(events) - i - 1
 		events[i], events[j] = events[j], events[i]
 	}
-	return events
 }

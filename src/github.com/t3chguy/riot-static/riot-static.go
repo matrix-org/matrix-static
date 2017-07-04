@@ -25,11 +25,12 @@ import (
 )
 
 const PublicRoomsPageSize = 20
+const RoomTimelineSize = 20
 const RoomMembersPageSize = 20
 
 func LoadPublicRooms(first bool) {
 	fmt.Println("Loading publicRooms")
-	resp, err := client.PublicRooms(5, "", "")
+	resp, err := client.PublicRooms(0, "", "")
 
 	if err != nil {
 		// Only panic if first one fails, after that we only have outdated data (less important)
@@ -102,7 +103,7 @@ func main() {
 			room := c.MustGet("Room").(*matrixClient.Room)
 			_, forward := c.GetQuery("forward")
 
-			pageSize := 4
+			pageSize := RoomTimelineSize
 			anchor := c.DefaultQuery("anchor", "")
 			events, nextAnchor := room.GetEvents(anchor, pageSize, !forward)
 
