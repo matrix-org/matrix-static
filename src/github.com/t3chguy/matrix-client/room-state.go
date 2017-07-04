@@ -98,19 +98,17 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event) {
 	}
 }
 
-func (rs *RoomState) CalculateMemberList() {
+func (rs *RoomState) CalculateMemberList() []*MemberInfo {
 	rs.RLock()
-	newMemberList := make([]*MemberInfo, 0, len(rs.memberMap))
+	memberList := make([]*MemberInfo, 0, len(rs.memberMap))
 	for _, member := range rs.memberMap {
 		if member.Membership == "join" {
-			newMemberList = append(newMemberList, member)
+			memberList = append(memberList, member)
 		}
 	}
 	rs.RUnlock()
 
-	rs.Lock()
-	defer rs.Unlock()
-	rs.memberList = newMemberList
+	return memberList
 }
 
 func (rs *RoomState) Topic() string {

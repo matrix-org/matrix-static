@@ -299,14 +299,21 @@ func (r *Room) Topic() string {
 }
 
 func (r *Room) GetServers() map[string]int {
-	r.RLock()
-	defer r.RUnlock()
-
 	serverMap := make(map[string]int)
-	for _, member := range r.latestRoomState.memberList {
+	for _, member := range r.latestRoomState.CalculateMemberList() {
 		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
 			serverMap[mxidSplit[1]]++
 		}
 	}
 	return serverMap
+}
+
+func (r *Room) GetMembers() []*MemberInfo {
+	return r.latestRoomState.CalculateMemberList()
+}
+
+func (r *Room) GetNumMemberEvents() int {
+	r.latestRoomState.RLock()
+	defer r.latestRoomState.RUnlock()
+	return len(r.latestRoomState.memberMap)
 }

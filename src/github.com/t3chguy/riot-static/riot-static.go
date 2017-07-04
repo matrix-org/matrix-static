@@ -138,8 +138,7 @@ func main() {
 
 			c.HTML(http.StatusOK, "room_members.html", gin.H{
 				"Room":       room,
-				"MemberInfo": room.GetMemberList(skip, end),
-				"NumMembers": room.GetNumMembers(),
+				"MemberInfo": room.GetMembers()[skip:end],
 				"Page":       page,
 			})
 		})

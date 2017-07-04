@@ -10,6 +10,9 @@
         img {
             height: 20px;
         }
+        div.paginate {
+            text-align: center;
+        }
     </style>
     {{ template "room_header:css" }}
 </head>
@@ -17,9 +20,12 @@
 
     {{ template "room_header.html" .Room }}
 
-    <div>
-        <a href="?anchor={{.NextAnchor}}">Load older messages</a>
+    <div class="paginate">
+        <a href="?anchor={{.NextAnchor}}">
+            <h4>Load older messages</h4>
+        </a>
     </div>
+    <hr>
 
     <table>
 
