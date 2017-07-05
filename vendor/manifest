@@ -41,13 +41,7 @@
 		{
 			"importpath": "github.com/matrix-org/gomatrix",
 			"repository": "https://github.com/t3chguy/gomatrix",
-			"revision": "edf1a799867bbf7b610809ed0ac4330dc9c3e0e0",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/matryer/resync",
-			"repository": "https://github.com/matryer/resync",
-			"revision": "d39c09a11215c84aab0b65e323fc47dd6e276af1",
+			"revision": "4b4b248451359fb090788f9163c45bdb0f0be64e",
 			"branch": "master"
 		},
 		{
@@ -75,12 +69,6 @@
 			"revision": "5f8847ae0d0e90b6a9dc8148e7ad616874625171",
 			"branch": "master",
 			"path": "/html"
-		},
-		{
-			"importpath": "gopkg.in/gin-gonic/gin.v1",
-			"repository": "https://gopkg.in/gin-gonic/gin.v1",
-			"revision": "e2212d40c62a98b388a5eb48ecbdcf88534688ba",
-			"branch": "master"
 		},
 		{
 			"importpath": "gopkg.in/go-playground/validator.v8",
