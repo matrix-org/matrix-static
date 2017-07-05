@@ -42,7 +42,7 @@ func LoadPublicRooms(first bool) {
 	}
 
 	// Preallocate the maximum capacity possibly needed (if all rooms were world readable)
-	worldReadableRooms := make([]*matrixClient.Room, 0, len(resp.Chunk))
+	worldReadableRooms := make([]*matrix_client.Room, 0, len(resp.Chunk))
 
 	// filter on actually WorldReadable publicRooms
 	for _, x := range resp.Chunk {
@@ -50,7 +50,7 @@ func LoadPublicRooms(first bool) {
 			continue
 		}
 
-		var room *matrixClient.Room
+		var room *matrix_client.Room
 		if existingRoom := client.GetRoom(x.RoomId); existingRoom != nil {
 			room = existingRoom
 		} else {
@@ -63,10 +63,10 @@ func LoadPublicRooms(first bool) {
 	client.SetRoomList(worldReadableRooms)
 }
 
-var client *matrixClient.Client
+var client *matrix_client.Client
 
 func main() {
-	client = matrixClient.NewClient()
+	client = matrix_client.NewClient()
 
 	router := gin.Default()
 	router.SetHTMLTemplate(tpl)
@@ -100,7 +100,7 @@ func main() {
 		})
 
 		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
-			room := c.MustGet("Room").(*matrixClient.Room)
+			room := c.MustGet("Room").(*matrix_client.Room)
 			_, forward := c.GetQuery("forward")
 
 			pageSize := RoomTimelineSize
@@ -128,13 +128,13 @@ func main() {
 
 		roomRouter.GET("/:roomID/servers", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "room_servers.html", gin.H{
-				"Room": c.MustGet("Room").(*matrixClient.Room),
+				"Room": c.MustGet("Room").(*matrix_client.Room),
 			})
 		})
 
 		roomRouter.GET("/:roomID/members", func(c *gin.Context) {
 			page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
-			room := c.MustGet("Room").(*matrixClient.Room)
+			room := c.MustGet("Room").(*matrix_client.Room)
 
 			c.HTML(http.StatusOK, "room_members.html", gin.H{
 				"Room":       room,
@@ -144,7 +144,7 @@ func main() {
 		})
 
 		roomRouter.GET("/:roomID/members/:mxid", func(c *gin.Context) {
-			room := c.MustGet("Room").(*matrixClient.Room)
+			room := c.MustGet("Room").(*matrix_client.Room)
 			mxid := c.Param("mxid")
 
 			if memberInfo, exists := room.GetMember(mxid); exists {
@@ -159,7 +159,7 @@ func main() {
 
 		roomRouter.GET("/:roomID/power_levels", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "power_levels.html", gin.H{
-				"Room": c.MustGet("Room").(*matrixClient.Room),
+				"Room": c.MustGet("Room").(*matrix_client.Room),
 			})
 		})
 	}

@@ -27,9 +27,9 @@ import (
 )
 
 type MemberEventContent struct {
-	Membership  string              `json:"membership,omitempty"`
-	AvatarURL   matrixClient.MXCURL `json:"avatar_url,omitempty"`
-	DisplayName string              `json:"displayname,omitempty"`
+	Membership  string               `json:"membership,omitempty"`
+	AvatarURL   matrix_client.MXCURL `json:"avatar_url,omitempty"`
+	DisplayName string               `json:"displayname,omitempty"`
 }
 
 var tpl *template.Template = template.Must(template.New("main").Funcs(template.FuncMap{
@@ -48,13 +48,13 @@ var tpl *template.Template = template.Must(template.New("main").Funcs(template.F
 	"HTML": func(str string) template.HTML {
 		return template.HTML(str)
 	},
-	"MXCtoThumbUrl": func(mxc matrixClient.MXCURL) template.URL {
+	"MXCtoThumbUrl": func(mxc matrix_client.MXCURL) template.URL {
 		return template.URL(client.MXCToThumbUrl(mxc))
 	},
-	"MXCtoUrl": func(mxc matrixClient.MXCURL) template.URL {
+	"MXCtoUrl": func(mxc matrix_client.MXCURL) template.URL {
 		return template.URL(client.MXCToUrl(mxc))
 	},
-	"mRoomMember": func(room *matrixClient.Room, event *gomatrix.Event) interface{} {
+	"mRoomMember": func(room *matrix_client.Room, event *gomatrix.Event) interface{} {
 		// join -> join = avatar/display name
 		// join -> quit = kick/leave
 		// * -> join = join
