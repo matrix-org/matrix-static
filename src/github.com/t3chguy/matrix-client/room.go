@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/utils"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -298,14 +299,32 @@ func (r *Room) Topic() string {
 	return r.latestRoomState.topic
 }
 
-func (r *Room) GetServers() map[string]int {
+type Pair struct {
+	Key   string
+	Value int
+}
+
+type PairList []Pair
+
+func (p PairList) Len() int           { return len(p) }
+func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
+func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func (r *Room) GetServers() PairList {
 	serverMap := make(map[string]int)
 	for _, member := range r.latestRoomState.CalculateMemberList() {
 		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
 			serverMap[mxidSplit[1]]++
 		}
 	}
-	return serverMap
+
+	serverList := make(PairList, 0, len(serverMap))
+	for server, num := range serverMap {
+		serverList = append(serverList, Pair{server, num})
+	}
+
+	sort.Sort(sort.Reverse(serverList))
+	return serverList
 }
 
 func (r *Room) GetMembers() []*MemberInfo {
