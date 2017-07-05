@@ -1,3 +1,0 @@
-[submodule "vendor/src/github.com/matrix-org/gomatrix"]
-	path = vendor/src/github.com/matrix-org/gomatrix
-	url = https://github.com/t3chguy/gomatrix
