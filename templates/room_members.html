@@ -25,7 +25,7 @@
         </tr>
     </thead>
 
-    {{ .Room.GetNumMemberEvents }} - Users have interacted with this room.
+    {{ .Room.GetNumMemberEvents }} users have interacted with this room.
 
     {{ range $memberInfo := .MemberInfo }}
         {{ if eq $memberInfo.Membership "join" }}
