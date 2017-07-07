@@ -1,31 +1,34 @@
-<table id="roomHeader">
-    <tr>
-        <td rowspan="4">
-            {{ with .AvatarUrl }}
-                <img class="roomLogo" src="{{MXCtoThumbUrl .}}" />
-            {{ else }}
-                <img class="roomLogo" src="../../assets/logo_missing.png" />
-            {{ end }}
-        </td>
-        <td>{{ .GetName }} ({{ .ID }})</td>
-        <td class="rightAlign">
-            <a href="./members">{{ .NumJoinedMembers }} Members</a>
-        </td>
-    </tr>
-    <tr>
-        <td>{{ .CanonicalAlias }}</td>
-        <td class="rightAlign">
-            <a href="./servers">{{ len .GetServers }} Servers</a>
-        </td>
-    </tr>
-    <tr>
-        <td class="maxWidth">{{ .Topic }}</td>
-        <td class="rightAlign">
-            <a href="./chat">Chat</a>
-        </td>
-    </tr>
-</table>
-<hr>
+{{ with . }}
+    <header>
+        <table id="roomHeader">
+            <tr>
+                <td rowspan="4">
+                    {{ with .AvatarUrl }}
+                    <img class="roomLogo" src="{{MXCtoThumbUrl .}}" />
+                    {{ else }}
+                    <img class="roomLogo" src="../../assets/logo_missing.png" />
+                    {{ end }}
+                </td>
+                <td>{{ .GetName }} ({{ .ID }})</td>
+                <td class="rightAlign">
+                    <a href="./members">{{ .NumJoinedMembers }} Members</a>
+                </td>
+            </tr>
+            <tr>
+                <td>{{ .CanonicalAlias }}</td>
+                <td class="rightAlign">
+                    <a href="./servers">{{ len .GetServers }} Servers</a>
+                </td>
+            </tr>
+            <tr>
+                <td class="maxWidth">{{ .Topic }}</td>
+                <td class="rightAlign">
+                    <a href="./chat">Chat</a>
+                </td>
+            </tr>
+        </table>
+    </header>
+{{ end }}
 
 {{ define "room_header:css" }}
     <style>

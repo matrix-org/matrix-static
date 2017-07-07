@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiders Welcome</title>
+    {{ template "room_header:css" }}
+</head>
+<body>
+
+{{ template "room_header.html" .Room }}
+<hr>
+<h1>Failed to load room.</h1>
+<hr>
+{{ template "back_to_room_list" }}
+</body>
+</html>

@@ -48,7 +48,14 @@ func (powerLevel PowerLevel) ToInt() int {
 type Room struct {
 	client *Client // each room has a client that is responsible for its state being up to date
 
-	sync.RWMutex
+	// Active lock is called for the duration of a Read/Write on any field of the room.
+	// This lock may be Locked/Unlocked several times in a request, so may be hit by inconsistent data,
+	// for this reason requests which may move the anchor point of our eventList/latestRoomState Lock requestLock (TOO?)
+	activeLock sync.RWMutex
+
+	// Request lock is called for the duration of a request on the room object
+	// To prevent the CRON forward pagination from changing the 0 point of a timeline (and mangling latestRoomState)
+	requestLock sync.RWMutex
 
 	ID string // IMMUTABLE
 
@@ -63,24 +70,33 @@ type Room struct {
 	hasInitialSynced bool
 }
 
-func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken *string) {
-	r.Lock() //deadlock
-	defer r.Unlock()
+func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string) {
+	r.activeLock.Lock()
+	defer r.activeLock.Unlock()
+
+	fmt.Println("concatBackpagination", len(oldEvents), newToken)
 
 	//for _, event := range oldEvents {
-	//	r.eventMap[event.ID] = &event
+	//fmt.Println(event)
 	//}
 	r.eventList = append(r.eventList, oldEvents...)
+	r.backPaginationToken = newToken
+}
 
-	if newToken != nil {
-		r.backPaginationToken = *newToken
-	}
+func (r *Room) concatForwardpagination(newEvents []gomatrix.Event, newToken string) {
+	r.activeLock.Lock()
+	defer r.activeLock.Unlock()
 
+	//for _, event := range newEvents {
+	//fmt.Println(event)
+	//}
+	//r.eventList = ...
+	r.forwardPaginationToken = newToken
 }
 
 func (r *Room) GetTokens() (string, string) {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 	return r.backPaginationToken, r.forwardPaginationToken
 }
 
@@ -111,14 +127,14 @@ func (r *Room) GetNumMembers() int {
 }
 
 func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
-	r.RLock()
+	r.activeLock.RLock()
 	for index, event := range r.eventList {
 		if event.ID == anchor {
-			defer r.RUnlock()
+			defer r.activeLock.RUnlock()
 			return index, true
 		}
 	}
-	r.RUnlock()
+	r.activeLock.RUnlock()
 
 	if backpaginate {
 		if numNew := r.client.backpaginateRoom(r, 100); numNew > 0 {
@@ -128,12 +144,12 @@ func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 	return 0, false
 }
 
-const overcompensatePaginationQuantity = 5
+const overcompensatePaginationQuantity = 32
 
 func (r *Room) getBackwardEventRange(index, number int) []gomatrix.Event {
-	r.RLock()
+	r.activeLock.RLock()
 	length := len(r.eventList)
-	r.RUnlock()
+	r.activeLock.RUnlock()
 
 	var numNew int
 	if delta := index + number + overcompensatePaginationQuantity; delta >= length {
@@ -143,14 +159,14 @@ func (r *Room) getBackwardEventRange(index, number int) []gomatrix.Event {
 
 	eventList := r.eventList[index:utils.Min(index+number+1, length)]
 
-	fmt.Println(eventList)
+	//fmt.Println(eventList)
 
 	return eventList
 }
 
 func (r *Room) getForwardEventRange(index, number int) []gomatrix.Event {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 	length := len(r.eventList)
 
 	oldestIndex := utils.FixRange(0, index+number, length)
@@ -197,7 +213,7 @@ func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events
 	}
 }
 
-const RoomInitialSyncLimit = 100
+const RoomInitialSyncLimit = 256
 
 func (m *Client) NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) *Room {
 	newRoom := &Room{
@@ -221,23 +237,24 @@ func (m *Client) NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) *Room {
 	return newRoom
 }
 
-func (r *Room) LazyInitialSync() {
-	r.RLock()
+func (r *Room) LazyInitialSync() bool {
+	r.activeLock.RLock()
 	hasInitialSynced := r.hasInitialSynced
-	r.RUnlock()
+	r.activeLock.RUnlock()
 
 	if hasInitialSynced {
-		return
+		return true
 	}
 
 	resp, err := r.client.RoomInitialSync(r.ID, RoomInitialSyncLimit)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return false
 	}
 
-	r.Lock()
-	defer r.Unlock()
+	r.activeLock.Lock()
+	defer r.activeLock.Unlock()
 
 	for _, event := range resp.State {
 		r.latestRoomState.UpdateOnEvent(&event)
@@ -249,13 +266,14 @@ func (r *Room) LazyInitialSync() {
 	utils.ReverseEvents(resp.Messages.Chunk)
 	r.eventList = resp.Messages.Chunk
 	r.hasInitialSynced = true
+	return true
 }
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room
 // falling back to room ID instead of "Empty Room" (though this should not be possible with guest-world-readble-rooms)
 func (r *Room) GetName() string {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 
 	if r.latestRoomState.Name != "" {
 		return r.latestRoomState.Name
@@ -271,14 +289,14 @@ func (r *Room) GetName() string {
 }
 
 func (r *Room) NumJoinedMembers() int {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 	return r.latestRoomState.NumJoinedMembers
 }
 
 func (r *Room) CanonicalAlias() string {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 
 	if r.latestRoomState.CanonicalAlias != "" {
 		return r.latestRoomState.CanonicalAlias
@@ -289,13 +307,13 @@ func (r *Room) CanonicalAlias() string {
 	return ""
 }
 func (r *Room) AvatarUrl() MXCURL {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 	return r.latestRoomState.AvatarURL
 }
 func (r *Room) Topic() string {
-	r.RLock()
-	defer r.RUnlock()
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 	return r.latestRoomState.topic
 }
 

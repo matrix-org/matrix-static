@@ -53,7 +53,7 @@ func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSyn
 	return
 }
 
-const minimumPagination = 20
+const minimumPagination = 64
 
 func (m *Client) backpaginateRoom(room *Room, amount int) int {
 	amount = utils.Max(amount, minimumPagination)
@@ -64,7 +64,7 @@ func (m *Client) backpaginateRoom(room *Room, amount int) int {
 		return 0
 	}
 
-	room.concatBackpagination(resp.Chunk, &resp.End)
+	room.concatBackpagination(resp.Chunk, resp.End)
 	return len(resp.Chunk)
 }
 

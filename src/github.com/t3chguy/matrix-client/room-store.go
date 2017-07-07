@@ -26,15 +26,17 @@ type RoomStore struct {
 	roomMap  map[string]*Room
 }
 
+func (data *RoomStore) LoadRoom(roomID string) (room *Room, ok bool) {
+	if room = data.GetRoom(roomID); room != nil {
+		ok = room.LazyInitialSync()
+	}
+	return
+}
+
 func (data *RoomStore) GetRoom(roomID string) *Room {
 	data.RLock()
-	room := data.roomMap[roomID]
-	data.RUnlock()
-
-	if room != nil {
-		room.LazyInitialSync()
-	}
-	return room
+	defer data.RUnlock()
+	return data.roomMap[roomID]
 }
 
 func (data *RoomStore) GetRoomList(start int, end int) []*Room {

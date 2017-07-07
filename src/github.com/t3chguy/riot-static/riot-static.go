@@ -86,7 +86,12 @@ func main() {
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
 
-			if room := client.GetRoom(roomID); room != nil {
+			if room, ok := client.LoadRoom(roomID); !ok {
+				c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
+					"Room": room,
+				})
+				c.Abort()
+			} else if room != nil {
 				c.Set("Room", room)
 				c.Next()
 			} else {
