@@ -45,8 +45,10 @@ func (powerLevel PowerLevel) ToInt() int {
 	return int(powerLevel)
 }
 
+type RoomEventErrorEnum int
+
 const (
-	RoomEventsCouldNotFindEvent = iota
+	RoomEventsCouldNotFindEvent RoomEventErrorEnum = iota
 	RoomEventsUnknownError
 	RoomEventsFine
 )
@@ -180,7 +182,7 @@ func (r *Room) getForwardEventRange(index, number int) []gomatrix.Event {
 	return r.eventList[latestIndex:oldestIndex]
 }
 
-func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events []gomatrix.Event, nextAnchor string, error int) {
+func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) ([]gomatrix.Event, string, RoomEventErrorEnum) {
 	// normal (towards history): after=X - returns X+N including X
 	// return (towards present): before=X - returnx X-n not including X
 

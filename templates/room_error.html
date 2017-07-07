@@ -3,14 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Spiders Welcome</title>
+    <style>
+        div.errMsg {
+            text-align: center;
+        }
+    </style>
     {{ template "room_header:css" }}
 </head>
 <body>
 
-{{ template "room_header.html" .Room }}
-<hr>
-<h1>{{ .Error }}</h1>
-<hr>
-{{ template "back_to_room_list" }}
+    {{ template "room_header.html" .Room }}
+    <hr>
+
+    <div class="errMsg">
+        <h1>{{ .Error }}</h1>
+    </div>
+
+    <hr>
+    {{ template "back_to_room_list" }}
+
 </body>
 </html>
