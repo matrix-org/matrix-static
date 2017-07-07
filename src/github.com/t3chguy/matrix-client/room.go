@@ -45,6 +45,12 @@ func (powerLevel PowerLevel) ToInt() int {
 	return int(powerLevel)
 }
 
+const (
+	RoomEventsCouldNotFindEvent = iota
+	RoomEventsUnknownError
+	RoomEventsFine
+)
+
 type Room struct {
 	client *Client // each room has a client that is responsible for its state being up to date
 
@@ -174,7 +180,7 @@ func (r *Room) getForwardEventRange(index, number int) []gomatrix.Event {
 	return r.eventList[latestIndex:oldestIndex]
 }
 
-func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events []gomatrix.Event, nextAnchor string) {
+func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events []gomatrix.Event, nextAnchor string, error int) {
 	// normal (towards history): after=X - returns X+N including X
 	// return (towards present): before=X - returnx X-n not including X
 
@@ -182,7 +188,7 @@ func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events
 	// Len-1 is the OLDEST event
 
 	if amount <= 0 {
-		return []gomatrix.Event{}, anchor
+		return []gomatrix.Event{}, anchor, RoomEventsUnknownError
 	}
 
 	var eventIndex int
@@ -191,7 +197,7 @@ func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events
 		if index, found := r.findEventIndex(anchor, true); found {
 			eventIndex = index
 		} else {
-			return []gomatrix.Event{}, anchor
+			return []gomatrix.Event{}, anchor, RoomEventsCouldNotFindEvent
 		}
 	}
 
@@ -207,9 +213,9 @@ func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) (events
 			nextHistorical = eventsO[lastEventIndex]
 		}
 
-		return eventsO, nextHistorical.ID
+		return eventsO, nextHistorical.ID, RoomEventsFine
 	} else {
-		return []gomatrix.Event{}, anchor
+		return []gomatrix.Event{}, anchor, RoomEventsFine
 	}
 }
 

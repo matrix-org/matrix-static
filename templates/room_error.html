@@ -9,7 +9,7 @@
 
 {{ template "room_header.html" .Room }}
 <hr>
-<h1>Failed to load room.</h1>
+<h1>{{ .Error }}</h1>
 <hr>
 {{ template "back_to_room_list" }}
 </body>

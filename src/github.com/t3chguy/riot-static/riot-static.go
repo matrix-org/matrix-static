@@ -86,14 +86,17 @@ func main() {
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
 
-			if room, ok := client.LoadRoom(roomID); !ok {
-				c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
-					"Room": room,
-				})
-				c.Abort()
-			} else if room != nil {
-				c.Set("Room", room)
-				c.Next()
+			if room := client.GetRoom(roomID); room != nil {
+				if room.LazyInitialSync() {
+					c.Set("Room", room)
+					c.Next()
+				} else {
+					c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
+						"Error": "Failed to load room.",
+						"Room":  room,
+					})
+					c.Abort()
+				}
 			} else {
 				c.String(http.StatusNotFound, "Room Not Found")
 				c.Abort()
@@ -110,7 +113,22 @@ func main() {
 
 			pageSize := RoomTimelineSize
 			anchor := c.DefaultQuery("anchor", "")
-			events, nextAnchor := room.GetEvents(anchor, pageSize, !forward)
+			events, nextAnchor, eventsErr := room.GetEvents(anchor, pageSize, !forward)
+
+			if eventsErr != matrix_client.RoomEventsFine {
+				var errString string
+				switch eventsErr {
+				case matrix_client.RoomEventsCouldNotFindEvent:
+					errString = "Given up while looking for given event."
+				case matrix_client.RoomEventsUnknownError:
+					errString = "Unknown error encountered."
+				}
+				c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
+					"Error": errString,
+					"Room":  room,
+				})
+				return // Bail early
+			}
 
 			var prevPage string
 			if length := len(events); length > 0 {
