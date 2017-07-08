@@ -63,6 +63,7 @@ type Room struct {
 
 	// Request lock is called for the duration of a request on the room object
 	// To prevent the CRON forward pagination from changing the 0 point of a timeline (and mangling latestRoomState)
+	// Write Lock when modifying the start of the eventList, Read Lock when wanting to prevent such modification.
 	requestLock sync.RWMutex
 
 	ID string // IMMUTABLE
@@ -95,6 +96,7 @@ func (r *Room) concatForwardpagination(newEvents []gomatrix.Event, newToken stri
 	r.activeLock.Lock()
 	defer r.activeLock.Unlock()
 
+	// TODO this needs to update state, handle redactions and prepend to the eventList
 	//for _, event := range newEvents {
 	//fmt.Println(event)
 	//}
@@ -180,35 +182,10 @@ func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event 
 	return r.eventList[utils.Max(topIndex-number, 0):topIndex]
 }
 
-//func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) ([]gomatrix.Event, RoomEventErrorEnum) {
-//	 normal (towards history): after=X - returns X+N including X
-//	 return (towards present): before=X - returnx X-n not including X
-//
-// 0 is the LATEST Event
-// Len-1 is the OLDEST event
-//
-//if amount <= 0 {
-//	return []gomatrix.Event{}, RoomEventsUnknownError
-//}
-
-//var eventIndex int
-//
-//if anchor != "" {
-//	if index, found := r.findEventIndex(anchor, true); found {
-//		eventIndex = index
-//	} else {
-//		return []gomatrix.Event{}, RoomEventsCouldNotFindEvent
-//	}
-//}
-//
-//if towardsHistory {
-//	return r.getBackwardEventRange(eventIndex, amount), RoomEventsFine
-//} else {
-//	return r.getForwardEventRange(eventIndex, amount), RoomEventsFine
-//}
-//}
-
 func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, state RoomEventErrorEnum) {
+	r.requestLock.RLock()
+	defer r.requestLock.RUnlock()
+
 	var anchorIndex int
 
 	if anchor != "" {
