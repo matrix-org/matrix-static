@@ -55,6 +55,7 @@ func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSyn
 
 const minimumPagination = 64
 
+// TODO split into runs of max 999 recursively otherwise we get capped.
 func (m *Client) backpaginateRoom(room *Room, amount int) int {
 	amount = utils.Max(amount, minimumPagination)
 	backPaginationToken, _ := room.GetTokens()

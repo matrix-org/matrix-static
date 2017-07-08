@@ -19,69 +19,33 @@
 <body>
 
     {{ template "room_header.html" .Room }}
+    {{ $numEvents:= (len .Events) }}
+
     <hr>
     <div class="paginate">
-        <a href="?anchor={{.NextAnchor}}">
-            <h4>Load older messages</h4>
-        </a>
+        {{ if .ReachedRoomCreate }}
+            <h4>You have reached the beginning of time (for this room).</h4>
+        {{ else }}
+            <a href="?anchor={{.Anchor}}&offset={{plus .CurrentOffset .PageSize}}">
+                <h4>Load older messages</h4>
+            </a>
+        {{ end }}
     </div>
     <hr>
 
-    <table>
+    {{ if gt $numEvents 0 }}
+        {{ template "room_timeline.html" . }}
+    {{ else }}
+        <h3>No Events</h3>
+    {{ end }}
 
-        <thead>
-        <tr>
-            <th>Timestamp</th>
-            <th>Sender</th>
-            <th>Message</th>
-        </tr>
-        </thead>
-
-        {{ range $message := .Events }}
-            {{ $memberInfo:= ($.Room.GetMemberIgnore $message.Sender) }}
-
-            {{ if eq $message.Type "m.room.message" }}
-                <tr>
-                    <td class="timestamp">
-                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
-                    </td>
-                    <td>
-                        <a href="./members/{{$message.Sender}}">
-
-                            {{ with $memberInfo.AvatarURL }}
-                                <img src="{{MXCtoThumbUrl .}}" />
-                            {{ else }}
-                                <img src="../../assets/logo_missing.png" />
-                            {{ end }}
-
-                            {{ with $message.Content.msgtype }}
-                                {{ if eq . "m.emote" }}* {{ end }}
-                            {{ end }}
-
-                            {{ $memberInfo.GetName }}
-                        </a>
-                    </td>
-                    <td>
-                        {{ mRoomMessage $message }}
-                    </td>
-                </tr>
-            {{ else }}
-            {{ if eq $message.Type "m.room.member" }}
-                <tr>
-                    <td class="timestamp">
-                        <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
-                    </td>
-                    <td colspan="2">
-                        {{ mRoomMember $.Room $message }}
-                    </td>
-                </tr>
-            {{ end }}
-            {{ end }}
-        {{ end }}
-
-    </table>
-
-    <!--<div><a href="?forward&anchor={{.PrevAnchor}}">Show newer messages</a></div>-->
+    <hr>
+    <div class="paginate">
+        <a href="?anchor={{.Anchor}}&offset={{minus .CurrentOffset $numEvents}}">
+            <h4>Show newer messages</h4>
+        </a>
+    </div>
+    <hr>
 
     {{ template "back_to_room_list" }}
 </body>

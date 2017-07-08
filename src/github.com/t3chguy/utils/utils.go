@@ -40,6 +40,17 @@ func FixRange(min, val, max int) int {
 	return val
 }
 
+// abs returns the absolute of a value and whether it changed
+func Abs(num int) (newNum int, wasChanged bool) {
+	if num < 0 {
+		newNum = -num
+		wasChanged = true
+	} else {
+		newNum = num
+	}
+	return
+}
+
 // min returns the minimal value of N ints
 func Min(nums ...int) int {
 	curLowest := nums[0]

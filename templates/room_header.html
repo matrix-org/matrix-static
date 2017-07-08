@@ -9,21 +9,15 @@
                     <img class="roomLogo" src="../../assets/logo_missing.png" />
                     {{ end }}
                 </td>
-                <td>{{ .GetName }} ({{ .ID }})</td>
+                <td><h2>{{ .GetName }}</h2></td>
                 <td class="rightAlign">
                     <a href="./members">{{ .NumJoinedMembers }} Members</a>
                 </td>
             </tr>
             <tr>
-                <td>{{ .CanonicalAlias }}</td>
-                <td class="rightAlign">
-                    <a href="./servers">{{ len .GetServers }} Servers</a>
-                </td>
-            </tr>
-            <tr>
                 <td class="maxWidth">{{ .Topic }}</td>
                 <td class="rightAlign">
-                    <a href="./chat">Chat</a>
+                    <a href="./servers">{{ len .GetServers }} Servers</a>
                 </td>
             </tr>
         </table>
@@ -44,6 +38,12 @@
         }
         td.maxWidth {
             width: 100%;
+        }
+        * {
+            font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
+        }
+        h2 {
+            margin: 0;
         }
     </style>
 {{ end }}

@@ -154,71 +154,78 @@ func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 
 const overcompensatePaginationQuantity = 32
 
-func (r *Room) getBackwardEventRange(index, number int) []gomatrix.Event {
+func (r *Room) getBackwardEventRange(index, offset, number int) []gomatrix.Event {
 	r.activeLock.RLock()
 	length := len(r.eventList)
 	r.activeLock.RUnlock()
 
-	var numNew int
-	if delta := index + number + overcompensatePaginationQuantity; delta >= length {
-		numNew = r.client.backpaginateRoom(r, -delta)
+	if delta := index + offset + number + overcompensatePaginationQuantity; delta >= length {
+		length += r.client.backpaginateRoom(r, delta-length)
 	}
-	length += numNew
+	index = utils.Min(index+offset, length)
 
-	eventList := r.eventList[index:utils.Min(index+number+1, length)]
-
-	//fmt.Println(eventList)
-
-	return eventList
-}
-
-func (r *Room) getForwardEventRange(index, number int) []gomatrix.Event {
 	r.activeLock.RLock()
 	defer r.activeLock.RUnlock()
-	length := len(r.eventList)
 
-	oldestIndex := utils.FixRange(0, index+number, length)
-	latestIndex := utils.Min(index, oldestIndex)
-	return r.eventList[latestIndex:oldestIndex]
+	return r.eventList[index:utils.Min(index+number, length)]
 }
 
-func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) ([]gomatrix.Event, string, RoomEventErrorEnum) {
-	// normal (towards history): after=X - returns X+N including X
-	// return (towards present): before=X - returnx X-n not including X
+func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event {
+	r.activeLock.RLock()
+	defer r.activeLock.RUnlock()
 
-	// 0 is the LATEST Event
-	// Len-1 is the OLDEST event
+	length := len(r.eventList)
+	topIndex := utils.FixRange(0, index+number-offset, length)
 
-	if amount <= 0 {
-		return []gomatrix.Event{}, anchor, RoomEventsUnknownError
-	}
+	return r.eventList[utils.Max(topIndex-number, 0):topIndex]
+}
 
-	var eventIndex int
+//func (r *Room) GetEvents(anchor string, amount int, towardsHistory bool) ([]gomatrix.Event, RoomEventErrorEnum) {
+//	 normal (towards history): after=X - returns X+N including X
+//	 return (towards present): before=X - returnx X-n not including X
+//
+// 0 is the LATEST Event
+// Len-1 is the OLDEST event
+//
+//if amount <= 0 {
+//	return []gomatrix.Event{}, RoomEventsUnknownError
+//}
+
+//var eventIndex int
+//
+//if anchor != "" {
+//	if index, found := r.findEventIndex(anchor, true); found {
+//		eventIndex = index
+//	} else {
+//		return []gomatrix.Event{}, RoomEventsCouldNotFindEvent
+//	}
+//}
+//
+//if towardsHistory {
+//	return r.getBackwardEventRange(eventIndex, amount), RoomEventsFine
+//} else {
+//	return r.getForwardEventRange(eventIndex, amount), RoomEventsFine
+//}
+//}
+
+func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, state RoomEventErrorEnum) {
+	var anchorIndex int
 
 	if anchor != "" {
-		if index, found := r.findEventIndex(anchor, true); found {
-			eventIndex = index
+		if index, found := r.findEventIndex(anchor, false); found {
+			anchorIndex = index
 		} else {
-			return []gomatrix.Event{}, anchor, RoomEventsCouldNotFindEvent
+			return []gomatrix.Event{}, RoomEventsCouldNotFindEvent
 		}
 	}
 
-	if towardsHistory {
-		eventsO := r.getBackwardEventRange(eventIndex, amount)
-
-		var nextHistorical gomatrix.Event
-		lastEventIndex := len(eventsO) - 1
-
-		if lastEventIndex >= amount {
-			eventsO, nextHistorical = eventsO[:lastEventIndex], eventsO[lastEventIndex]
-		} else {
-			nextHistorical = eventsO[lastEventIndex]
-		}
-
-		return eventsO, nextHistorical.ID, RoomEventsFine
-	} else {
-		return []gomatrix.Event{}, anchor, RoomEventsFine
+	if offset >= 0 { // backwards
+		return r.getBackwardEventRange(anchorIndex, offset, pageSize), RoomEventsFine
+	} else { // forwards
+		return r.getForwardEventRange(anchorIndex, -offset, pageSize), RoomEventsFine
 	}
+
+	return
 }
 
 const RoomInitialSyncLimit = 256

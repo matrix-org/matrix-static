@@ -1,0 +1,53 @@
+<table>
+
+    <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Sender</th>
+            <th>Message</th>
+        </tr>
+    </thead>
+
+    {{ range $message := .Events }}
+        {{ $memberInfo:= ($.Room.GetMemberIgnore $message.Sender) }}
+
+        {{ if eq $message.Type "m.room.message" }}
+            <tr>
+                <td class="timestamp">
+                    <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
+                </td>
+                <td>
+                    <a href="./members/{{$message.Sender}}">
+
+                        {{ with $memberInfo.AvatarURL }}
+                        <img src="{{MXCtoThumbUrl .}}" />
+                        {{ else }}
+                        <img src="../../assets/logo_missing.png" />
+                        {{ end }}
+
+                        {{ with $message.Content.msgtype }}
+                        {{ if eq . "m.emote" }}* {{ end }}
+                        {{ end }}
+
+                        {{ $memberInfo.GetName }}
+                    </a>
+                </td>
+                <td>
+                    {{ mRoomMessage $message }}
+                </td>
+            </tr>
+        {{ else }}
+            {{ if eq $message.Type "m.room.member" }}
+            <tr>
+                <td class="timestamp">
+                    <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
+                </td>
+                <td colspan="2">
+                    {{ mRoomMember $.Room $message }}
+                </td>
+            </tr>
+            {{ end }}
+        {{ end }}
+    {{ end }}
+
+</table>

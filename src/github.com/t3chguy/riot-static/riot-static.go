@@ -21,6 +21,7 @@ import (
 	"github.com/t3chguy/utils"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -109,11 +110,19 @@ func main() {
 
 		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
 			room := c.MustGet("Room").(*matrix_client.Room)
-			_, forward := c.GetQuery("forward")
 
-			pageSize := RoomTimelineSize
-			anchor := c.DefaultQuery("anchor", "")
-			events, nextAnchor, eventsErr := room.GetEvents(anchor, pageSize, !forward)
+			pageSize := RoomMembersPageSize
+			eventID := c.DefaultQuery("anchor", "")
+
+			var offset int
+			if offsetStr, exists := c.GetQuery("offset"); exists {
+				num, err := strconv.Atoi(offsetStr)
+				if err == nil {
+					offset = num
+				}
+			}
+
+			events, eventsErr := room.GetEventPage(eventID, offset, pageSize)
 
 			if eventsErr != matrix_client.RoomEventsFine {
 				var errString string
@@ -130,22 +139,25 @@ func main() {
 				return // Bail early
 			}
 
-			var prevPage string
-			if length := len(events); length > 0 {
-				prevPage = events[length-1].ID
+			if eventID == "" && len(events) > 0 {
+				eventID = events[0].ID
+			}
+
+			events = utils.ReverseEventsCopy(events)
+
+			var reachedRoomCreate bool
+			if len(events) > 0 {
+				reachedRoomCreate = events[0].Type == "m.room.create"
 			}
 
 			c.HTML(http.StatusOK, "room.html", gin.H{
-				"Room":   room,
-				"Events": utils.ReverseEventsCopy(events),
-				//"PrevPage":  prevPage,
-				//"NextPage":  nextPage,
+				"Room":     room,
+				"Events":   events,
 				"PageSize": pageSize,
-				//"NumBefore": numBefore,
-				//"NumAfter":  numAfter,
-				"PrevAnchor":    prevPage,
-				"CurrentAnchor": anchor,
-				"NextAnchor":    nextAnchor,
+
+				"ReachedRoomCreate": reachedRoomCreate,
+				"CurrentOffset":     offset,
+				"Anchor":            eventID,
 			})
 		})
 
