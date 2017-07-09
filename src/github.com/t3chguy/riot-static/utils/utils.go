@@ -14,10 +14,7 @@
 
 package utils
 
-import (
-	"github.com/matrix-org/gomatrix"
-	"strconv"
-)
+import "strconv"
 
 func CalcPaginationPage(pageString string, size int) (page int, skip int, end int) {
 	var err error
@@ -40,17 +37,6 @@ func FixRange(min, val, max int) int {
 	return val
 }
 
-// abs returns the absolute of a value and whether it changed
-func Abs(num int) (newNum int, wasChanged bool) {
-	if num < 0 {
-		newNum = -num
-		wasChanged = true
-	} else {
-		newNum = num
-	}
-	return
-}
-
 // min returns the minimal value of N ints
 func Min(nums ...int) int {
 	curLowest := nums[0]
@@ -71,33 +57,4 @@ func Max(nums ...int) int {
 		}
 	}
 	return curHighest
-}
-
-func Concat(slices ...[]gomatrix.Event) []gomatrix.Event {
-	var totalLen int
-	for _, s := range slices {
-		totalLen += len(s)
-	}
-	tmp := make([]gomatrix.Event, totalLen)
-	var i int
-	for _, s := range slices {
-		i += copy(tmp[i:], s)
-	}
-	return tmp
-}
-
-func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
-	newEvents := make([]gomatrix.Event, len(events))
-	for i := 0; i < len(events)/2; i++ {
-		j := len(events) - i - 1
-		newEvents[i], newEvents[j] = events[j], events[i]
-	}
-	return newEvents
-}
-
-func ReverseEvents(events []gomatrix.Event) {
-	for i := 0; i < len(events)/2; i++ {
-		j := len(events) - i - 1
-		events[i], events[j] = events[j], events[i]
-	}
 }

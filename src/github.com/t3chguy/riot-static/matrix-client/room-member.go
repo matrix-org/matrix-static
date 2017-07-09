@@ -14,6 +14,27 @@
 
 package matrix_client
 
+type PowerLevel int
+
+func (powerLevel PowerLevel) String() string {
+	switch int(powerLevel) {
+	case 100:
+		return "Admin"
+	case 50:
+		return "Moderator"
+	case 0:
+		return "User"
+	case -1:
+		return "Muted"
+	default:
+		return "Custom"
+	}
+}
+
+func (powerLevel PowerLevel) ToInt() int {
+	return int(powerLevel)
+}
+
 type MemberInfo struct {
 	MXID        string
 	Membership  string

@@ -80,8 +80,8 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event) {
 		if avatarUrl, ok := event.Content["avatar_url"].(string); ok {
 			currentMemberState.AvatarURL = MXCURL(avatarUrl)
 		}
-		if displayname, ok := event.Content["displayname"].(string); ok {
-			currentMemberState.DisplayName = displayname
+		if displayName, ok := event.Content["displayname"].(string); ok {
+			currentMemberState.DisplayName = displayName
 		}
 	case "m.room.power_levels":
 		switch event.Type {

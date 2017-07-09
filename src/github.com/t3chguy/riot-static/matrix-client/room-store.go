@@ -15,7 +15,7 @@
 package matrix_client
 
 import (
-	"github.com/t3chguy/utils"
+	"github.com/t3chguy/riot-static/utils"
 	"sync"
 )
 

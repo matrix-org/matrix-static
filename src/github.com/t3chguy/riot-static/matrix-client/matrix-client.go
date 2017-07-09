@@ -18,12 +18,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/matrix-org/gomatrix"
-	"github.com/t3chguy/utils"
+	"github.com/t3chguy/riot-static/utils"
 	"io/ioutil"
 	"os"
 	"strconv"
 )
 
+// This is a Truncated RespInitialSync as we only need SOME information from it.
 type RespInitialSync struct {
 	//AccountData []gomatrix.Event `json:"account_data"`
 
@@ -35,15 +36,11 @@ type RespInitialSync struct {
 	//Presence   []*PresenceEvent       `json:"presence"`
 }
 
+// Our Client extension adds some methods and ties in a RoomStore (Ordered Map)
 type Client struct {
 	*gomatrix.Client
 	*RoomStore
 }
-
-// Implement Cache as a layer on top of this?
-// Caching will cache r state historical calculations too
-// rather than just the raw data
-// memberInfo etc can just be stored as a list and calculated OD for the cache.
 
 func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSync, err error) {
 	urlPath := m.BuildURLWithQuery([]string{"rooms", roomID, "initialSync"}, map[string]string{
@@ -69,9 +66,8 @@ func (m *Client) backpaginateRoom(room *Room, amount int) int {
 	return len(resp.Chunk)
 }
 
-var config *gomatrix.RespRegister
-
 func NewClient() *Client {
+	var config *gomatrix.RespRegister
 	if _, err := os.Stat("./config.json"); err == nil {
 		file, e := ioutil.ReadFile("./config.json")
 		if e != nil {
@@ -112,5 +108,5 @@ func NewClient() *Client {
 
 	cli.SetCredentials(config.UserID, config.AccessToken)
 
-	return &Client{cli, new(RoomStore)}
+	return &Client{cli, NewRoomStore()}
 }

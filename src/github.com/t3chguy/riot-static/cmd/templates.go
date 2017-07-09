@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"github.com/matrix-org/gomatrix"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/t3chguy/matrix-client"
+	"github.com/t3chguy/riot-static/matrix-client"
 	"golang.org/x/net/html"
 	"html/template"
 	"strings"

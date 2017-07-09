@@ -17,13 +17,15 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/t3chguy/matrix-client"
-	"github.com/t3chguy/utils"
+	"github.com/t3chguy/riot-static/matrix-client"
+	"github.com/t3chguy/riot-static/utils"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 )
+
+// TODO Cache memberList+serverList until it changes
 
 const PublicRoomsPageSize = 20
 const RoomTimelineSize = 20
@@ -111,7 +113,7 @@ func main() {
 		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
 			room := c.MustGet("Room").(*matrix_client.Room)
 
-			pageSize := RoomMembersPageSize
+			pageSize := RoomTimelineSize
 			eventID := c.DefaultQuery("anchor", "")
 
 			var offset int
@@ -143,7 +145,7 @@ func main() {
 				eventID = events[0].ID
 			}
 
-			events = utils.ReverseEventsCopy(events)
+			events = matrix_client.ReverseEventsCopy(events)
 
 			var reachedRoomCreate bool
 			if len(events) > 0 {

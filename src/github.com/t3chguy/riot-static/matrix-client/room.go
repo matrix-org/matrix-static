@@ -17,33 +17,12 @@ package matrix_client
 import (
 	"fmt"
 	"github.com/matrix-org/gomatrix"
-	"github.com/t3chguy/utils"
+	"github.com/t3chguy/riot-static/utils"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 )
-
-type PowerLevel int
-
-func (powerLevel PowerLevel) String() string {
-	switch int(powerLevel) {
-	case 100:
-		return "Admin"
-	case 50:
-		return "Moderator"
-	case 0:
-		return "User"
-	case -1:
-		return "Muted"
-	default:
-		return "Custom"
-	}
-}
-
-func (powerLevel PowerLevel) ToInt() int {
-	return int(powerLevel)
-}
 
 type RoomEventErrorEnum int
 
@@ -83,7 +62,7 @@ func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string)
 	r.activeLock.Lock()
 	defer r.activeLock.Unlock()
 
-	fmt.Println("concatBackpagination", len(oldEvents), newToken)
+	//fmt.Println("concatBackpagination", len(oldEvents), newToken)
 
 	//for _, event := range oldEvents {
 	//fmt.Println(event)
@@ -138,13 +117,14 @@ func (r *Room) GetNumMembers() int {
 
 func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 	r.activeLock.RLock()
-	for index, event := range r.eventList {
+	eventList := r.eventList
+	r.activeLock.RUnlock()
+
+	for index, event := range eventList {
 		if event.ID == anchor {
-			defer r.activeLock.RUnlock()
 			return index, true
 		}
 	}
-	r.activeLock.RUnlock()
 
 	if backpaginate {
 		if numNew := r.client.backpaginateRoom(r, 100); numNew > 0 {
@@ -255,14 +235,14 @@ func (r *Room) LazyInitialSync() bool {
 	r.backPaginationToken = resp.Messages.Start
 	r.forwardPaginationToken = resp.Messages.End
 
-	utils.ReverseEvents(resp.Messages.Chunk)
+	ReverseEvents(resp.Messages.Chunk)
 	r.eventList = resp.Messages.Chunk
 	r.hasInitialSynced = true
 	return true
 }
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room
-// falling back to room ID instead of "Empty Room" (though this should not be possible with guest-world-readble-rooms)
+// falling back to room ID instead of "Empty Room" (though this should not be possible with guest-world-readable-rooms)
 func (r *Room) GetName() string {
 	r.activeLock.RLock()
 	defer r.activeLock.RUnlock()
