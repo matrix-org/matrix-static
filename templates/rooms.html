@@ -21,8 +21,7 @@
         <thead>
             <tr>
                 <th>Logo</th>
-                <th>Name</th>
-                <th>Primary Alias</th>
+                <th>Name & Alias</th>
                 <th>#Members</th>
                 <th>Topic</th>
             </tr>
@@ -41,12 +40,8 @@
             </td>
             <td>
                 <a href="./room/{{$room.ID}}">
-                    {{$room.GetName}}
-                </a>
-            </td>
-            <td>
-                <a href="./room/{{$room.ID}}">
-                    {{$room.CanonicalAlias}}
+                    <div>{{$room.GetName}}</div>
+                    <sub>{{$room.CanonicalAlias}}</sub>
                 </a>
             </td>
             <td>
