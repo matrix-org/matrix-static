@@ -13,28 +13,26 @@
 
         {{ if eq $message.Type "m.room.message" }}
             <tr>
-                <td class="timestamp">
+                <td class="timestamp" nowrap>
                     <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                 </td>
-                <td>
+                <td nowrap>
                     <a href="./members/{{$message.Sender}}">
 
                         {{ with $memberInfo.AvatarURL }}
-                        <img src="{{MXCtoThumbUrl .}}" />
+                            <img src="{{MXCtoThumbUrl .}}" />
                         {{ else }}
-                        <img src="../../assets/logo_missing.png" />
+                            <img src="../../assets/logo_missing.png" />
                         {{ end }}
 
                         {{ with $message.Content.msgtype }}
-                        {{ if eq . "m.emote" }}* {{ end }}
+                            {{ if eq . "m.emote" }}* {{ end }}
                         {{ end }}
 
                         {{ $memberInfo.GetName }}
                     </a>
                 </td>
-                <td>
-                    {{ mRoomMessage $message }}
-                </td>
+                <td>{{ mRoomMessage $message }}</td>
             </tr>
         {{ else }}
             {{ if eq $message.Type "m.room.member" }}
