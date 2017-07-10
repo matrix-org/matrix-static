@@ -88,17 +88,18 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event) *gomatrix.Event {
 			currentMemberState.DisplayName = displayName
 		}
 	case "m.room.power_levels":
-		switch event.Type {
-		case "m.room.power_levels":
-			// ez convert to powerLevels
-			if data, err := json.Marshal(event.Content); err == nil {
-				var powerLevels PowerLevels
-				err = json.Unmarshal(data, &powerLevels)
-				if err == nil {
-					rs.powerLevels = powerLevels
-				}
+		// ez convert to powerLevels
+		if data, err := json.Marshal(event.Content); err == nil {
+			var powerLevels PowerLevels
+			err = json.Unmarshal(data, &powerLevels)
+			if err == nil {
+				rs.powerLevels = powerLevels
 			}
 		}
+
+	case "m.room.redaction":
+		// These events should not be in the timeline
+		return nil
 	}
 
 	return event
