@@ -45,7 +45,7 @@ type Room struct {
 	// Write Lock when modifying the start of the eventList, Read Lock when wanting to prevent such modification.
 	requestLock sync.RWMutex
 
-	ID string // IMMUTABLE
+	ID string
 
 	backPaginationToken    string
 	forwardPaginationToken string
@@ -53,7 +53,7 @@ type Room struct {
 
 	eventList []gomatrix.Event
 	//eventMap        map[string]*gomatrix.Event
-	latestRoomState RoomState // IMMUTABLE
+	latestRoomState RoomState
 
 	hasInitialSynced bool
 }
@@ -159,7 +159,7 @@ func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event 
 	defer r.activeLock.RUnlock()
 
 	length := len(r.eventList)
-	topIndex := utils.FixRange(0, index+number-offset, length)
+	topIndex := utils.Bound(0, index+number-offset, length)
 
 	return r.eventList[utils.Max(topIndex-number, 0):topIndex]
 }

@@ -27,7 +27,7 @@ func CalcPaginationPage(pageString string, size int) (page int, skip int, end in
 	return
 }
 
-func FixRange(min, val, max int) int {
+func Bound(min, val, max int) int {
 	if val > max {
 		return max
 	}

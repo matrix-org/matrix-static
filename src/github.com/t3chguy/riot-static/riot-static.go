@@ -31,41 +31,6 @@ const PublicRoomsPageSize = 20
 const RoomTimelineSize = 20
 const RoomMembersPageSize = 20
 
-func LoadPublicRooms(client *mxclient.Client, first bool) {
-	fmt.Println("Loading publicRooms")
-	resp, err := client.PublicRooms(0, "", "")
-
-	if err != nil {
-		// Only panic if first one fails, after that we only have outdated data (less important)
-		if first {
-			panic(err)
-		} else {
-			fmt.Println(err)
-		}
-	}
-
-	// Preallocate the maximum capacity possibly needed (if all rooms were world readable)
-	worldReadableRooms := make([]*mxclient.Room, 0, len(resp.Chunk))
-
-	// filter on actually WorldReadable publicRooms
-	for _, x := range resp.Chunk {
-		if !x.WorldReadable {
-			continue
-		}
-
-		var room *mxclient.Room
-		if existingRoom := client.GetRoom(x.RoomId); existingRoom != nil {
-			room = existingRoom
-		} else {
-			room = client.NewRoom(x)
-		}
-
-		// Append world readable r to the filtered list.
-		worldReadableRooms = append(worldReadableRooms, room)
-	}
-	client.SetRoomList(worldReadableRooms)
-}
-
 func main() {
 	client := mxclient.NewClient()
 
@@ -149,7 +114,7 @@ func main() {
 
 			var reachedRoomCreate bool
 			if len(events) > 0 {
-				reachedRoomCreate = events[0].Type == "m.room.create"
+				reachedRoomCreate = events[0].Type == "m.room.create" && *events[0].StateKey == ""
 			}
 
 			c.HTML(http.StatusOK, "room.html", gin.H{
