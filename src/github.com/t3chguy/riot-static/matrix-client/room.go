@@ -71,14 +71,16 @@ func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string)
 	r.backPaginationToken = newToken
 }
 
-func (r *Room) concatForwardpagination(newEvents []gomatrix.Event, newToken string) {
+func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken string) {
 	r.activeLock.Lock()
 	defer r.activeLock.Unlock()
 
 	// TODO this needs to update state, handle redactions and prepend to the eventList
-	//for _, event := range newEvents {
-	//fmt.Println(event)
-	//}
+	for _, event := range newEvents {
+		if appliedEvent := r.latestRoomState.UpdateOnEvent(&event); appliedEvent != nil {
+			r.eventList = append([]gomatrix.Event{*appliedEvent}, r.eventList...)
+		}
+	}
 	//r.eventList = ...
 	r.forwardPaginationToken = newToken
 }
@@ -239,6 +241,19 @@ func (r *Room) LazyInitialSync() bool {
 	r.eventList = resp.Messages.Chunk
 	r.hasInitialSynced = true
 	return true
+}
+
+func (r *Room) LazyUpdateRoom() {
+	r.activeLock.RLock()
+	hasInitialSynced := r.hasInitialSynced
+	r.activeLock.RUnlock()
+
+	if !hasInitialSynced {
+		return
+	}
+
+	fmt.Println("LazyUpdateRoom")
+	r.client.forwardpaginateRoom(r, 0)
 }
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room

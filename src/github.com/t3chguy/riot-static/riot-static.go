@@ -207,6 +207,7 @@ func main() {
 	}
 
 	LoadPublicRooms(true)
+	go startForwardPaginator()
 	go startPublicRoomListTimer()
 	fmt.Println("Listening on port " + port)
 
@@ -228,5 +229,17 @@ func startPublicRoomListTimer() {
 	for {
 		<-t.C
 		LoadPublicRooms(false)
+	}
+}
+
+const LazyForwardPaginateRooms = time.Minute
+
+func startForwardPaginator() {
+	t := time.NewTicker(LazyForwardPaginateRooms)
+	for {
+		<-t.C
+		for _, room := range client.GetRoomList(0, -1) {
+			room.LazyUpdateRoom()
+		}
 	}
 }

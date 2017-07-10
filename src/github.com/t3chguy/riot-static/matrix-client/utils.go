@@ -31,9 +31,13 @@ import "github.com/matrix-org/gomatrix"
 //}
 
 func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
-	newEvents := make([]gomatrix.Event, len(events))
-	for i := 0; i < len(events)/2; i++ {
-		j := len(events) - i - 1
+	length := len(events)
+	if length <= 1 {
+		return events
+	}
+
+	newEvents := make([]gomatrix.Event, length)
+	for i, j := 0, length-1; i < j; i, j = i+1, j-1 {
 		newEvents[i], newEvents[j] = events[j], events[i]
 	}
 	return newEvents

@@ -17,6 +17,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/matrix-org/gomatrix"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/t3chguy/riot-static/matrix-client"

@@ -13,9 +13,7 @@
             <td>Avatar</td>
             <td>
                 {{ with .MemberInfo.AvatarURL }}
-                    <a href="{{MXCtoUrl .}}">
-                        <img src="{{MXCtoThumbUrl .}}" />
-                    </a>
+                    <a href="{{MXCtoUrl .}}"><img src="{{MXCtoThumbUrl .}}" /></a>
                 {{ else }}
                     <img src="../../../assets/logo_missing.png" />
                 {{ end }}

@@ -66,6 +66,24 @@ func (m *Client) backpaginateRoom(room *Room, amount int) int {
 	return len(resp.Chunk)
 }
 
+func (m *Client) forwardpaginateRoom(room *Room, amount int) int {
+	amount = utils.Max(amount, minimumPagination)
+
+	room.requestLock.Lock()
+	defer room.requestLock.Unlock()
+
+	_, forwardPaginationToken := room.GetTokens()
+	resp, err := m.Messages(room.ID, forwardPaginationToken, "", 'f', amount)
+
+	if err != nil {
+		return 0
+	}
+
+	// I would have thought to use resp.Start here but NOEP
+	room.concatForwardPagination(resp.Chunk, resp.End)
+	return len(resp.Chunk)
+}
+
 func NewClient() *Client {
 	var config *gomatrix.RespRegister
 	if _, err := os.Stat("./config.json"); err == nil {

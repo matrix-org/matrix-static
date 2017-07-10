@@ -49,9 +49,13 @@ type RoomState struct {
 	memberMap   map[string]*MemberInfo // include leave?
 }
 
-func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event) {
+func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event) *gomatrix.Event {
 	rs.Lock()
 	defer rs.Unlock()
+
+	if event.StateKey == nil {
+		return event
+	}
 
 	stateKey := *event.StateKey
 
@@ -96,6 +100,8 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event) {
 			}
 		}
 	}
+
+	return event
 }
 
 func (rs *RoomState) CalculateMemberList() []*MemberInfo {

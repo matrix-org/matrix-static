@@ -37,7 +37,7 @@
         {{ else }}
             {{ if eq $message.Type "m.room.member" }}
             <tr>
-                <td class="timestamp">
+                <td class="timestamp" nowrap>
                     <a href="https://matrix.to/#/{{.RoomID}}/{{$message.ID}}">{{$message.Timestamp | time}}</a>
                 </td>
                 <td colspan="2">
