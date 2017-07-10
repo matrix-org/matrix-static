@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"github.com/matrix-org/gomatrix"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/t3chguy/riot-static/matrix-client"
+	"github.com/t3chguy/riot-static/mxclient"
 	"golang.org/x/net/html"
 	"html/template"
 	"strings"
@@ -27,12 +27,12 @@ import (
 )
 
 type MemberEventContent struct {
-	Membership  string               `json:"membership,omitempty"`
-	AvatarURL   matrix_client.MXCURL `json:"avatar_url,omitempty"`
-	DisplayName string               `json:"displayname,omitempty"`
+	Membership  string          `json:"membership,omitempty"`
+	AvatarURL   mxclient.MXCURL `json:"avatar_url,omitempty"`
+	DisplayName string          `json:"displayname,omitempty"`
 }
 
-func InitTemplates(client *matrix_client.Client) *template.Template {
+func InitTemplates(client *mxclient.Client) *template.Template {
 	return template.Must(template.New("main").Funcs(template.FuncMap{
 		"time": func(timestamp int) string {
 			return time.Unix(0, int64(timestamp)*int64(time.Millisecond)).Format("2 Jan 2006 15:04:05")
@@ -49,13 +49,13 @@ func InitTemplates(client *matrix_client.Client) *template.Template {
 		"HTML": func(str string) template.HTML {
 			return template.HTML(str)
 		},
-		"MXCtoThumbUrl": func(mxc matrix_client.MXCURL) template.URL {
+		"MXCtoThumbUrl": func(mxc mxclient.MXCURL) template.URL {
 			return template.URL(client.MXCToThumbUrl(mxc))
 		},
-		"MXCtoUrl": func(mxc matrix_client.MXCURL) template.URL {
+		"MXCtoUrl": func(mxc mxclient.MXCURL) template.URL {
 			return template.URL(client.MXCToUrl(mxc))
 		},
-		"mRoomMember": func(room *matrix_client.Room, event *gomatrix.Event) interface{} {
+		"mRoomMember": func(room *mxclient.Room, event *gomatrix.Event) interface{} {
 			// join -> join = avatar/display name
 			// join -> quit = kick/leave
 			// * -> join = join

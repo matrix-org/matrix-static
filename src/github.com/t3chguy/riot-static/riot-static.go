@@ -17,7 +17,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/t3chguy/riot-static/matrix-client"
+	"github.com/t3chguy/riot-static/mxclient"
 	"github.com/t3chguy/riot-static/utils"
 	"net/http"
 	"os"
@@ -31,7 +31,7 @@ const PublicRoomsPageSize = 20
 const RoomTimelineSize = 20
 const RoomMembersPageSize = 20
 
-func LoadPublicRooms(client *matrix_client.Client, first bool) {
+func LoadPublicRooms(client *mxclient.Client, first bool) {
 	fmt.Println("Loading publicRooms")
 	resp, err := client.PublicRooms(0, "", "")
 
@@ -45,7 +45,7 @@ func LoadPublicRooms(client *matrix_client.Client, first bool) {
 	}
 
 	// Preallocate the maximum capacity possibly needed (if all rooms were world readable)
-	worldReadableRooms := make([]*matrix_client.Room, 0, len(resp.Chunk))
+	worldReadableRooms := make([]*mxclient.Room, 0, len(resp.Chunk))
 
 	// filter on actually WorldReadable publicRooms
 	for _, x := range resp.Chunk {
@@ -53,7 +53,7 @@ func LoadPublicRooms(client *matrix_client.Client, first bool) {
 			continue
 		}
 
-		var room *matrix_client.Room
+		var room *mxclient.Room
 		if existingRoom := client.GetRoom(x.RoomId); existingRoom != nil {
 			room = existingRoom
 		} else {
@@ -67,7 +67,7 @@ func LoadPublicRooms(client *matrix_client.Client, first bool) {
 }
 
 func main() {
-	client := matrix_client.NewClient()
+	client := mxclient.NewClient()
 
 	templates := InitTemplates(client)
 
@@ -111,7 +111,7 @@ func main() {
 		})
 
 		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
-			room := c.MustGet("Room").(*matrix_client.Room)
+			room := c.MustGet("Room").(*mxclient.Room)
 
 			pageSize := RoomTimelineSize
 			eventID := c.DefaultQuery("anchor", "")
@@ -126,12 +126,12 @@ func main() {
 
 			events, eventsErr := room.GetEventPage(eventID, offset, pageSize)
 
-			if eventsErr != matrix_client.RoomEventsFine {
+			if eventsErr != mxclient.RoomEventsFine {
 				var errString string
 				switch eventsErr {
-				case matrix_client.RoomEventsCouldNotFindEvent:
+				case mxclient.RoomEventsCouldNotFindEvent:
 					errString = "Given up while looking for given event."
-				case matrix_client.RoomEventsUnknownError:
+				case mxclient.RoomEventsUnknownError:
 					errString = "Unknown error encountered."
 				}
 				c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
@@ -145,7 +145,7 @@ func main() {
 				eventID = events[0].ID
 			}
 
-			events = matrix_client.ReverseEventsCopy(events)
+			events = mxclient.ReverseEventsCopy(events)
 
 			var reachedRoomCreate bool
 			if len(events) > 0 {
@@ -165,13 +165,13 @@ func main() {
 
 		roomRouter.GET("/:roomID/servers", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "room_servers.html", gin.H{
-				"Room": c.MustGet("Room").(*matrix_client.Room),
+				"Room": c.MustGet("Room").(*mxclient.Room),
 			})
 		})
 
 		roomRouter.GET("/:roomID/members", func(c *gin.Context) {
 			page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
-			room := c.MustGet("Room").(*matrix_client.Room)
+			room := c.MustGet("Room").(*mxclient.Room)
 
 			c.HTML(http.StatusOK, "room_members.html", gin.H{
 				"Room":       room,
@@ -181,7 +181,7 @@ func main() {
 		})
 
 		roomRouter.GET("/:roomID/members/:mxid", func(c *gin.Context) {
-			room := c.MustGet("Room").(*matrix_client.Room)
+			room := c.MustGet("Room").(*mxclient.Room)
 			mxid := c.Param("mxid")
 
 			if memberInfo, exists := room.GetMember(mxid); exists {
@@ -196,7 +196,7 @@ func main() {
 
 		roomRouter.GET("/:roomID/power_levels", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "power_levels.html", gin.H{
-				"Room": c.MustGet("Room").(*matrix_client.Room),
+				"Room": c.MustGet("Room").(*mxclient.Room),
 			})
 		})
 	}
@@ -224,7 +224,7 @@ func main() {
 
 const LoadPublicRoomsPeriod = time.Hour
 
-func startPublicRoomListTimer(client *matrix_client.Client) {
+func startPublicRoomListTimer(client *mxclient.Client) {
 	t := time.NewTicker(LoadPublicRoomsPeriod)
 	for {
 		<-t.C
@@ -234,7 +234,7 @@ func startPublicRoomListTimer(client *matrix_client.Client) {
 
 const LazyForwardPaginateRooms = time.Minute
 
-func startForwardPaginator(client *matrix_client.Client) {
+func startForwardPaginator(client *mxclient.Client) {
 	t := time.NewTicker(LazyForwardPaginateRooms)
 	for {
 		<-t.C
