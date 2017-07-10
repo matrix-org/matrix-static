@@ -31,7 +31,7 @@ const PublicRoomsPageSize = 20
 const RoomTimelineSize = 20
 const RoomMembersPageSize = 20
 
-func LoadPublicRooms(first bool) {
+func LoadPublicRooms(client *matrix_client.Client, first bool) {
 	fmt.Println("Loading publicRooms")
 	resp, err := client.PublicRooms(0, "", "")
 
@@ -66,14 +66,14 @@ func LoadPublicRooms(first bool) {
 	client.SetRoomList(worldReadableRooms)
 }
 
-var client *matrix_client.Client
-
 func main() {
-	client = matrix_client.NewClient()
+	client := matrix_client.NewClient()
+
+	templates := InitTemplates(client)
 
 	router := gin.Default()
-	router.SetHTMLTemplate(tpl)
-	router.Static("/assets", "./assets")
+	router.SetHTMLTemplate(templates)
+	router.Static("/img", "./assets/img")
 
 	router.GET("/", func(c *gin.Context) {
 		page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), PublicRoomsPageSize)
@@ -206,9 +206,9 @@ func main() {
 		port = "8000"
 	}
 
-	LoadPublicRooms(true)
-	go startForwardPaginator()
-	go startPublicRoomListTimer()
+	LoadPublicRooms(client, true)
+	go startForwardPaginator(client)
+	go startPublicRoomListTimer(client)
 	fmt.Println("Listening on port " + port)
 
 	srv := &http.Server{
@@ -224,17 +224,17 @@ func main() {
 
 const LoadPublicRoomsPeriod = time.Hour
 
-func startPublicRoomListTimer() {
+func startPublicRoomListTimer(client *matrix_client.Client) {
 	t := time.NewTicker(LoadPublicRoomsPeriod)
 	for {
 		<-t.C
-		LoadPublicRooms(false)
+		LoadPublicRooms(client, false)
 	}
 }
 
 const LazyForwardPaginateRooms = time.Minute
 
-func startForwardPaginator() {
+func startForwardPaginator(client *matrix_client.Client) {
 	t := time.NewTicker(LazyForwardPaginateRooms)
 	for {
 		<-t.C

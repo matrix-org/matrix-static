@@ -79,7 +79,7 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) int {
 		return 0
 	}
 
-	// I would have thought to use resp.Start here but NOEP
+	// I would have thought to use resp.Start here but NOPE
 	room.concatForwardPagination(resp.Chunk, resp.End)
 	return len(resp.Chunk)
 }
