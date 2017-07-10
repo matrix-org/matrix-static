@@ -31,21 +31,9 @@ import "github.com/matrix-org/gomatrix"
 //}
 
 func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
-	length := len(events)
-	if length <= 1 {
-		return events
-	}
-
-	newEvents := make([]gomatrix.Event, length)
-	for i, j := 0, length-1; i < j; i, j = i+1, j-1 {
-		newEvents[i], newEvents[j] = events[j], events[i]
+	var newEvents []gomatrix.Event
+	for i := len(events) - 1; i >= 0; i-- {
+		newEvents = append(newEvents, events[i])
 	}
 	return newEvents
-}
-
-func ReverseEvents(events []gomatrix.Event) {
-	for i := 0; i < len(events)/2; i++ {
-		j := len(events) - i - 1
-		events[i], events[j] = events[j], events[i]
-	}
 }

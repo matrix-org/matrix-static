@@ -237,8 +237,7 @@ func (r *Room) LazyInitialSync() bool {
 	r.backPaginationToken = resp.Messages.Start
 	r.forwardPaginationToken = resp.Messages.End
 
-	ReverseEvents(resp.Messages.Chunk)
-	r.eventList = resp.Messages.Chunk
+	r.eventList = ReverseEventsCopy(resp.Messages.Chunk)
 	r.hasInitialSynced = true
 	return true
 }
