@@ -1,0 +1,23 @@
+{% code
+
+type BenchRow struct {
+	ID int
+	Message string
+	Print bool
+}
+
+%}
+
+{% func BenchPage(rows []BenchRow) %}<html>
+	<head><title>test</title></head>
+	<body>
+		<ul>
+		{% for _, row := range rows %}
+			{% if row.Print %}
+				<li>ID={%d row.ID %}, Message={%s row.Message %}</li>
+			{% endif %}
+		{% endfor %}
+		</ul>
+	</body>
+</html>
+{% endfunc %}

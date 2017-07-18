@@ -1,0 +1,73 @@
+Simple pagination helpers, empty string means no such pagination possible
+Makes a lot of assumptions specific to all but one of the paginatable pages.
+AllPage = page 0
+There is always a PrevPage if curPage > 1
+Pages are ints and can be +/- 1 to get siblings
+{% code type Paginator interface {
+    CurPage() int
+    HasNextPage() bool
+    BaseUrl() string
+} %}
+
+{% func PaginatorCurPage(p Paginator) %}
+    {% code curPage := p.CurPage() %}
+    <div>
+        {% if curPage > 0 %}
+            Page {% space %}{%d curPage %}
+        {% else %}
+            All Pages
+        {% endif %}
+    </div>
+{% endfunc %}
+
+{% func PaginatorFooter(p Paginator) %}
+    {% code
+        curPage := p.CurPage()
+        baseUrl := p.BaseUrl()
+    %}
+
+    <footer>
+        <span style="float: left;">
+            <span>
+                {% if curPage > 1 %}
+                    <a href="{%s baseUrl %}?page={%d curPage -1 %}">Previous Page</a>
+                {% elseif curPage == 1 %}
+                    <a href="{%s baseUrl %}?page=0">See All</a>
+                {% endif %}
+            </span>
+            {% space %}
+            <span>
+                {% if curPage == 0 %}
+                    <a href="{%s baseUrl %}?page=1">First Page</a>
+                {% elseif p.HasNextPage() %}
+                    <a href="{%s baseUrl %}?page={%d curPage +1 %}">Next Page</a>
+                {% else %}
+                    <a href="{%s baseUrl %}?page=0">See All</a>
+                {% endif %}
+            </span>
+        </span>
+        {% if baseUrl != "./" %}
+            <span style="float: right;">
+                <a href="./">Back to Room List</a>
+            </span>
+        {% endif %}
+        <span style="clear: both;"></span>
+    </footer>
+{% endfunc %}
+
+{% func PaginatorHeadLinks(p Paginator) %}
+    {% code
+        curPage := p.CurPage()
+        baseUrl := p.BaseUrl()
+    %}
+
+    <link rel="canonical" href="{%s baseUrl %}?page=0">
+
+    {% if curPage > 1 %}
+        <link rel="prev" href="{%s baseUrl %}?page={%d curPage -1 %}">
+    {% endif %}
+
+    {% if p.HasNextPage() %}
+        <link rel="next" href="{%s baseUrl %}?page={%d curPage +1 %}">
+    {% endif %}
+{% endfunc %}

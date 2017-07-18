@@ -15,10 +15,10 @@
 package mxclient
 
 import (
-	"github.com/matrix-org/gomatrix"
 	"net/url"
 	"path"
 	"regexp"
+	"strconv"
 )
 
 // mxcRegex allows splitting an mxc into a serverName and mediaId
@@ -30,10 +30,22 @@ import (
 // "invalidMxc://whatever" => [] (Invalid MXC Caught)
 var mxcRegex = regexp.MustCompile(`mxc://(.+?)/(.+?)(?:#.+)?$`)
 
-type MXCURL string
+type MXCURL struct {
+	string
+	homeserverURL string
+}
+
+func NewMXCURL(url string, baseUrl string) *MXCURL {
+	return &MXCURL{url, baseUrl}
+}
+
+func (m *MXCURL) IsValid() bool {
+	ok, _, _ := m.split()
+	return ok
+}
 
 func (m *MXCURL) split() (ok bool, serverName string, mediaId string) {
-	mxc := string(*m)
+	mxc := m.string
 	matches := mxcRegex.FindStringSubmatch(mxc)
 
 	ok = true
@@ -46,31 +58,36 @@ func (m *MXCURL) split() (ok bool, serverName string, mediaId string) {
 	return
 }
 
-func (m *MXCURL) mapMxcUrl(cli *gomatrix.Client, kind string) string {
+func (m *MXCURL) mapMxcUrl(kind string) *url.URL {
 	ok, serverName, mediaId := m.split()
 	if !ok {
-		return ""
+		return nil
 	}
 
-	hsURL, _ := url.Parse(cli.HomeserverURL.String())
+	hsURL, _ := url.Parse(m.homeserverURL)
 	parts := []string{hsURL.Path}
 	parts = append(parts, "_matrix", "media", "r0", kind, serverName, mediaId)
 	hsURL.Path = path.Join(parts...)
-
-	q := hsURL.Query()
-	q.Set("width", "50")
-	q.Set("height", "50")
-	q.Set("method", "crop")
-
-	hsURL.RawQuery = q.Encode()
-
-	return hsURL.String()
+	return hsURL
 }
 
-func (m *Client) MXCToThumbUrl(mxcurl MXCURL) string {
-	return mxcurl.mapMxcUrl(m.Client, "thumbnail")
+func (m *MXCURL) ToThumbURL(width, height int, method string) string {
+	mediaUrl := m.mapMxcUrl("thumbnail")
+
+	if mediaUrl == nil {
+		return ""
+	}
+
+	q := mediaUrl.Query()
+	q.Set("width", strconv.Itoa(width))
+	q.Set("height", strconv.Itoa(height))
+	q.Set("method", method)
+
+	mediaUrl.RawQuery = q.Encode()
+
+	return mediaUrl.String()
 }
 
-func (m *Client) MXCToUrl(mxcurl MXCURL) string {
-	return mxcurl.mapMxcUrl(m.Client, "download")
+func (m *MXCURL) ToURL() string {
+	return m.mapMxcUrl("download").String()
 }

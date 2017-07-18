@@ -15,41 +15,29 @@
 package mxclient
 
 import (
-	"fmt"
+	"errors"
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/riot-static/utils"
-	"sort"
-	"strings"
-	"sync"
-	"time"
 )
 
-type RoomEventErrorEnum int
-
-const (
-	RoomEventsCouldNotFindEvent RoomEventErrorEnum = iota
-	RoomEventsUnknownError
-	RoomEventsFine
-)
+type RoomInfo struct {
+	RoomID          string
+	Name            string
+	Topic           string
+	AvatarURL       MXCURL
+	NumMemberEvents int
+	NumMembers      int
+	NumServers      int
+}
 
 type Room struct {
-	client *Client // each room has a client that is responsible for its state being up to date
-
-	// Active lock is called for the duration of a Read/Write on any field of the room.
-	// This lock may be Locked/Unlocked several times in a request, so may be hit by inconsistent data,
-	// for this reason requests which may move the anchor point of our eventList/latestRoomState Lock requestLock (TOO?)
-	activeLock sync.RWMutex
-
-	// Request lock is called for the duration of a request on the room object
-	// To prevent the CRON forward pagination from changing the 0 point of a timeline (and mangling latestRoomState)
-	// Write Lock when modifying the start of the eventList, Read Lock when wanting to prevent such modification.
-	requestLock sync.RWMutex
+	// each room has a client that is responsible for its state being up to date
+	client *Client
 
 	ID string
 
 	backPaginationToken    string
 	forwardPaginationToken string
-	lastForwardPagination  time.Time
 
 	eventList []gomatrix.Event
 	//eventMap        map[string]*gomatrix.Event
@@ -58,78 +46,50 @@ type Room struct {
 	hasInitialSynced bool
 }
 
+func (r *Room) ForwardPaginateRoom() {
+	r.client.forwardpaginateRoom(r, 0)
+}
+
 func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string) {
-	r.activeLock.Lock()
-	defer r.activeLock.Unlock()
+	for _, event := range oldEvents {
+		if event.Type == "m.room.redaction" {
+			// The server has already handled these for us
+			// so just consume them to prevent them blanking on timeline
+			continue
+		}
 
-	//fmt.Println("concatBackpagination", len(oldEvents), newToken)
-
-	//for _, event := range oldEvents {
-	//fmt.Println(event)
-	//}
-	r.eventList = append(r.eventList, oldEvents...)
+		r.eventList = append(r.eventList, event)
+	}
 	r.backPaginationToken = newToken
 }
 
 func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken string) {
-	r.activeLock.Lock()
-	defer r.activeLock.Unlock()
-
-	// TODO this needs to update state, handle redactions and prepend to the eventList
 	for _, event := range newEvents {
-		if appliedEvent := r.latestRoomState.UpdateOnEvent(&event); appliedEvent != nil {
-			r.eventList = append([]gomatrix.Event{*appliedEvent}, r.eventList...)
+		if event.Type == "m.room.redaction" {
+			// TODO Handle redaction and skip adding to TL
+			// Might want an Event Map->*Event so we can skip an O(n) task
+			continue
 		}
+
+		r.latestRoomState.UpdateOnEvent(&event, false)
+		r.eventList = append([]gomatrix.Event{event}, r.eventList...)
 	}
-	//r.eventList = ...
 	r.forwardPaginationToken = newToken
 }
 
 func (r *Room) GetTokens() (string, string) {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
 	return r.backPaginationToken, r.forwardPaginationToken
 }
 
-func (r *Room) GetMemberList(start int, end int) []*MemberInfo {
-	length := r.GetNumMembers()
-
-	if end == 0 {
-		return r.latestRoomState.memberList[utils.Min(start, length):]
-	}
-
-	return r.latestRoomState.memberList[utils.Min(start, length):utils.Min(end, length)]
-}
-
-func (r *Room) GetMemberIgnore(mxid string) (memberInfo MemberInfo) {
-	memberInfo, _ = r.GetMember(mxid)
-	return
-}
-
-func (r *Room) GetMember(mxid string) (memberInfo MemberInfo, exists bool) {
-	if memberInfoPointer := r.latestRoomState.memberMap[mxid]; memberInfoPointer != nil {
-		return *memberInfoPointer, true
-	}
-	return MemberInfo{}, false
-}
-
-func (r *Room) GetNumMembers() int {
-	return len(r.latestRoomState.memberList)
-}
-
 func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
-	r.activeLock.RLock()
-	eventList := r.eventList
-	r.activeLock.RUnlock()
-
-	for index, event := range eventList {
+	for index, event := range r.eventList {
 		if event.ID == anchor {
 			return index, true
 		}
 	}
 
 	if backpaginate {
-		if numNew := r.client.backpaginateRoom(r, 100); numNew > 0 {
+		if numNew, _ := r.client.backpaginateRoom(r, 100); numNew > 0 {
 			return r.findEventIndex(anchor, false)
 		}
 	}
@@ -139,49 +99,43 @@ func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 const overcompensatePaginationQuantity = 32
 
 func (r *Room) getBackwardEventRange(index, offset, number int) []gomatrix.Event {
-	r.activeLock.RLock()
 	length := len(r.eventList)
-	r.activeLock.RUnlock()
 
 	if delta := index + offset + number + overcompensatePaginationQuantity; delta >= length {
-		length += r.client.backpaginateRoom(r, delta-length)
+		if numNew, err := r.client.backpaginateRoom(r, delta-length); err == nil {
+			length += numNew
+		}
 	}
 	index = utils.Min(index+offset, length)
-
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
 
 	return r.eventList[index:utils.Min(index+number, length)]
 }
 
 func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
-
 	length := len(r.eventList)
 	topIndex := utils.Bound(0, index+number-offset, length)
 
 	return r.eventList[utils.Max(topIndex-number, 0):topIndex]
 }
 
-func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, state RoomEventErrorEnum) {
-	r.requestLock.RLock()
-	defer r.requestLock.RUnlock()
+func (r *Room) GetState() RoomState {
+	return r.latestRoomState
+}
 
+func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, err error) {
 	var anchorIndex int
-
 	if anchor != "" {
 		if index, found := r.findEventIndex(anchor, false); found {
 			anchorIndex = index
 		} else {
-			return []gomatrix.Event{}, RoomEventsCouldNotFindEvent
+			return []gomatrix.Event{}, errors.New("Could not find event")
 		}
 	}
 
-	if offset >= 0 { // backwards
-		return r.getBackwardEventRange(anchorIndex, offset, pageSize), RoomEventsFine
-	} else { // forwards
-		return r.getForwardEventRange(anchorIndex, -offset, pageSize), RoomEventsFine
+	if offset >= 0 {
+		return r.getBackwardEventRange(anchorIndex, offset, pageSize), nil
+	} else {
+		return r.getForwardEventRange(anchorIndex, -offset, pageSize), nil
 	}
 
 	return
@@ -189,154 +143,45 @@ func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []g
 
 const RoomInitialSyncLimit = 256
 
-func (m *Client) NewRoom(publicRoomInfo gomatrix.PublicRoomsChunk) *Room {
-	newRoom := &Room{
-		client: m,
-		ID:     publicRoomInfo.RoomId,
-		latestRoomState: RoomState{
-			Name:             publicRoomInfo.Name,
-			topic:            publicRoomInfo.Topic,
-			AvatarURL:        MXCURL(publicRoomInfo.AvatarUrl),
-			CanonicalAlias:   publicRoomInfo.CanonicalAlias,
-			Aliases:          publicRoomInfo.Aliases,
-			memberMap:        make(map[string]*MemberInfo),
-			NumJoinedMembers: publicRoomInfo.NumJoinedMembers,
-		},
-		lastForwardPagination: time.Now(),
-		//eventMap: make(map[string]*gomatrix.Event),
-		//eventList: make([]*gomatrix.Event, 0, RoomInitialSyncLimit),
-	}
-
-	//newRoom.latestRoomState.CalculateMemberList()
-	return newRoom
-}
-
-func (r *Room) LazyInitialSync() bool {
-	r.activeLock.RLock()
-	hasInitialSynced := r.hasInitialSynced
-	r.activeLock.RUnlock()
-
-	if hasInitialSynced {
-		return true
-	}
-
-	resp, err := r.client.RoomInitialSync(r.ID, RoomInitialSyncLimit)
+func (m *Client) NewRoom(roomID string) (*Room, error) {
+	resp, err := m.RoomInitialSync(roomID, RoomInitialSyncLimit)
 
 	if err != nil {
-		fmt.Println(err)
-		return false
+		return nil, err
 	}
 
-	r.activeLock.Lock()
-	defer r.activeLock.Unlock()
-
-	for _, event := range resp.State {
-		r.latestRoomState.UpdateOnEvent(&event)
-	}
-
-	r.backPaginationToken = resp.Messages.Start
-	r.forwardPaginationToken = resp.Messages.End
-
-	r.eventList = ReverseEventsCopy(resp.Messages.Chunk)
-	r.hasInitialSynced = true
-	return true
-}
-
-func (r *Room) LazyUpdateRoom() {
-	r.activeLock.RLock()
-	hasInitialSynced := r.hasInitialSynced
-	r.activeLock.RUnlock()
-
-	if !hasInitialSynced {
-		return
-	}
-
-	fmt.Println("LazyUpdateRoom")
-	r.client.forwardpaginateRoom(r, 0)
-}
-
-// Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room
-// falling back to room ID instead of "Empty Room" (though this should not be possible with guest-world-readable-rooms)
-func (r *Room) GetName() string {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
-
-	if r.latestRoomState.Name != "" {
-		return r.latestRoomState.Name
-	}
-	if r.latestRoomState.CanonicalAlias != "" {
-		return r.latestRoomState.CanonicalAlias
-	}
-	if len(r.latestRoomState.Aliases) > 0 {
-		return r.latestRoomState.Aliases[0]
-	}
-
-	return r.ID
-}
-
-func (r *Room) NumJoinedMembers() int {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
-	return r.latestRoomState.NumJoinedMembers
-}
-
-func (r *Room) CanonicalAlias() string {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
-
-	if r.latestRoomState.CanonicalAlias != "" {
-		return r.latestRoomState.CanonicalAlias
-	}
-	if len(r.latestRoomState.Aliases) > 0 {
-		return r.latestRoomState.Aliases[0]
-	}
-	return ""
-}
-func (r *Room) AvatarUrl() MXCURL {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
-	return r.latestRoomState.AvatarURL
-}
-func (r *Room) Topic() string {
-	r.activeLock.RLock()
-	defer r.activeLock.RUnlock()
-	return r.latestRoomState.topic
-}
-
-type Pair struct {
-	Key   string
-	Value int
-}
-
-type PairList []Pair
-
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-
-func (r *Room) GetServers() PairList {
-	serverMap := make(map[string]int)
-	for _, member := range r.latestRoomState.CalculateMemberList() {
-		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
-			serverMap[mxidSplit[1]]++
+	// filter out m.room.redactions and reverse ordering at once.
+	var filteredEventList []gomatrix.Event
+	for _, event := range resp.Messages.Chunk {
+		if event.Type != "m.room.redaction" {
+			filteredEventList = append([]gomatrix.Event{event}, filteredEventList...)
 		}
 	}
 
-	serverList := make(PairList, 0, len(serverMap))
-	for server, num := range serverMap {
-		serverList = append(serverList, Pair{server, num})
+	newRoom := &Room{
+		client: m,
+		ID:     roomID,
+		forwardPaginationToken: resp.Messages.End,
+		backPaginationToken:    resp.Messages.Start,
+		eventList:              filteredEventList,
+		latestRoomState:        *NewRoomState(m),
 	}
 
-	sort.Sort(sort.Reverse(serverList))
-	return serverList
+	for _, event := range resp.State {
+		newRoom.latestRoomState.UpdateOnEvent(&event, true)
+	}
+
+	return newRoom, nil
 }
 
-func (r *Room) GetMembers() []*MemberInfo {
-	return r.latestRoomState.CalculateMemberList()
-}
-
-func (r *Room) GetNumMemberEvents() int {
-	r.latestRoomState.RLock()
-	defer r.latestRoomState.RUnlock()
-	return len(r.latestRoomState.memberMap)
+func (r *Room) RoomInfo() RoomInfo {
+	return RoomInfo{
+		r.ID,
+		r.latestRoomState.CalculateName(),
+		r.latestRoomState.Topic,
+		r.latestRoomState.AvatarURL,
+		r.latestRoomState.GetNumMemberEvents(),
+		r.latestRoomState.NumMembers(),
+		len(r.latestRoomState.Servers()),
+	}
 }

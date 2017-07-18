@@ -1,0 +1,31 @@
+// Main page template. Implements BasePage methods.
+
+{% import "github.com/valyala/fasthttp" %}
+
+{% code
+type MainPage struct {
+	CTX *fasthttp.RequestCtx
+}
+%}
+
+
+{% func (p *MainPage) Title() %}
+	This is the main page
+{% endfunc %}
+
+
+{% func (p *MainPage) Body() %}
+	<h1>Main page</h1>
+	<div>
+		Click links below:
+		<ul>
+			<li><a href="/table?rowsCount=42">Table page</a></li>
+			<li><a href="/unknown-page">Error page</a></li>
+		</ul>
+	</div>
+	<div>
+		Some info about you:<br/>
+		IP: <b>{%s p.CTX.RemoteIP().String() %}</b><br/>
+		User-Agent: <b>{%z p.CTX.UserAgent() %}</b><br/>
+	</div>
+{% endfunc %}

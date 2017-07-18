@@ -1,0 +1,49 @@
+Templates for marshal_timing_test.go
+
+{% code
+type MarshalRow struct {
+	Msg string
+	N int
+}
+
+type MarshalData struct {
+	Foo int
+	Bar string
+	Rows []MarshalRow
+}
+%}
+
+// JSON marshaling
+{% stripspace %}
+{% func (d *MarshalData) JSON() %}
+{
+	"Foo": {%d d.Foo %},
+	"Bar": {%q= d.Bar %},
+	"Rows":[
+		{% for i, r := range d.Rows %}
+			{
+				"Msg": {%q= r.Msg %},
+				"N": {%d r.N %}
+			}
+			{% if i + 1 < len(d.Rows) %},{% endif %}
+		{% endfor %}
+	]
+}
+{% endfunc %}
+{% endstripspace %}
+
+// XML marshaling
+{% stripspace %}
+{% func (d *MarshalData) XML() %}
+<MarshalData>
+	<Foo>{%d d.Foo %}</Foo>
+	<Bar>{%s d.Bar %}</Bar>
+	{% for _, r := range d.Rows %}
+		<Rows>
+			<Msg>{%s r.Msg %}</Msg>
+			<N>{%d r.N %}</N>
+		</Rows>
+	{% endfor %}
+</MarshalData>
+{% endfunc %}
+{% endstripspace %}

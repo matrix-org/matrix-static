@@ -27,6 +27,33 @@
 			"path": "/proto"
 		},
 		{
+			"importpath": "github.com/klauspost/compress/flate",
+			"repository": "https://github.com/klauspost/compress",
+			"revision": "f3dce52e0576655d55fd69e74b63da96ad1108f3",
+			"branch": "master",
+			"path": "/flate"
+		},
+		{
+			"importpath": "github.com/klauspost/compress/gzip",
+			"repository": "https://github.com/klauspost/compress",
+			"revision": "f3dce52e0576655d55fd69e74b63da96ad1108f3",
+			"branch": "master",
+			"path": "/gzip"
+		},
+		{
+			"importpath": "github.com/klauspost/compress/zlib",
+			"repository": "https://github.com/klauspost/compress",
+			"revision": "f3dce52e0576655d55fd69e74b63da96ad1108f3",
+			"branch": "master",
+			"path": "/zlib"
+		},
+		{
+			"importpath": "github.com/klauspost/cpuid",
+			"repository": "https://github.com/klauspost/cpuid",
+			"revision": "09cded8978dc9e80714c4d85b0322337b0a1e5e0",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/manucorporat/sse",
 			"repository": "https://github.com/manucorporat/sse",
 			"revision": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d",
@@ -41,7 +68,7 @@
 		{
 			"importpath": "github.com/matrix-org/gomatrix",
 			"repository": "https://github.com/t3chguy/gomatrix",
-			"revision": "4b4b248451359fb090788f9163c45bdb0f0be64e",
+			"revision": "c709943824ff40cbeb45238e30dcb931ee04f635",
 			"branch": "master"
 		},
 		{
@@ -55,6 +82,31 @@
 			"repository": "https://github.com/microcosm-cc/bluemonday",
 			"revision": "e79763773ab6222ca1d5a7cbd9d62d83c1f77081",
 			"branch": "master"
+		},
+		{
+			"importpath": "github.com/valyala/bytebufferpool",
+			"repository": "https://github.com/valyala/bytebufferpool",
+			"revision": "e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/valyala/fasthttp",
+			"repository": "https://github.com/valyala/fasthttp",
+			"revision": "52a0993b96f032dea57fa93081d7c0a1aa906430",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/valyala/quicktemplate",
+			"repository": "https://github.com/valyala/quicktemplate",
+			"revision": "6abbd1b822699a4925c76df1740b266f17c2c9ae",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/valyala/quicktemplate/qtc",
+			"repository": "https://github.com/valyala/quicktemplate",
+			"revision": "6abbd1b822699a4925c76df1740b266f17c2c9ae",
+			"branch": "master",
+			"path": "/qtc"
 		},
 		{
 			"importpath": "golang.org/x/net/context",

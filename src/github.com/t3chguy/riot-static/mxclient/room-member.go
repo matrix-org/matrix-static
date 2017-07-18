@@ -31,7 +31,7 @@ func (powerLevel PowerLevel) String() string {
 	}
 }
 
-func (powerLevel PowerLevel) ToInt() int {
+func (powerLevel PowerLevel) Int() int {
 	return int(powerLevel)
 }
 

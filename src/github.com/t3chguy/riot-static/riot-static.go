@@ -18,151 +18,171 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/t3chguy/riot-static/mxclient"
+	"github.com/t3chguy/riot-static/sanitizer"
+	"github.com/t3chguy/riot-static/templates"
 	"github.com/t3chguy/riot-static/utils"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 )
 
 // TODO Cache memberList+serverList until it changes
 
 const PublicRoomsPageSize = 20
-const RoomTimelineSize = 20
+const RoomTimelineSize = 30
 const RoomMembersPageSize = 20
+
+const NumWorkers uint32 = 32
 
 func main() {
 	client := mxclient.NewClient()
+	worldReadableRooms := client.NewWorldReadableRooms()
 
-	templates := InitTemplates(client)
+	workers := NewWorkers(NumWorkers, client)
+	sanitizer := sanitizer.InitSanitizer()
 
 	router := gin.Default()
-	router.SetHTMLTemplate(templates)
 	router.Static("/img", "./assets/img")
 
 	router.GET("/", func(c *gin.Context) {
-		page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), PublicRoomsPageSize)
-		c.HTML(http.StatusOK, "rooms.html", gin.H{
-			"Rooms": client.GetRoomList(skip, end),
-			"Page":  page,
+		page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
+		templates.WritePageTemplate(c.Writer, &templates.RoomsPage{
+			Rooms:    worldReadableRooms.GetPage(page, PublicRoomsPageSize),
+			PageSize: PublicRoomsPageSize,
+			Page:     page,
 		})
 	})
 
-	roomRouter := router.Group("/room/")
+	roomRouter := router.Group("/room/:roomID/")
 	{
-		// Load room into request object so that we can do any clean up etc here
+		// Load room worker into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
+			worker := workers.GetWorkerForRoomID(roomID)
 
-			if room := client.GetRoom(roomID); room != nil {
-				if room.LazyInitialSync() {
-					c.Set("Room", room)
-					c.Next()
-				} else {
-					c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
-						"Error": "Failed to load room.",
-						"Room":  room,
-					})
-					c.Abort()
-				}
-			} else {
+			worker.Queue <- &RoomInitialSyncJob{roomID}
+			resp := (<-worker.Output).(*RoomInitialSyncResp)
+
+			if resp.err != nil {
 				c.String(http.StatusNotFound, "Room Not Found")
 				c.Abort()
+				return
 			}
+
+			c.Set("RoomWorker", worker)
+			c.Next()
+
+			//	c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
+			//		"Error": "Failed to load room.",
+			//		"Room":  room,
+			//	})
 		})
 
-		roomRouter.GET("/:roomID/", func(c *gin.Context) {
-			c.Redirect(http.StatusTemporaryRedirect, "chat")
-		})
-
-		roomRouter.GET("/:roomID/chat", func(c *gin.Context) {
-			room := c.MustGet("Room").(*mxclient.Room)
-
-			pageSize := RoomTimelineSize
+		roomRouter.GET("/", func(c *gin.Context) {
+			worker := c.MustGet("RoomWorker").(Worker)
+			offset := utils.StrToIntDefault(c.DefaultQuery("offset", "0"), 0)
 			eventID := c.DefaultQuery("anchor", "")
 
-			var offset int
-			if offsetStr, exists := c.GetQuery("offset"); exists {
-				num, err := strconv.Atoi(offsetStr)
-				if err == nil {
-					offset = num
-				}
-			}
+			worker.Queue <- Job(RoomEventsJob{
+				c.Param("roomID"),
+				eventID,
+				offset,
+				RoomTimelineSize,
+			})
 
-			events, eventsErr := room.GetEventPage(eventID, offset, pageSize)
-
-			if eventsErr != mxclient.RoomEventsFine {
-				var errString string
-				switch eventsErr {
-				case mxclient.RoomEventsCouldNotFindEvent:
-					errString = "Given up while looking for given event."
-				case mxclient.RoomEventsUnknownError:
-					errString = "Unknown error encountered."
-				}
-				c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
-					"Error": errString,
-					"Room":  room,
+			jobResult := (<-worker.Output).(RoomEventsResp)
+			if jobResult.err != nil {
+				templates.WritePageTemplate(c.Writer, &templates.RoomErrorPage{
+					Error:    "Some error has occurred",
+					RoomInfo: jobResult.RoomInfo,
 				})
-				return // Bail early
+				return
 			}
 
-			if eventID == "" && len(events) > 0 {
-				eventID = events[0].ID
+			numEvents := len(jobResult.Events)
+
+			if eventID == "" && numEvents > 0 {
+				eventID = jobResult.Events[0].ID
 			}
 
-			events = mxclient.ReverseEventsCopy(events)
+			events := mxclient.ReverseEventsCopy(jobResult.Events)
 
 			var reachedRoomCreate bool
-			if len(events) > 0 {
+			if numEvents > 0 {
 				reachedRoomCreate = events[0].Type == "m.room.create" && *events[0].StateKey == ""
 			}
 
-			c.HTML(http.StatusOK, "room.html", gin.H{
-				"Room":     room,
-				"Events":   events,
-				"PageSize": pageSize,
+			templates.WritePageTemplate(c.Writer, &templates.RoomChatPage{
+				RoomInfo:          jobResult.RoomInfo,
+				MemberMap:         jobResult.MemberMap,
+				Events:            events,
+				PageSize:          RoomTimelineSize,
+				ReachedRoomCreate: reachedRoomCreate,
+				CurrentOffset:     offset,
+				Anchor:            eventID,
 
-				"ReachedRoomCreate": reachedRoomCreate,
-				"CurrentOffset":     offset,
-				"Anchor":            eventID,
+				Sanitizer:         sanitizer,
+				HomeserverBaseURL: client.HomeserverURL.String(),
 			})
 		})
 
-		roomRouter.GET("/:roomID/servers", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "room_servers.html", gin.H{
-				"Room": c.MustGet("Room").(*mxclient.Room),
-			})
-		})
+		const RoomServersPageSize = 30
 
-		roomRouter.GET("/:roomID/members", func(c *gin.Context) {
-			page, skip, end := utils.CalcPaginationPage(c.DefaultQuery("page", "1"), RoomMembersPageSize)
-			room := c.MustGet("Room").(*mxclient.Room)
+		roomRouter.GET("/servers", func(c *gin.Context) {
+			worker := c.MustGet("RoomWorker").(Worker)
+			page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
 
-			c.HTML(http.StatusOK, "room_members.html", gin.H{
-				"Room":       room,
-				"MemberInfo": room.GetMembers()[skip:end],
-				"Page":       page,
-			})
-		})
-
-		roomRouter.GET("/:roomID/members/:mxid", func(c *gin.Context) {
-			room := c.MustGet("Room").(*mxclient.Room)
-			mxid := c.Param("mxid")
-
-			if memberInfo, exists := room.GetMember(mxid); exists {
-				c.HTML(http.StatusOK, "member_info.html", gin.H{
-					"MemberInfo": memberInfo,
-					"Room":       room,
-				})
-			} else {
-				c.AbortWithStatus(http.StatusNotFound)
+			worker.Queue <- RoomServersJob{
+				c.Param("roomID"),
+				page,
+				RoomServersPageSize,
 			}
+
+			jobResult := templates.RoomServersPage((<-worker.Output).(RoomServersResp))
+			templates.WritePageTemplate(c.Writer, &jobResult)
+
+			/*
+				templates.WritePageTemplate(c.Writer, &worker.RoomServers(RoomServersJob{
+					c.Param("roomID"),
+					page,
+					RoomServersPageSize,
+				}))
+			*/
 		})
 
-		roomRouter.GET("/:roomID/power_levels", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "power_levels.html", gin.H{
-				"Room": c.MustGet("Room").(*mxclient.Room),
-			})
+		roomRouter.GET("/members", func(c *gin.Context) {
+			worker := c.MustGet("RoomWorker").(Worker)
+			page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
+
+			worker.Queue <- RoomMembersJob{
+				c.Param("roomID"),
+				page,
+				RoomMembersPageSize,
+			}
+
+			jobResult := templates.RoomMembersPage((<-worker.Output).(RoomMembersResp))
+			templates.WritePageTemplate(c.Writer, &jobResult)
+		})
+
+		roomRouter.GET("/members/:mxid", func(c *gin.Context) {
+			worker := c.MustGet("RoomWorker").(Worker)
+			worker.Queue <- RoomMemberInfoJob{
+				c.Param("roomID"),
+				c.Param("mxid"),
+			}
+
+			//c.AbortWithStatus(http.StatusNotFound)
+
+			jobResult := templates.RoomMemberInfoPage((<-worker.Output).(RoomMemberInfoResp))
+			templates.WritePageTemplate(c.Writer, &jobResult)
+		})
+
+		roomRouter.GET("/power_levels", func(c *gin.Context) {
+			worker := c.MustGet("RoomWorker").(Worker)
+			worker.Queue <- RoomPowerLevelsJob{c.Param("roomID")}
+
+			jobResult := templates.RoomPowerLevelsPage((<-worker.Output).(RoomPowerLevelsResp))
+			templates.WritePageTemplate(c.Writer, &jobResult)
 		})
 	}
 
@@ -171,9 +191,8 @@ func main() {
 		port = "8000"
 	}
 
-	LoadPublicRooms(client, true)
-	go startForwardPaginator(client)
-	go startPublicRoomListTimer(client)
+	go startForwardPaginator(workers)
+	go startPublicRoomListTimer(worldReadableRooms)
 	fmt.Println("Listening on port " + port)
 
 	srv := &http.Server{
@@ -189,22 +208,20 @@ func main() {
 
 const LoadPublicRoomsPeriod = time.Hour
 
-func startPublicRoomListTimer(client *mxclient.Client) {
+func startPublicRoomListTimer(worldReadableRooms *mxclient.WorldReadableRooms) {
 	t := time.NewTicker(LoadPublicRoomsPeriod)
 	for {
 		<-t.C
-		LoadPublicRooms(client, false)
+		worldReadableRooms.Update()
 	}
 }
 
 const LazyForwardPaginateRooms = time.Minute
 
-func startForwardPaginator(client *mxclient.Client) {
+func startForwardPaginator(workers *Workers) {
 	t := time.NewTicker(LazyForwardPaginateRooms)
 	for {
 		<-t.C
-		for _, room := range client.GetRoomList(0, -1) {
-			room.LazyUpdateRoom()
-		}
+		workers.JobForAllWorkers(RoomForwardPaginateJob{})
 	}
 }

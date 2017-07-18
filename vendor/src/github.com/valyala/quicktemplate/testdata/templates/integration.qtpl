@@ -1,0 +1,132 @@
+This is a template for integration test.
+It should contains all the quicktemplate stuff.
+
+{% import "fmt" %}
+
+{% func Integration() %}
+	Output tags` verification.
+
+	{% code
+		p := &integrationPage{
+			S: "foobar",
+		}
+	%}
+	Embedded func template:
+		plain: {%= embeddedFunc(p) %}
+		html-escaped: {%=h embeddedFunc(p) %}
+		url-escaped: {%=u embeddedFunc(p) %}
+		quoted json string: {%=q embeddedFunc(p) %}
+		unquoted json string: {%=j embeddedFunc(p) %}
+		html-escaped url-escaped: {%=uh embeddedFunc(p) %}
+		html-escaped quoted json string: {%=qh embeddedFunc(p) %}
+		html-escaped unquoted json string: {%=jh embeddedFunc(p) %}
+
+	Html-escaped output tags:
+	<ul>
+		<li>{%s "<b>html-escaped `string</b>" %}</li>
+		<li>{%z []byte("<b>html-escaped `byte slice</b>") %}</li>
+		<li>Int: {%d 42 %}</li>
+		<li>Float: {%f 3.14 %}</li>
+		<li>{%q `<quoted> "json"
+				string` %}</li>
+		<li>alert("foo {%j `"json"-safe
+				<string>` %} aa" + 'bar {%j `';alert("evil")</script>` %}')</li>
+		<li><a href="?{%u "ключ" %}={%u "значение&=?123" %}">test</a></li>
+		<li>{%v struct{ A string }{A: "<b>foobar`</b>"} %}</li>
+	</ul>
+
+	Output tags without html escaping
+	<ul>
+		<li>{%s= "<b>html-escaped `string</b>" %}</li>
+		<li>{%z= []byte("<b>html-escaped `byte slice</b>") %}</li>
+		<li>Int: {%d= 42 %}</li>
+		<li>Float: {%f= 3.14 %}</li>
+		<li>{%q= `<quoted> "json"
+				string` %}</li>
+		<li>alert("foo {%j= `"json"-safe
+				<string>` %} aa" + 'bar {%j= `';alert("evil")</script>` %}')</li>
+		<li><a href="?{%u= "ключ" %}={%u= "значение&=?123" %}">test</a></li>
+		<li>{%v= struct{ A string }{A: "<b>foobar`</b>"} %}</li>
+	</ul>
+
+	{% stripspace %}
+		Strip space {%space%}
+		between lines and tags
+		{%plain%}
+			Tags aren't parsed {%inside %}
+			plain
+		{%endplain%}
+		{% code // one-liner comment %}
+		{% code
+		// multi-line
+		// comment
+		%}
+		{% code
+		/*
+		  yet another
+		  multi-line comment
+		*/
+		%}
+	{% endstripspace %}
+
+	{% collapsespace %}
+		Collapse space {%space %}
+		between {%newline%} lines and tags
+		{%comment%}
+			Comments {%are%}
+			ignored
+		{%endcomment%}
+
+		{% for _, s := range []string{"foo","bar","baz"} %}
+			{% if s == "bar" %}
+				Bar
+			{% elseif s == "baz" %}
+				Baz
+				{% break %}
+			{% else %}
+				{% if s == "never" %}
+					{% return %}
+				{% endif %}
+
+				{% switch s %}
+				{% case "foobar" %}
+					s = foobar
+				{% case "barbaz" %}
+					s = barbaz
+				{% default %}
+					s = {%s s %}
+				{% endswitch %}
+
+				{% continue %}
+			{% endif %}
+		{% endfor %}
+	{% endcollapsespace %}
+
+	{% cat "integration.qtpl" %}
+
+	tail of the func
+{% endfunc %}
+
+{%
+interface Page {
+	Header()
+	Body()
+}
+%}
+
+{% func embeddedFunc(p Page) %}
+	Page's header: {%= p.Header() %}
+	Body: {%s= fmt.Sprintf("<b>%s</b>", p.Body()) %}
+{% endfunc %}
+
+{% code
+type integrationPage struct {
+	S string
+}
+%}
+
+{% func (p *integrationPage) Header() %}Header{% endfunc %}
+
+{% func (p *integrationPage) Body() %}
+	S={%q p.S %}
+{% endfunc %}

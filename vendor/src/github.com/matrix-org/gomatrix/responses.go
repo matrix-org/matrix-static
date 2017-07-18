@@ -37,7 +37,7 @@ type PublicRoomsChunk struct {
 	Topic            string   `json:"topic"`
 	NumJoinedMembers int      `json:"num_joined_members"`
 	AvatarUrl        string   `json:"avatar_url"`
-	RoomId           string   `json:"room_id"`
+	RoomID           string   `json:"room_id"`
 	GuestCanJoin     bool     `json:"guest_can_join"`
 	Aliases          []string `json:"aliases"`
 }

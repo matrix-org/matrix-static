@@ -16,17 +16,28 @@ package utils
 
 import "strconv"
 
-func CalcPaginationPage(pageString string, size int) (page int, skip int, end int) {
+// StrToIntDefault converts str to its equivalent int, falling back to def if str does not represent an int.
+func StrToIntDefault(str string, def int) (page int) {
 	var err error
-	if page, err = strconv.Atoi(pageString); err != nil {
-		page = 1
+	if page, err = strconv.Atoi(str); err != nil {
+		page = def
 	}
-
-	skip = (page - 1) * size
-	end = skip + size
 	return
 }
 
+// CalcPaginationStartEnd calculates the slice offsets needed to perform pagination for desired page, pageSize and length
+// if page=0 it will return slice offsets 0:length-1 for a "get all entries" page.
+func CalcPaginationStartEnd(page, pageSize, length int) (start, end int) {
+	if page == 0 {
+		return 0, length - 1
+	}
+
+	start = Min((page-1)*pageSize, length)
+	end = Min(start+pageSize, length)
+	return
+}
+
+// Bound returns min if val<min, max if val>max, val else.
 func Bound(min, val, max int) int {
 	if val > max {
 		return max
@@ -37,24 +48,18 @@ func Bound(min, val, max int) int {
 	return val
 }
 
-// min returns the minimal value of N ints
-func Min(nums ...int) int {
-	curLowest := nums[0]
-	for _, i := range nums {
-		if i < curLowest {
-			curLowest = i
-		}
+// Min returns the minimal value of ints a and b
+func Min(a, b int) int {
+	if a < b {
+		return a
 	}
-	return curLowest
+	return b
 }
 
-// max returns the maximal value of N ints
-func Max(nums ...int) int {
-	curHighest := nums[0]
-	for _, i := range nums {
-		if i > curHighest {
-			curHighest = i
-		}
+// Max returns the maximal value of ints a and b
+func Max(a, b int) int {
+	if a > b {
+		return a
 	}
-	return curHighest
+	return b
 }

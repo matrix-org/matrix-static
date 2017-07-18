@@ -37,10 +37,7 @@ type RespInitialSync struct {
 }
 
 // Our Client extension adds some methods and ties in a RoomStore (Ordered Map)
-type Client struct {
-	*gomatrix.Client
-	*RoomStore
-}
+type Client struct{ *gomatrix.Client }
 
 func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSync, err error) {
 	urlPath := m.BuildURLWithQuery([]string{"rooms", roomID, "initialSync"}, map[string]string{
@@ -53,35 +50,32 @@ func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSyn
 const minimumPagination = 64
 
 // TODO split into runs of max 999 recursively otherwise we get capped.
-func (m *Client) backpaginateRoom(room *Room, amount int) int {
+func (m *Client) backpaginateRoom(room *Room, amount int) (int, error) {
 	amount = utils.Max(amount, minimumPagination)
 	backPaginationToken, _ := room.GetTokens()
 	resp, err := m.Messages(room.ID, backPaginationToken, "", 'b', amount)
 
 	if err != nil {
-		return 0
+		return -1, err
 	}
 
 	room.concatBackpagination(resp.Chunk, resp.End)
-	return len(resp.Chunk)
+	return len(resp.Chunk), nil
 }
 
-func (m *Client) forwardpaginateRoom(room *Room, amount int) int {
+func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 	amount = utils.Max(amount, minimumPagination)
-
-	room.requestLock.Lock()
-	defer room.requestLock.Unlock()
 
 	_, forwardPaginationToken := room.GetTokens()
 	resp, err := m.Messages(room.ID, forwardPaginationToken, "", 'f', amount)
 
 	if err != nil {
-		return 0
+		return -1, err
 	}
 
 	// I would have thought to use resp.Start here but NOPE
 	room.concatForwardPagination(resp.Chunk, resp.End)
-	return len(resp.Chunk)
+	return len(resp.Chunk), nil
 }
 
 func NewClient() *Client {
@@ -126,5 +120,5 @@ func NewClient() *Client {
 
 	cli.SetCredentials(config.UserID, config.AccessToken)
 
-	return &Client{cli, NewRoomStore()}
+	return &Client{cli}
 }
