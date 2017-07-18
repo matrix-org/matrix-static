@@ -247,7 +247,7 @@
     <hr>
 
     {% if len(p.Events) > 0 %}
-        <table class="timeline">
+        <table id="timeline">
             <thead>
                 <tr>
                     <th>Timestamp</th>

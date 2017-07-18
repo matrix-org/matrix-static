@@ -33,6 +33,9 @@ PrintPage prints Page p
             table#roomList img {
                 height: 60px;
             }
+            table#timeline tr {
+                vertical-align: top;
+            }
             td.rightAlign {
                 text-align: right;
                 min-width: 120px;
