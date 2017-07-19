@@ -203,6 +203,22 @@
             {% case "m.room.member" %}
                 <td></td>
                 <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
+            {% case "m.room.topic" %}
+                <td></td>
+                <td>
+                    {%s ev.Sender %}{% space %}
+                    {% code
+                        prevTopic := Str(ev.PrevContent["topic"])
+                        curTopic := Str(ev.Content["topic"])
+                    %}
+                    {% if curTopic != "" && prevTopic == "" %}
+                        set the topic to "{%s curTopic %}".
+                    {% elseif curTopic == "" && prevTopic != "" %}
+                        removed the topic "{%s prevTopic %}".
+                    {% else %}
+                        changed the topic to "{%s curTopic %}" from "{%s prevTopic %}".
+                    {% endif %}
+                </td>
             {% default %}
                 <td>{%s ev.Type %}</td>
                 <td>Default Event Renderer.</td>
