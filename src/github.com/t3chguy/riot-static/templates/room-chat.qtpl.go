@@ -654,299 +654,303 @@ func (p *RoomChatPage) streamprintEvent(qw422016 *qt422016.Writer, ev gomatrix.E
 	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:206
 	default:
 		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:206
-		qw422016.N().S(`Default Event Renderer. Room topic name etc need renderers.`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:208
+		qw422016.N().S(`<td>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:207
+		qw422016.E().S(ev.Type)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:207
+		qw422016.N().S(`</td><td>Default Event Renderer.</td>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:209
 	}
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:208
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:209
 	qw422016.N().S(`</tr>`)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 func (p *RoomChatPage) writeprintEvent(qq422016 qtio422016.Writer, ev gomatrix.Event) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	p.streamprintEvent(qw422016, ev)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 func (p *RoomChatPage) printEvent(ev gomatrix.Event) string {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	p.writeprintEvent(qb422016, ev)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:210
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:211
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:212
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:213
 func (p *RoomChatPage) streamprintPermalinkColumn(qw422016 *qt422016.Writer, ev gomatrix.Event) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:212
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:213
 	qw422016.N().S(`<td class="timestamp" nowrap><a href="https://matrix.to/#/`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:214
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:215
 	qw422016.E().S(p.RoomInfo.RoomID)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:214
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:215
 	qw422016.N().S(`/`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:214
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:215
 	qw422016.E().S(ev.ID)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:214
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:215
 	qw422016.N().S(`">`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:214
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:215
 	streamprintTimestamp(qw422016, ev.Timestamp)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:214
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:215
 	qw422016.N().S(`</a></td>`)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 func (p *RoomChatPage) writeprintPermalinkColumn(qq422016 qtio422016.Writer, ev gomatrix.Event) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	p.streamprintPermalinkColumn(qw422016, ev)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 func (p *RoomChatPage) printPermalinkColumn(ev gomatrix.Event) string {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	p.writeprintPermalinkColumn(qb422016, ev)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:216
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:217
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:220
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:221
 func (p *RoomChatPage) StreamTitle(qw422016 *qt422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:220
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:221
 	qw422016.N().S(`Public Room Timeline -`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:221
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
 	qw422016.E().S(p.RoomInfo.Name)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:221
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
 	qw422016.N().S(`- Riot Static`)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 func (p *RoomChatPage) WriteTitle(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	p.StreamTitle(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 func (p *RoomChatPage) Title() string {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	p.WriteTitle(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:222
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:223
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:224
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:225
 func (p *RoomChatPage) StreamHead(qw422016 *qt422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:225
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:226
 	if !p.ReachedRoomCreate {
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:225
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:226
 		qw422016.N().S(`<link rel="next" href="?anchor=`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:226
-		qw422016.E().S(p.Anchor)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:226
-		qw422016.N().S(`&offset=`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:226
-		qw422016.N().D(p.CurrentOffset + p.PageSize)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:226
-		qw422016.N().S(`">`)
 		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:227
-	}
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:228
-	if len(p.Events) > 0 {
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:228
-		qw422016.N().S(`<link rel="prev" href="?anchor=`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:229
 		qw422016.E().S(p.Anchor)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:229
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:227
 		qw422016.N().S(`&offset=`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:229
-		qw422016.N().D(p.CurrentOffset - len(p.Events))
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:229
-		qw422016.N().S(`">`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:230
-	}
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-}
-
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-func (p *RoomChatPage) WriteHead(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	p.StreamHead(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-}
-
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-func (p *RoomChatPage) Head() string {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	p.WriteHead(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
-}
-
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:233
-func (p *RoomChatPage) StreamHeader(qw422016 *qt422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:234
-	StreamPrintRoomHeader(qw422016, p.RoomInfo)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-}
-
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-func (p *RoomChatPage) WriteHeader(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	p.StreamHeader(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-}
-
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-func (p *RoomChatPage) Header() string {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	p.WriteHeader(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
-}
-
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:237
-func (p *RoomChatPage) StreamBody(qw422016 *qt422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:237
-	qw422016.N().S(`<div class="paginate">`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:239
-	if p.ReachedRoomCreate {
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:239
-		qw422016.N().S(`<h4>You have reached the beginning of time (for this room).</h4>`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:241
-	} else {
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:241
-		qw422016.N().S(`<a href="./room/`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
-		qw422016.E().S(p.RoomInfo.RoomID)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
-		qw422016.N().S(`/?anchor=`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
-		qw422016.E().S(p.Anchor)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
-		qw422016.N().S(`&offset=`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:227
 		qw422016.N().D(p.CurrentOffset + p.PageSize)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
-		qw422016.N().S(`"><h4>Load older messages</h4></a>`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:245
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:227
+		qw422016.N().S(`">`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:228
 	}
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:245
-	qw422016.N().S(`</div><hr>`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:249
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:229
 	if len(p.Events) > 0 {
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:249
-		qw422016.N().S(`<table id="timeline"><thead><tr><th>Timestamp</th><th>&nbsp;</th><th>Message</th></tr></thead><tbody>`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:259
-		for _, event := range p.Events {
-			//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:260
-			p.streamprintEvent(qw422016, event)
-			//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:261
-		}
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:261
-		qw422016.N().S(`</tbody></table>`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:264
-	} else {
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:264
-		qw422016.N().S(`<h3>No Events</h3>`)
-		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:266
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:229
+		qw422016.N().S(`<link rel="prev" href="?anchor=`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:230
+		qw422016.E().S(p.Anchor)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:230
+		qw422016.N().S(`&offset=`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:230
+		qw422016.N().D(p.CurrentOffset - len(p.Events))
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:230
+		qw422016.N().S(`">`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:231
 	}
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:266
-	qw422016.N().S(`<hr><div class="paginate"><a href="./room/`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:270
-	qw422016.E().S(p.RoomInfo.RoomID)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:270
-	qw422016.N().S(`/?anchor=`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:270
-	qw422016.E().S(p.Anchor)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:270
-	qw422016.N().S(`&offset=`)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:270
-	qw422016.N().D(p.CurrentOffset - len(p.Events))
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:270
-	qw422016.N().S(`"><h4>Show newer messages</h4></a></div><hr><a href="./">Back to Room List</a>`)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
-func (p *RoomChatPage) WriteBody(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
+func (p *RoomChatPage) WriteHead(qq422016 qtio422016.Writer) {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
-	p.StreamBody(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
+	p.StreamHead(qw422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
-func (p *RoomChatPage) Body() string {
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
+func (p *RoomChatPage) Head() string {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
-	p.WriteBody(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
+	p.WriteHead(qb422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:277
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:232
+}
+
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:234
+func (p *RoomChatPage) StreamHeader(qw422016 *qt422016.Writer) {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:235
+	StreamPrintRoomHeader(qw422016, p.RoomInfo)
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+}
+
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+func (p *RoomChatPage) WriteHeader(qq422016 qtio422016.Writer) {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	qw422016 := qt422016.AcquireWriter(qq422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	p.StreamHeader(qw422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	qt422016.ReleaseWriter(qw422016)
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+}
+
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+func (p *RoomChatPage) Header() string {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	qb422016 := qt422016.AcquireByteBuffer()
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	p.WriteHeader(qb422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	qs422016 := string(qb422016.B)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	qt422016.ReleaseByteBuffer(qb422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+	return qs422016
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:236
+}
+
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:238
+func (p *RoomChatPage) StreamBody(qw422016 *qt422016.Writer) {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:238
+	qw422016.N().S(`<div class="paginate">`)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:240
+	if p.ReachedRoomCreate {
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:240
+		qw422016.N().S(`<h4>You have reached the beginning of time (for this room).</h4>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
+	} else {
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:242
+		qw422016.N().S(`<a href="./room/`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:243
+		qw422016.E().S(p.RoomInfo.RoomID)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:243
+		qw422016.N().S(`/?anchor=`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:243
+		qw422016.E().S(p.Anchor)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:243
+		qw422016.N().S(`&offset=`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:243
+		qw422016.N().D(p.CurrentOffset + p.PageSize)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:243
+		qw422016.N().S(`"><h4>Load older messages</h4></a>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:246
+	}
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:246
+	qw422016.N().S(`</div><hr>`)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:250
+	if len(p.Events) > 0 {
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:250
+		qw422016.N().S(`<table id="timeline"><thead><tr><th>Timestamp</th><th>&nbsp;</th><th>Message</th></tr></thead><tbody>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:260
+		for _, event := range p.Events {
+			//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:261
+			p.streamprintEvent(qw422016, event)
+			//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:262
+		}
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:262
+		qw422016.N().S(`</tbody></table>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:265
+	} else {
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:265
+		qw422016.N().S(`<h3>No Events</h3>`)
+		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:267
+	}
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:267
+	qw422016.N().S(`<hr><div class="paginate"><a href="./room/`)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:271
+	qw422016.E().S(p.RoomInfo.RoomID)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:271
+	qw422016.N().S(`/?anchor=`)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:271
+	qw422016.E().S(p.Anchor)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:271
+	qw422016.N().S(`&offset=`)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:271
+	qw422016.N().D(p.CurrentOffset - len(p.Events))
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:271
+	qw422016.N().S(`"><h4>Show newer messages</h4></a></div><hr><a href="./">Back to Room List</a>`)
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+}
+
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+func (p *RoomChatPage) WriteBody(qq422016 qtio422016.Writer) {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	qw422016 := qt422016.AcquireWriter(qq422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	p.StreamBody(qw422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	qt422016.ReleaseWriter(qw422016)
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+}
+
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+func (p *RoomChatPage) Body() string {
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	qb422016 := qt422016.AcquireByteBuffer()
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	p.WriteBody(qb422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	qs422016 := string(qb422016.B)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	qt422016.ReleaseByteBuffer(qb422016)
+	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
+	return qs422016
+//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:278
 }

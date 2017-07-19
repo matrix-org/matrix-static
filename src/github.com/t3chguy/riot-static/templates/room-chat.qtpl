@@ -204,7 +204,8 @@
                 <td></td>
                 <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
             {% default %}
-                Default Event Renderer. Room topic name etc need renderers.
+                <td>{%s ev.Type %}</td>
+                <td>Default Event Renderer.</td>
         {% endswitch %}
     </tr>
 {% endfunc %}
