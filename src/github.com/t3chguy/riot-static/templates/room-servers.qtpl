@@ -52,8 +52,6 @@
 
     {%= PaginatorFooter(p) %}
 
-    <a href="./">Back to Room List</a>
-
 {% endfunc %}
 {% endstripspace %}
 
