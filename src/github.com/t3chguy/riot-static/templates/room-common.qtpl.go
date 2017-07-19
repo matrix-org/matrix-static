@@ -23,13 +23,13 @@ var (
 //line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:6
 func StreamPrintRoomHeader(qw422016 *qt422016.Writer, roomInfo mxclient.RoomInfo) {
 	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:6
-	qw422016.N().S(`<table id="roomHeader"><tr><td rowspan="2">`)
+	qw422016.N().S(`<table id="roomHeader"><tr><td class="roomLogo" rowspan="2">`)
 	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:10
 	if roomInfo.AvatarURL.IsValid() {
 		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:10
 		qw422016.N().S(`<img class="roomLogo" src="`)
 		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:11
-		qw422016.E().S(roomInfo.AvatarURL.ToThumbURL(48, 48, "crop"))
+		qw422016.E().S(roomInfo.AvatarURL.ToThumbURL(64, 64, "crop"))
 		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:11
 		qw422016.N().S(`" />`)
 		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:12
