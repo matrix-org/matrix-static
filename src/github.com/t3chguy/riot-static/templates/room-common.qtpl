@@ -6,9 +6,9 @@
 {% func PrintRoomHeader(roomInfo mxclient.RoomInfo) %}
     <table id="roomHeader">
         <tr>
-            <td rowspan="2">
+            <td class="roomLogo" rowspan="2">
                 {% if roomInfo.AvatarURL.IsValid() %}
-                    <img class="roomLogo" src="{%s roomInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
+                    <img class="roomLogo" src="{%s roomInfo.AvatarURL.ToThumbURL(64, 64, "crop") %}" />
                 {% else %}
                     <img class="roomLogo" src="./img/logo_missing.png" />
                 {% endif %}

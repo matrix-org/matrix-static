@@ -24,6 +24,9 @@ PrintPage prints Page p
             * {
                 font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
             }
+            td.roomLogo {
+                width: 80px;
+            }
             img.roomLogo {
                 height: 64px;
             }

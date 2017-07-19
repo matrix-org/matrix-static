@@ -893,7 +893,7 @@ func (p *RoomChatPage) StreamBody(qw422016 *qt422016.Writer) {
 	//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:249
 	if len(p.Events) > 0 {
 		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:249
-		qw422016.N().S(`<table class="timeline"><thead><tr><th>Timestamp</th><th>&nbsp;</th><th>Message</th></tr></thead><tbody>`)
+		qw422016.N().S(`<table id="timeline"><thead><tr><th>Timestamp</th><th>&nbsp;</th><th>Message</th></tr></thead><tbody>`)
 		//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:259
 		for _, event := range p.Events {
 			//line src\github.com\t3chguy\riot-static\templates\room-chat.qtpl:260
