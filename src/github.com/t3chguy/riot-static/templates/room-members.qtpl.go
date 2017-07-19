@@ -50,7 +50,7 @@ func (p *RoomMembersPage) streamprintMemberRow(qw422016 *qt422016.Writer, Member
 	if Member.AvatarURL.IsValid() {
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:18
 		qw422016.N().S(`
-                <img src="`)
+                <img class="memberListAvatar" src="`)
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:19
 		qw422016.E().S(Member.AvatarURL.ToThumbURL(48, 48, "crop"))
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:19
@@ -60,7 +60,7 @@ func (p *RoomMembersPage) streamprintMemberRow(qw422016 *qt422016.Writer, Member
 	} else {
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:20
 		qw422016.N().S(`
-                <img src="./img/logo_missing.png" />
+                <img class="memberListAvatar" src="./img/logo_missing.png" />
             `)
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:22
 	}

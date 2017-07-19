@@ -21,6 +21,9 @@ PrintPage prints Page p
             img.userAvatar {
                 height: 20px;
             }
+            img.memberListAvatar {
+                height: 36px;
+            }
             * {
                 font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
             }
