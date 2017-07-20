@@ -20,8 +20,10 @@ import (
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/riot-static/utils"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 // This is a Truncated RespInitialSync as we only need SOME information from it.
@@ -99,6 +101,9 @@ func NewClient() *Client {
 	}
 
 	cli, _ := gomatrix.NewClient(config.HomeServer, "", "")
+	cli.Client = &http.Client{
+		Timeout: 5 * time.Second,
+	}
 
 	if config.AccessToken == "" || config.UserID == "" {
 		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
