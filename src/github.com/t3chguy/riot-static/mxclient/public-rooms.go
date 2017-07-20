@@ -33,6 +33,11 @@ func processRoomDirectory(homeserverBaseUrl string, roomList []gomatrix.PublicRo
 			continue
 		}
 
+		// Hack to get a "Primary Alias" to match Room Directory of riot-web
+		if room.CanonicalAlias == "" && len(room.Aliases) > 0 {
+			room.CanonicalAlias = room.Aliases[0]
+		}
+
 		room.AvatarUrl = NewMXCURL(room.AvatarUrl, homeserverBaseUrl).ToThumbURL(60, 60, "crop")
 
 		// Append world readable room to the filtered list.

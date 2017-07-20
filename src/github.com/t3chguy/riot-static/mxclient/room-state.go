@@ -173,6 +173,7 @@ func (rs RoomState) Servers() StringIntPairList {
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room
 // Does not handle based on members if there is no Name/Alias (yet)
+// Falls back to first alias. TODO find edge case rooms for which this is needed.
 func (rs RoomState) CalculateName() string {
 	if rs.Name != "" {
 		return rs.Name
@@ -185,14 +186,4 @@ func (rs RoomState) CalculateName() string {
 	}
 
 	return "Empty Room"
-}
-
-func (rs RoomState) CanonicalAlias() string {
-	if rs.canonicalAlias != "" {
-		return rs.canonicalAlias
-	}
-	if len(rs.Aliases) > 0 {
-		return rs.Aliases[0]
-	}
-	return ""
 }
