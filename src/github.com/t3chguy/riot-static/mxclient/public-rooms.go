@@ -21,9 +21,9 @@ import (
 )
 
 type WorldReadableRooms struct {
-	mxclient *Client
-	sync.RWMutex
-	rooms []gomatrix.PublicRoomsChunk
+	mxclient   *Client
+	roomsMutex sync.RWMutex
+	rooms      []gomatrix.PublicRoomsChunk
 }
 
 // processRoomDirectory replaces AvatarUrl from mxc to its https counterpart and filters on WorldReadable rooms.
@@ -62,28 +62,29 @@ func (r *WorldReadableRooms) Update() error {
 	}
 	filteredRooms := processRoomDirectory(r.mxclient.HomeserverURL.String(), resp.Chunk)
 
-	r.Lock()
-	defer r.Unlock()
+	r.roomsMutex.Lock()
+	defer r.roomsMutex.Unlock()
 
 	r.rooms = filteredRooms
 	return nil
 }
 
-func (r *WorldReadableRooms) GetFilteredPage(page, pageSize int, query string) []gomatrix.PublicRoomsChunk {
-	r.RLock()
-	defer r.RUnlock()
-	return nil
-}
+// For future when we support filtering the public room directory (LOCALLY)
+//func (r *WorldReadableRooms) GetFilteredPage(page, pageSize int, query string) []gomatrix.PublicRoomsChunk {
+//	r.roomsMutex.RLock()
+//	defer r.roomsMutex.RUnlock()
+//	return nil
+//}
 
 func (r *WorldReadableRooms) GetPage(page, pageSize int) []gomatrix.PublicRoomsChunk {
-	r.RLock()
-	defer r.RUnlock()
+	r.roomsMutex.RLock()
+	defer r.roomsMutex.RUnlock()
 	start, end := utils.CalcPaginationStartEnd(page, pageSize, len(r.rooms))
 	return r.rooms[start:end]
 }
 
 func (r *WorldReadableRooms) GetAll() []gomatrix.PublicRoomsChunk {
-	r.RLock()
-	defer r.RUnlock()
+	r.roomsMutex.RLock()
+	defer r.roomsMutex.RUnlock()
 	return r.rooms
 }
