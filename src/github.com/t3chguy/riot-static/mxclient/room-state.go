@@ -154,7 +154,27 @@ func (rs RoomState) Members() []*MemberInfo {
 	return rs.memberList
 }
 
-func (rs RoomState) Servers() StringIntPairList {
+// implements sort.Interface
+type ServerUserCount struct {
+	ServerName string
+	NumUsers   int
+}
+
+type ServerUserCounts []ServerUserCount
+
+func (p ServerUserCounts) Len() int { return len(p) }
+func (p ServerUserCounts) Less(i, j int) bool {
+	a, b := p[i], p[j]
+	if a.NumUsers == b.NumUsers {
+		// Secondary Sort is Low->High Lexicographically on ServerName
+		return a.ServerName < b.ServerName
+	}
+	// Primary Sort is High->Low on NumUsers
+	return a.NumUsers > b.NumUsers
+}
+func (p ServerUserCounts) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+
+func (rs RoomState) Servers() ServerUserCounts {
 	serverMap := make(map[string]int)
 	for _, member := range rs.CalculateMemberList() {
 		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
@@ -162,12 +182,12 @@ func (rs RoomState) Servers() StringIntPairList {
 		}
 	}
 
-	serverList := make(StringIntPairList, 0, len(serverMap))
+	serverList := make(ServerUserCounts, 0, len(serverMap))
 	for server, num := range serverMap {
-		serverList = append(serverList, StringIntPair{server, num})
+		serverList = append(serverList, ServerUserCount{server, num})
 	}
 
-	sort.Sort(sort.Reverse(serverList))
+	sort.Sort(serverList)
 	return serverList
 }
 

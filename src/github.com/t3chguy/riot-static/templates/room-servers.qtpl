@@ -4,17 +4,17 @@
 
 {% code type RoomServersPage struct {
     RoomInfo mxclient.RoomInfo
-    Servers  mxclient.StringIntPairList
+    Servers  mxclient.ServerUserCounts
     PageSize int
     Page     int
 } %}
 
 
 
-{% func (p *RoomServersPage) printServer(server mxclient.StringIntPair) %}
+{% func (p *RoomServersPage) printServer(server mxclient.ServerUserCount) %}
     <tr>
-        <td>{%s server.Key %}</td>
-        <td>{%d server.Value %}</td>
+        <td>{%s server.ServerName %}</td>
+        <td>{%d server.NumUsers %}</td>
     </tr>
 {% endfunc %}
 

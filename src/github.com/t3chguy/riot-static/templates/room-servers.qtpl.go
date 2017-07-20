@@ -23,24 +23,24 @@ var (
 //line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:5
 type RoomServersPage struct {
 	RoomInfo mxclient.RoomInfo
-	Servers  mxclient.StringIntPairList
+	Servers  mxclient.ServerUserCounts
 	PageSize int
 	Page     int
 }
 
 //line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:14
-func (p *RoomServersPage) streamprintServer(qw422016 *qt422016.Writer, server mxclient.StringIntPair) {
+func (p *RoomServersPage) streamprintServer(qw422016 *qt422016.Writer, server mxclient.ServerUserCount) {
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:14
 	qw422016.N().S(`
     <tr>
         <td>`)
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:16
-	qw422016.E().S(server.Key)
+	qw422016.E().S(server.ServerName)
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:16
 	qw422016.N().S(`</td>
         <td>`)
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:17
-	qw422016.N().D(server.Value)
+	qw422016.N().D(server.NumUsers)
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:17
 	qw422016.N().S(`</td>
     </tr>
@@ -49,7 +49,7 @@ func (p *RoomServersPage) streamprintServer(qw422016 *qt422016.Writer, server mx
 }
 
 //line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:19
-func (p *RoomServersPage) writeprintServer(qq422016 qtio422016.Writer, server mxclient.StringIntPair) {
+func (p *RoomServersPage) writeprintServer(qq422016 qtio422016.Writer, server mxclient.ServerUserCount) {
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:19
 	qw422016 := qt422016.AcquireWriter(qq422016)
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:19
@@ -60,7 +60,7 @@ func (p *RoomServersPage) writeprintServer(qq422016 qtio422016.Writer, server mx
 }
 
 //line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:19
-func (p *RoomServersPage) printServer(server mxclient.StringIntPair) string {
+func (p *RoomServersPage) printServer(server mxclient.ServerUserCount) string {
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:19
 	qb422016 := qt422016.AcquireByteBuffer()
 	//line src\github.com\t3chguy\riot-static\templates\room-servers.qtpl:19

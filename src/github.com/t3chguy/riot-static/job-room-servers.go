@@ -21,7 +21,7 @@ import (
 
 type RoomServersResp struct {
 	RoomInfo mxclient.RoomInfo
-	Servers  mxclient.StringIntPairList
+	Servers  mxclient.ServerUserCounts
 	PageSize int
 	Page     int
 }
