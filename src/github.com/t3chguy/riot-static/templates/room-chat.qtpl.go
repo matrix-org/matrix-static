@@ -99,7 +99,7 @@ func getMemberEventPrevContent(ev gomatrix.Event, homeserverBaseUrl string) Memb
 
 type RoomChatPage struct {
 	RoomInfo          mxclient.RoomInfo
-	MemberMap         map[string]*mxclient.MemberInfo
+	MemberMap         map[string]mxclient.MemberInfo
 	Events            []gomatrix.Event
 	PageSize          int
 	ReachedRoomCreate bool

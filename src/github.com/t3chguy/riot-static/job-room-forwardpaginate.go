@@ -14,14 +14,11 @@
 
 package main
 
-import "fmt"
-
 // This Job has no Resp.
 
 type RoomForwardPaginateJob struct{}
 
 func (job RoomForwardPaginateJob) Work(w *Worker) {
-	fmt.Println("Starting forward paginate job >> worker ", w.ID)
 	for _, room := range w.rooms {
 		room.ForwardPaginateRoom()
 	}

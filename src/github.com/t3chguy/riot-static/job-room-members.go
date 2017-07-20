@@ -21,7 +21,7 @@ import (
 
 type RoomMembersResp struct {
 	RoomInfo mxclient.RoomInfo
-	Members  []*mxclient.MemberInfo
+	Members  []mxclient.MemberInfo
 	PageSize int
 	Page     int
 }
@@ -38,9 +38,15 @@ func (job RoomMembersJob) Work(w *Worker) {
 
 	start, end := utils.CalcPaginationStartEnd(job.page, job.pageSize, len(members))
 
+	membersPointerSlice := members[start:end]
+	membersSlice := make([]mxclient.MemberInfo, 0, len(membersPointerSlice))
+	for _, member := range membersPointerSlice {
+		membersSlice = append(membersSlice, *member)
+	}
+
 	w.Output <- RoomMembersResp{
 		room.RoomInfo(),
-		members[start:end],
+		membersSlice,
 		job.pageSize,
 		job.page,
 	}

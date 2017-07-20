@@ -23,7 +23,7 @@ var (
 //line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:5
 type RoomMembersPage struct {
 	RoomInfo mxclient.RoomInfo
-	Members  []*mxclient.MemberInfo
+	Members  []mxclient.MemberInfo
 	PageSize int
 	Page     int
 }
@@ -241,7 +241,7 @@ func (p *RoomMembersPage) StreamBody(qw422016 *qt422016.Writer) {
 	//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:59
 	for _, Member := range p.Members {
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:60
-		p.streamprintMemberRow(qw422016, Member)
+		p.streamprintMemberRow(qw422016, &Member)
 		//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:61
 	}
 	//line src\github.com\t3chguy\riot-static\templates\room-members.qtpl:61

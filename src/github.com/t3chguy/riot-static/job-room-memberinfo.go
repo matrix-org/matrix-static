@@ -15,12 +15,23 @@
 package main
 
 import (
+	"fmt"
 	"github.com/t3chguy/riot-static/mxclient"
 )
+
+type RoomMemberNotFoundError struct {
+	roomID string
+	mxid   string
+}
+
+func (err *RoomMemberNotFoundError) Error() string {
+	return fmt.Sprintf("Member %s not found in %s.", err.mxid, err.roomID)
+}
 
 type RoomMemberInfoResp struct {
 	RoomInfo   mxclient.RoomInfo
 	MemberInfo mxclient.MemberInfo
+	Err        error
 }
 
 type RoomMemberInfoJob struct {
@@ -31,8 +42,21 @@ type RoomMemberInfoJob struct {
 func (job RoomMemberInfoJob) Work(w *Worker) {
 	room := w.rooms[job.roomID]
 
+	var err error
+	var memberInfo mxclient.MemberInfo
+
+	if member := room.GetState().MemberMap[job.mxid]; member == nil {
+		err = &RoomMemberNotFoundError{
+			job.roomID,
+			job.mxid,
+		}
+	} else {
+		memberInfo = *member
+	}
+
 	w.Output <- RoomMemberInfoResp{
 		room.RoomInfo(),
-		*room.GetState().MemberMap[job.mxid],
+		memberInfo,
+		err,
 	}
 }

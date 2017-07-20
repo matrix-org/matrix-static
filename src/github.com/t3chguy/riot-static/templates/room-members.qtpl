@@ -4,7 +4,7 @@
 
 {% code type RoomMembersPage struct {
     RoomInfo mxclient.RoomInfo
-    Members  []*mxclient.MemberInfo
+    Members  []mxclient.MemberInfo
     PageSize int
     Page     int
 } %}
@@ -57,7 +57,7 @@
         </thead>
         <tbody>
             {% for _, Member := range p.Members %}
-                {%= p.printMemberRow(Member) %}
+                {%= p.printMemberRow(&Member) %}
             {% endfor %}
         </tbody>
     </table>

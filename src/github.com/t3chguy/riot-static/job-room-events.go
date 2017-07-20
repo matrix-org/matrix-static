@@ -22,7 +22,7 @@ import (
 type RoomEventsResp struct {
 	Events    []gomatrix.Event
 	RoomInfo  mxclient.RoomInfo
-	MemberMap map[string]*mxclient.MemberInfo
+	MemberMap map[string]mxclient.MemberInfo
 	err       error
 }
 
@@ -37,10 +37,15 @@ func (job RoomEventsJob) Work(w *Worker) {
 	room := w.rooms[job.roomID]
 	events, err := room.GetEventPage(job.anchor, job.offset, job.pageSize)
 
+	membersMap := make(map[string]mxclient.MemberInfo)
+	for mxid, member := range room.GetState().MemberMap {
+		membersMap[mxid] = *member
+	}
+
 	w.Output <- RoomEventsResp{
 		events,
 		room.RoomInfo(),
-		room.GetState().MemberMap,
+		membersMap,
 		err,
 	}
 }

@@ -5,6 +5,7 @@
 {% code type RoomMemberInfoPage struct {
     RoomInfo   mxclient.RoomInfo
     MemberInfo mxclient.MemberInfo
+    Err        error
 } %}
 
 
@@ -21,8 +22,7 @@
 {% endfunc %}
 
 {% stripspace %}
-{% func (p *RoomMemberInfoPage) Body() %}
-
+{% func (p *RoomMemberInfoPage) body() %}
     MemberInfo of {% space %}{%s p.MemberInfo.MXID %}
     <hr>
 
@@ -52,6 +52,15 @@
     </table>
 
     <a href="./">Back to Room List</a>
+{% endfunc %}
+
+{% func (p *RoomMemberInfoPage) Body() %}
+
+    {% if p.Err != nil %}
+        {%s p.Err.Error() %}
+    {% else %}
+        {%= p.body() %}
+    {% endif %}
 
 {% endfunc %}
 {% endstripspace %}
