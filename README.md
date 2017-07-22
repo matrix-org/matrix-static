@@ -2,7 +2,7 @@ Riot Static
 ===========
 
 ### Installation
-`git clone` this repository and follow instructions at getgb.io.
+`git clone` this repository and follow instructions at [getgb.io](https://getgb.io).
 Use gb to build the project using `gb build` then execute it from the `bin/` directory.
 
 ### Usage
