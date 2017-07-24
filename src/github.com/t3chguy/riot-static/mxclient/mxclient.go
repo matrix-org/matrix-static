@@ -83,7 +83,7 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 func newClient(homeserverURL, userID, accessToken string) (*Client, error) {
 	cli, err := gomatrix.NewClient(homeserverURL, userID, accessToken)
 	cli.Client = &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 	return &Client{cli}, err
 }
