@@ -43,6 +43,7 @@ func main() {
 
 	router := gin.Default()
 	router.Static("/img", "./assets/img")
+	router.Static("/css", "./assets/css")
 
 	router.GET("/", func(c *gin.Context) {
 		page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)

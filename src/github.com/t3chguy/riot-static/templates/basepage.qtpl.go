@@ -55,183 +55,183 @@ func StreamPageTemplate(qw422016 *qt422016.Writer, p Page) {
 	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:16
 	p.StreamTitle(qw422016)
 	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:16
-	qw422016.N().S(`</title><style>/*tr {*//*height: 64px;*//*}*/img.userAvatar {height: 20px;}img.memberListAvatar {height: 36px;}* {font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;}td.roomLogo {width: 80px;}img.roomLogo {height: 64px;}table#roomHeader {width: 100%;}table#roomList img {height: 60px;}table#timeline tr {vertical-align: top;}td.rightAlign {text-align: right;min-width: 120px;}div.paginate {text-align: center;}/*td.maxWidth {*//*width: 100%;*//*}*/h2 {margin: 0;}span.redacted {color: red;}</style>`)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:62
+	qw422016.N().S(`</title><link rel="stylesheet" type="text/css" href="./css/main.css">`)
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:18
 	p.StreamHead(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:62
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:18
 	qw422016.N().S(`<base href="/"></head><body><header>`)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:67
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:23
 	p.StreamHeader(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:67
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:23
 	qw422016.N().S(`</header><hr>`)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:70
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:26
 	p.StreamBody(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:70
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:26
 	qw422016.N().S(`</body></html>`)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 func WritePageTemplate(qq422016 qtio422016.Writer, p Page) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	StreamPageTemplate(qw422016, p)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 func PageTemplate(p Page) string {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	WritePageTemplate(qb422016, p)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:73
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:29
 }
 
 // Base page implementation. Other pages may inherit from it if they need overriding only certain Page methods
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:76
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:32
 type BasePage struct{}
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 func (p *BasePage) StreamTitle(qw422016 *qt422016.Writer) {
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 qw422016.N().S(`Spiders Welcome`) }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 func (p *BasePage) WriteTitle(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	p.StreamTitle(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 func (p *BasePage) Title() string {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	p.WriteTitle(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:77
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:33
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 func (p *BasePage) StreamHead(qw422016 *qt422016.Writer) {
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 func (p *BasePage) WriteHead(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	p.StreamHead(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 func (p *BasePage) Head() string {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	p.WriteHead(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:78
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:34
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 func (p *BasePage) StreamHeader(qw422016 *qt422016.Writer) {
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 qw422016.N().S(`Default Header`) }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 func (p *BasePage) WriteHeader(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	p.StreamHeader(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 func (p *BasePage) Header() string {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	p.WriteHeader(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:79
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:35
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 func (p *BasePage) StreamBody(qw422016 *qt422016.Writer) {
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 qw422016.N().S(`Default Body`) }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 func (p *BasePage) WriteBody(qq422016 qtio422016.Writer) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	p.StreamBody(qw422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 func (p *BasePage) Body() string {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	p.WriteBody(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:80
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:36
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:82
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:38
 func StreamStrFallback(qw422016 *qt422016.Writer, strings ...string) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:84
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:40
 	firstStr := ""
 	for _, str := range strings {
 		if str != "" {
@@ -240,38 +240,38 @@ func StreamStrFallback(qw422016 *qt422016.Writer, strings ...string) {
 		}
 	}
 
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:92
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:48
 	qw422016.N().S(firstStr)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 func WriteStrFallback(qq422016 qtio422016.Writer, strings ...string) {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	StreamStrFallback(qw422016, strings...)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 func StrFallback(strings ...string) string {
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	WriteStrFallback(qb422016, strings...)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:93
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:49
 }
 
-//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:96
+//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:52
 func Str(a interface{}) string {
 	str, _ := a.(string)
 	return str

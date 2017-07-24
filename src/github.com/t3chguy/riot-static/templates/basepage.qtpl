@@ -14,51 +14,7 @@ PrintPage prints Page p
     <head>
         <meta charset="UTF-8">
         <title>{%= p.Title() %}</title>
-        <style>
-            /*tr {*/
-                /*height: 64px;*/
-            /*}*/
-            img.userAvatar {
-                height: 20px;
-            }
-            img.memberListAvatar {
-                height: 36px;
-            }
-            * {
-                font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
-            }
-            td.roomLogo {
-                width: 80px;
-            }
-            img.roomLogo {
-                height: 64px;
-            }
-            table#roomHeader {
-                width: 100%;
-            }
-            table#roomList img {
-                height: 60px;
-            }
-            table#timeline tr {
-                vertical-align: top;
-            }
-            td.rightAlign {
-                text-align: right;
-                min-width: 120px;
-            }
-            div.paginate {
-                text-align: center;
-            }
-            /*td.maxWidth {*/
-                /*width: 100%;*/
-            /*}*/
-            h2 {
-                margin: 0;
-            }
-            span.redacted {
-                color: red;
-            }
-        </style>
+        <link rel="stylesheet" type="text/css" href="./css/main.css">
         {%= p.Head() %}
         <base href="/">
     </head>
