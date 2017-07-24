@@ -16,7 +16,7 @@ package mxclient
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/riot-static/utils"
 	"io/ioutil"
@@ -80,50 +80,58 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 	return len(resp.Chunk), nil
 }
 
-func NewClient() *Client {
+func newClient(homeserverURL, userID, accessToken string) (*Client, error) {
+	cli, err := gomatrix.NewClient(homeserverURL, userID, accessToken)
+	cli.Client = &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	return &Client{cli}, err
+}
+
+func RegisterGuest(configPath string, homeserverURL string) error {
+	m, err := newClient(homeserverURL, "", "")
+	if err != nil {
+		return err
+	}
+
+	register, inter, err := m.RegisterGuest(&gomatrix.ReqRegister{})
+
+	if err != nil {
+		return err
+	}
+	if inter != nil || register == nil {
+		return errors.New("Error encountered during guest registration")
+	}
+
+	// TODO consider SRV Query instead.
+	register.HomeServer = homeserverURL
+
+	configJson, err := json.Marshal(register)
+
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(configPath, configJson, 0600)
+}
+
+func NewClient(configPath string) (*Client, error) {
 	var config *gomatrix.RespRegister
-	if _, err := os.Stat("./config.json"); err == nil {
-		file, e := ioutil.ReadFile("./config.json")
-		if e != nil {
-			fmt.Printf("File error: %v\n", e)
-			os.Exit(1)
-		}
 
-		json.Unmarshal(file, &config)
+	if _, err := os.Stat(configPath); err != nil {
+		return nil, errors.New("Config file not found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
 	}
 
-	if config == nil {
-		config = new(gomatrix.RespRegister)
+	file, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
 	}
+
+	json.Unmarshal(file, &config)
 
 	if config.HomeServer == "" {
-		config.HomeServer = "https://matrix.org"
+		return nil, errors.New("No user configuration found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
 	}
 
-	cli, _ := gomatrix.NewClient(config.HomeServer, "", "")
-	cli.Client = &http.Client{
-		Timeout: 5 * time.Second,
-	}
-
-	if config.AccessToken == "" || config.UserID == "" {
-		register, inter, err := cli.RegisterGuest(&gomatrix.ReqRegister{})
-
-		if err != nil || inter != nil || register == nil {
-			fmt.Println("Error encountered during guest registration")
-			os.Exit(1)
-		}
-
-		register.HomeServer = config.HomeServer
-		config = register
-
-		configJson, _ := json.Marshal(config)
-		err = ioutil.WriteFile("./config.json", configJson, 0600)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	cli.SetCredentials(config.UserID, config.AccessToken)
-
-	return &Client{cli}
+	return newClient(config.HomeServer, config.UserID, config.AccessToken)
 }
