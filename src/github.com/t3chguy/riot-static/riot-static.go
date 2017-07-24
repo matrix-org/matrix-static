@@ -15,6 +15,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/t3chguy/riot-static/mxclient"
@@ -35,9 +36,31 @@ const RoomMembersPageSize = 20
 const NumWorkers uint32 = 32
 
 func main() {
-	client := mxclient.NewClient()
-	worldReadableRooms := client.NewWorldReadableRooms()
+	configPath := flag.String("config-file", "./config.json", "The path to the desired config file.")
+	registerGuest := flag.Bool("create-guest-account", false, "Whether or not a guest should be registered.")
+	homeserverUrl := flag.String("homeserver-url", "https://matrix.org", "What Homeserver URL to use when registering a guest.")
+	flag.Parse()
 
+	var client *mxclient.Client
+	var err error
+
+	if *registerGuest {
+		client, err = mxclient.NewGuest(*configPath, *homeserverUrl)
+		if err != nil {
+			fmt.Println("Error encountered when creating guest account: ", err)
+		} else {
+			fmt.Println("Guest account created successfully!! Restart without --create-guest-account")
+		}
+		return
+	}
+
+	client, err = mxclient.NewClient(*configPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	worldReadableRooms := client.NewWorldReadableRooms()
 	workers := NewWorkers(NumWorkers, client)
 	sanitizerFn := sanitizer.InitSanitizer()
 
