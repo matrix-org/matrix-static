@@ -65,9 +65,9 @@ func main() {
 	publicRouter.Use(gin.Logger(), gin.Recovery())
 
 	if *enablePrometheusMetrics {
-		ginPrometheus := ginprometheus.NewPrometheus("gin")
-		publicRouter.Use(ginPrometheus.HandlerFunc())
-		router.GET(ginPrometheus.MetricsPath, ginprometheus.PrometheusHandler())
+		ginProm := ginprometheus.NewPrometheus("gin")
+		publicRouter.Use(ginProm.HandlerFunc())
+		publicRouter.GET(ginProm.MetricsPath, ginprometheus.PrometheusHandler())
 	}
 
 	publicRouter.Static("/img", "./assets/img")

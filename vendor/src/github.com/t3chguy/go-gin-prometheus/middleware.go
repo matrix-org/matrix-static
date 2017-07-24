@@ -17,6 +17,7 @@ type Prometheus struct {
 	reqCnt               *prometheus.CounterVec
 	reqDur, reqSz, resSz prometheus.Summary
 
+	//RouteAliases map[string]string
 	MetricsPath string
 }
 
@@ -74,6 +75,11 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 
 // Use adds the middleware to a gin engine.
 func (p *Prometheus) Use(e *gin.Engine) {
+	//p.RouteAliases = make(map[string]string)
+	//for _, route := range e.Routes() {
+	//	p.RouteAliases[route.Handler] = route.Path
+	//}
+
 	e.Use(p.HandlerFunc())
 	e.GET(p.MetricsPath, PrometheusHandler())
 }
@@ -86,7 +92,8 @@ func (p *Prometheus) UseWithAuth(e *gin.Engine, accounts gin.Accounts) {
 
 func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.URL.String() == p.MetricsPath {
+		url := c.Request.URL.Path
+		if url == p.MetricsPath {
 			c.Next()
 			return
 		}
@@ -103,7 +110,7 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 		resSz := float64(c.Writer.Size())
 
 		p.reqDur.Observe(elapsed)
-		p.reqCnt.WithLabelValues(status, c.Request.Method, c.HandlerName()).Inc()
+		p.reqCnt.WithLabelValues(status, c.Request.Method, url).Inc()
 		p.reqSz.Observe(float64(<-reqSz))
 		p.resSz.Observe(resSz)
 	}
