@@ -39,7 +39,7 @@ func main() {
 	worldReadableRooms := client.NewWorldReadableRooms()
 
 	workers := NewWorkers(NumWorkers, client)
-	sanitizer := sanitizer.InitSanitizer()
+	sanitizerFn := sanitizer.InitSanitizer()
 
 	router := gin.Default()
 	router.Static("/img", "./assets/img")
@@ -122,7 +122,7 @@ func main() {
 				CurrentOffset:     offset,
 				Anchor:            eventID,
 
-				Sanitizer:         sanitizer,
+				Sanitizer:         sanitizerFn,
 				HomeserverBaseURL: client.HomeserverURL.String(),
 			})
 		})
