@@ -38,9 +38,9 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 		prometheus.CounterOpts{
 			Subsystem: subsystem,
 			Name:      "requests_total",
-			Help:      "How many HTTP requests processed, partitioned by status code and HTTP method.",
+			Help:      "How many HTTP requests processed, partitioned by status code, HTTP method and path.",
 		},
-		[]string{"code", "method", "handler"},
+		[]string{"code", "method", "path"},
 	)
 	prometheus.MustRegister(p.reqCnt)
 
