@@ -80,39 +80,12 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 	return len(resp.Chunk), nil
 }
 
-func newClient(homeserverURL, userID, accessToken string) (*Client, error) {
+func NewRawClient(homeserverURL, userID, accessToken string) (*Client, error) {
 	cli, err := gomatrix.NewClient(homeserverURL, userID, accessToken)
 	cli.Client = &http.Client{
 		Timeout: 30 * time.Second,
 	}
 	return &Client{cli}, err
-}
-
-func RegisterGuest(configPath string, homeserverURL string) error {
-	m, err := newClient(homeserverURL, "", "")
-	if err != nil {
-		return err
-	}
-
-	register, inter, err := m.RegisterGuest(&gomatrix.ReqRegister{})
-
-	if err != nil {
-		return err
-	}
-	if inter != nil || register == nil {
-		return errors.New("Error encountered during guest registration")
-	}
-
-	// TODO consider SRV Query instead.
-	register.HomeServer = homeserverURL
-
-	configJson, err := json.Marshal(register)
-
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(configPath, configJson, 0600)
 }
 
 func NewClient(configPath string) (*Client, error) {
@@ -133,5 +106,5 @@ func NewClient(configPath string) (*Client, error) {
 		return nil, errors.New("No user configuration found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
 	}
 
-	return newClient(config.HomeServer, config.UserID, config.AccessToken)
+	return NewRawClient(config.HomeServer, config.UserID, config.AccessToken)
 }

@@ -17,7 +17,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/t3chguy/go-gin-prometheus"
 	"github.com/t3chguy/riot-static/mxclient"
 	"github.com/t3chguy/riot-static/sanitizer"
 	"github.com/t3chguy/riot-static/templates"
@@ -33,22 +35,15 @@ const PublicRoomsPageSize = 20
 const RoomTimelineSize = 30
 const RoomMembersPageSize = 20
 
-const NumWorkers uint32 = 32
-
 func main() {
 	configPath := flag.String("config-file", "./config.json", "The path to the desired config file.")
-	registerGuest := flag.Bool("create-guest-account", false, "Whether or not a guest should be registered.")
-	homeserverUrl := flag.String("homeserver-url", "https://matrix.org", "What Homeserver URL to use when registering a guest.")
-	flag.Parse()
+	numWorkers := flag.Int("num-workers", 32, "Number of Worker goroutines to start.")
 
-	if *registerGuest {
-		if err := mxclient.RegisterGuest(*configPath, *homeserverUrl); err != nil {
-			fmt.Println("Error encountered when creating guest account: ", err)
-		} else {
-			fmt.Println("Guest account created successfully!! Restart without --create-guest-account")
-		}
-		return
-	}
+	publicServePrefix := flag.String("public-serve-prefix", "/", "Prefix for publicly accessible routes.")
+	enablePrometheusMetrics := flag.Bool("enable-premetheus-metrics", false, "Whether or not to enable the /metric endpoint.")
+	enablePprof := flag.Bool("enable-pprof", false, "Whether or not to enable the /debug/pprof endpoints.")
+
+	flag.Parse()
 
 	client, err := mxclient.NewClient(*configPath)
 	if err != nil {
@@ -57,14 +52,28 @@ func main() {
 	}
 
 	worldReadableRooms := client.NewWorldReadableRooms()
-	workers := NewWorkers(NumWorkers, client)
+	workers := NewWorkers(uint32(*numWorkers), client)
 	sanitizerFn := sanitizer.InitSanitizer()
 
-	router := gin.Default()
-	router.Static("/img", "./assets/img")
-	router.Static("/css", "./assets/css")
+	router := gin.New()
 
-	router.GET("/", func(c *gin.Context) {
+	if *enablePprof {
+		pprof.Register(router, nil)
+	}
+
+	publicRouter := router.Group(*publicServePrefix)
+	publicRouter.Use(gin.Logger(), gin.Recovery())
+
+	if *enablePrometheusMetrics {
+		ginPrometheus := ginprometheus.NewPrometheus("gin")
+		publicRouter.Use(ginPrometheus.HandlerFunc())
+		router.GET(ginPrometheus.MetricsPath, ginprometheus.PrometheusHandler())
+	}
+
+	publicRouter.Static("/img", "./assets/img")
+	publicRouter.Static("/css", "./assets/css")
+
+	publicRouter.GET("/", func(c *gin.Context) {
 		page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
 		templates.WritePageTemplate(c.Writer, &templates.RoomsPage{
 			Rooms:    worldReadableRooms.GetPage(page, PublicRoomsPageSize),
@@ -73,7 +82,7 @@ func main() {
 		})
 	})
 
-	roomRouter := router.Group("/room/:roomID/")
+	roomRouter := publicRouter.Group("/room/:roomID/")
 	{
 		// Load room worker into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
