@@ -41,12 +41,8 @@ func main() {
 	homeserverUrl := flag.String("homeserver-url", "https://matrix.org", "What Homeserver URL to use when registering a guest.")
 	flag.Parse()
 
-	var client *mxclient.Client
-	var err error
-
 	if *registerGuest {
-		client, err = mxclient.NewGuest(*configPath, *homeserverUrl)
-		if err != nil {
+		if err := mxclient.NewGuest(*configPath, *homeserverUrl); err != nil {
 			fmt.Println("Error encountered when creating guest account: ", err)
 		} else {
 			fmt.Println("Guest account created successfully!! Restart without --create-guest-account")
@@ -54,7 +50,7 @@ func main() {
 		return
 	}
 
-	client, err = mxclient.NewClient(*configPath)
+	client, err := mxclient.NewClient(*configPath)
 	if err != nil {
 		fmt.Println(err)
 		return

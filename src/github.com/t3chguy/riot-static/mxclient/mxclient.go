@@ -88,19 +88,19 @@ func newClient(homeserverURL, userID, accessToken string) (*Client, error) {
 	return &Client{cli}, err
 }
 
-func NewGuest(configPath string, homeserverURL string) (*Client, error) {
+func NewGuest(configPath string, homeserverURL string) error {
 	m, err := newClient(homeserverURL, "", "")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	register, inter, err := m.RegisterGuest(&gomatrix.ReqRegister{})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if inter != nil || register == nil {
-		return nil, errors.New("Error encountered during guest registration")
+		return errors.New("Error encountered during guest registration")
 	}
 
 	// TODO consider SRV Query instead.
@@ -109,15 +109,10 @@ func NewGuest(configPath string, homeserverURL string) (*Client, error) {
 	configJson, err := json.Marshal(register)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err = ioutil.WriteFile(configPath, configJson, 0600); err != nil {
-		return nil, err
-	}
-
-	m.SetCredentials(register.UserID, register.AccessToken)
-	return m, nil
+	return ioutil.WriteFile(configPath, configJson, 0600)
 }
 
 func NewClient(configPath string) (*Client, error) {
