@@ -88,7 +88,7 @@ func newClient(homeserverURL, userID, accessToken string) (*Client, error) {
 	return &Client{cli}, err
 }
 
-func NewGuest(configPath string, homeserverURL string) error {
+func RegisterGuest(configPath string, homeserverURL string) error {
 	m, err := newClient(homeserverURL, "", "")
 	if err != nil {
 		return err

@@ -42,7 +42,7 @@ func main() {
 	flag.Parse()
 
 	if *registerGuest {
-		if err := mxclient.NewGuest(*configPath, *homeserverUrl); err != nil {
+		if err := mxclient.RegisterGuest(*configPath, *homeserverUrl); err != nil {
 			fmt.Println("Error encountered when creating guest account: ", err)
 		} else {
 			fmt.Println("Guest account created successfully!! Restart without --create-guest-account")
