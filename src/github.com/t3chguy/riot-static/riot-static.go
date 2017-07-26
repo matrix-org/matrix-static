@@ -40,7 +40,7 @@ func main() {
 	numWorkers := flag.Int("num-workers", 32, "Number of Worker goroutines to start.")
 
 	publicServePrefix := flag.String("public-serve-prefix", "/", "Prefix for publicly accessible routes.")
-	enablePrometheusMetrics := flag.Bool("enable-prometheus-metrics", false, "Whether or not to enable the /metric endpoint.")
+	enablePrometheusMetrics := flag.Bool("enable-prometheus-metrics", false, "Whether or not to enable the /metrics endpoint.")
 	enablePprof := flag.Bool("enable-pprof", false, "Whether or not to enable the /debug/pprof endpoints.")
 
 	flag.Parse()
