@@ -160,8 +160,10 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	var filteredEventList []gomatrix.Event
 	for _, event := range resp.Messages.Chunk {
 		if event.Type != "m.room.redaction" {
-			filteredEventList = append([]gomatrix.Event{event}, filteredEventList...)
+			continue
 		}
+
+		filteredEventList = append([]gomatrix.Event{event}, filteredEventList...)
 	}
 
 	newRoom := &Room{
