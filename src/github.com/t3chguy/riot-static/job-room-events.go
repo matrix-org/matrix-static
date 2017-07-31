@@ -20,10 +20,12 @@ import (
 )
 
 type RoomEventsResp struct {
-	Events    []gomatrix.Event
-	RoomInfo  mxclient.RoomInfo
-	MemberMap map[string]mxclient.MemberInfo
-	err       error
+	Events      []gomatrix.Event
+	RoomInfo    mxclient.RoomInfo
+	MemberMap   map[string]mxclient.MemberInfo
+	AtTopEnd    bool
+	AtBottomEnd bool
+	err         error
 }
 
 type RoomEventsJob struct {
@@ -35,7 +37,7 @@ type RoomEventsJob struct {
 
 func (job RoomEventsJob) Work(w *Worker) {
 	room := w.rooms[job.roomID]
-	events, err := room.GetEventPage(job.anchor, job.offset, job.pageSize)
+	events, atTopEnd, atBottomEnd, err := room.GetEventPage(job.anchor, job.offset, job.pageSize)
 
 	membersMap := make(map[string]mxclient.MemberInfo)
 	for mxid, member := range room.GetState().MemberMap {
@@ -46,6 +48,8 @@ func (job RoomEventsJob) Work(w *Worker) {
 		events,
 		room.RoomInfo(),
 		membersMap,
+		atTopEnd,
+		atBottomEnd,
 		err,
 	}
 }

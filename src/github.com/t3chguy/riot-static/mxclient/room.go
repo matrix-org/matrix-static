@@ -39,11 +39,12 @@ type Room struct {
 	backPaginationToken    string
 	forwardPaginationToken string
 
+	// eventList[0] is the latest event we know
 	eventList []gomatrix.Event
 	//eventMap        map[string]*gomatrix.Event
 	latestRoomState RoomState
 
-	hasInitialSynced bool
+	HasReachedHistoricEndOfTimeline bool
 }
 
 func (r *Room) ForwardPaginateRoom() {
@@ -100,27 +101,35 @@ func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 // backpaginate on every single call.
 const overcompensateBackpaginationBy = 32
 
-func (r *Room) getBackwardEventRange(anchorIndex, offset, number int) []gomatrix.Event {
-	length := len(r.eventList)
+func (r *Room) backpaginateIfNeeded(anchorIndex, offset, number int) {
+	if r.HasReachedHistoricEndOfTimeline {
+		return
+	}
 
 	// delta is the number of events we should have, to comfortably handle this request, if we do not have this many
 	// then ask the mxclient to backpaginate this room by at least delta-length events.
 	// TODO if numNew = 0, we are at end of TL as we know it, mark this room as such.
+	length := len(r.eventList)
 	if delta := anchorIndex + offset + number + overcompensateBackpaginationBy; delta >= length {
-		// if no error encountered then we have new events, update our previously calculated length by the len of these.
+		// if no error encountered and zero events then we are likely at the last historical event.
 		if numNew, err := r.client.backpaginateRoom(r, delta-length); err == nil {
-			length += numNew
+			if numNew == 0 {
+				r.HasReachedHistoricEndOfTimeline = true
+			}
 		}
 	}
+}
 
+func (r *Room) getBackwardEventRange(anchorIndex, offset, number int) []gomatrix.Event {
+	r.backpaginateIfNeeded(anchorIndex, offset, number)
+
+	length := len(r.eventList)
 	startIndex := utils.Min(anchorIndex+offset, length)
 	return r.eventList[startIndex:utils.Min(startIndex+number, length)]
 }
 
 func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event {
-	length := len(r.eventList)
-	topIndex := utils.Bound(0, index+number-offset, length)
-
+	topIndex := utils.Bound(0, index+number-offset, len(r.eventList))
 	return r.eventList[utils.Max(topIndex-number, 0):topIndex]
 }
 
@@ -128,21 +137,28 @@ func (r *Room) GetState() RoomState {
 	return r.latestRoomState
 }
 
-func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, err error) {
+func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, atTopEnd, atBottomEnd bool, err error) {
 	var anchorIndex int
 	if anchor != "" {
 		if index, found := r.findEventIndex(anchor, false); found {
 			anchorIndex = index
 		} else {
-			return []gomatrix.Event{}, errors.New("Could not find event")
+			err = errors.New("Could not find event")
+			return
 		}
 	}
 
 	if offset >= 0 {
-		return r.getBackwardEventRange(anchorIndex, offset, pageSize), nil
+		events = r.getBackwardEventRange(anchorIndex, offset, pageSize)
 	} else {
-		return r.getForwardEventRange(anchorIndex, -offset, pageSize), nil
+		events = r.getForwardEventRange(anchorIndex, -offset, pageSize)
 	}
+
+	// Consider ourselves at end if the ID matches the respective end of the stored event list.
+	if numEvents, totalNumEvents := len(events), len(r.eventList); numEvents > 0 {
+		atTopEnd = events[numEvents-1].ID == r.eventList[totalNumEvents-1].ID
+	}
+	atBottomEnd = events[0].ID == r.eventList[0].ID
 
 	return
 }
@@ -159,7 +175,7 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	// filter out m.room.redactions and reverse ordering at once.
 	var filteredEventList []gomatrix.Event
 	for _, event := range resp.Messages.Chunk {
-		if event.Type != "m.room.redaction" {
+		if event.Type == "m.room.redaction" {
 			continue
 		}
 

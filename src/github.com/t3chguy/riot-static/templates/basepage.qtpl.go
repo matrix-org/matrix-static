@@ -55,7 +55,7 @@ func StreamPageTemplate(qw422016 *qt422016.Writer, p Page) {
 	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:16
 	p.StreamTitle(qw422016)
 	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:16
-	qw422016.N().S(`</title><link rel="stylesheet" type="text/css" href="./css/main.css">`)
+	qw422016.N().S(`</title><link rel="stylesheet" type="text/css" href="/css/main.css">`)
 	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:18
 	p.StreamHead(qw422016)
 	//line src\github.com\t3chguy\riot-static\templates\basepage.qtpl:18
