@@ -257,7 +257,7 @@
 
 
 {% func (p *RoomChatPage) Title() %}
-    Public Room Timeline - {%s p.RoomInfo.Name %} - Riot Static
+    Public Room Timeline - {% space %}{%s p.RoomInfo.Name %}{% space %} - Riot Static
 {% endfunc %}
 
 {% func (p *RoomChatPage) Head() %}
