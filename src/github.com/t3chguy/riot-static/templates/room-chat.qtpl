@@ -63,13 +63,11 @@
 
         sender := ev.Sender
         target := *ev.StateKey
-        senderPretty := p.MemberMap[sender].GetName()
-        targetPretty := p.MemberMap[target].GetName()
     %}
 
     {% switch content.Membership %}
         {% case "invite" %}
-            {%s senderPretty %} invited {%s targetPretty %}.
+            {%= p.prettyPrintMember(sender) %} invited {%= p.prettyPrintMember(target) %}.
         {% case "ban" %}
             {% code
                 var reasonString string
@@ -77,40 +75,40 @@
                     reasonString = " (" + reason + ")"
                 }
             %}
-            {%s senderPretty %} banned {%s targetPretty %}{%s reasonString %}.
+            {%= p.prettyPrintMember(sender) %} banned {%= p.prettyPrintMember(target) %}{%s reasonString %}.
         {% case "join" %}
             {% if ev.PrevContent != nil && prevContent.Membership == "join" %}
                 {% if prevContent.DisplayName == "" && content.DisplayName != "" %}
-                    {%s senderPretty %} set their display name to {%s content.DisplayName %}.
+                    {%= p.prettyPrintMember(target) %} set their display name to {%s content.DisplayName %}.
                 {% elseif prevContent.DisplayName != "" && content.DisplayName == "" %}
-                    {%s senderPretty %} removed their display name {%s prevContent.DisplayName %}.
+                    {%= p.prettyPrintMember(target) %} removed their display name {%s prevContent.DisplayName %}.
                 {% elseif prevContent.DisplayName != content.DisplayName %}
-                    {%s senderPretty %} changed their display name from {%s prevContent.DisplayName %} to {%s content.DisplayName %}.
+                    {%= p.prettyPrintMember(target) %} changed their display name from {%s prevContent.DisplayName %} to {%s content.DisplayName %}.
                 {% elseif !prevContent.AvatarURL.IsValid() && content.AvatarURL.IsValid() %}
-                    {%s senderPretty %} set a profile picture.
+                    {%= p.prettyPrintMember(target) %} set a profile picture.
                 {% elseif prevContent.AvatarURL.IsValid() && !content.AvatarURL.IsValid() %}
-                    {%s senderPretty %} removed their profile picture.
+                    {%= p.prettyPrintMember(target) %} removed their profile picture.
                 {% elseif prevContent.AvatarURL != content.AvatarURL %}
-                    {%s senderPretty %} changed their profile picture.
+                    {%= p.prettyPrintMember(target) %} changed their profile picture.
                 {% endif %}
             {% else %}
-                {%s targetPretty %} joined the room.
+                {%= p.prettyPrintMember(target) %}joined the room.
             {% endif %}
         {% case "leave" %}
             {% if sender == target %}
                 {% if prevContent.Membership == "invite" %}
-                    {%s targetPretty %} rejected invite.
+                    {%= p.prettyPrintMember(target) %} rejected invite.
                 {% else %}
-                    {%s targetPretty %} left the room.
+                    {%= p.prettyPrintMember(target) %} left the room.
                 {% endif %}
             {% elseif prevContent.Membership == "ban" %}
-                {%s senderPretty %} unbanned {%s targetPretty %}.
+                {%= p.prettyPrintMember(sender) %} unbanned {%= p.prettyPrintMember(target) %}.
             {% elseif prevContent.Membership == "leave" %}
-                {%s senderPretty %} kicked {%s targetPretty %}.
+                {%= p.prettyPrintMember(sender) %} kicked {%= p.prettyPrintMember(target) %}.
             {% elseif prevContent.Membership == "invite" %}
-                {%s senderPretty %} withdrew {%s targetPretty %}'s invite.
+                {%= p.prettyPrintMember(sender) %} withdrew {%= p.prettyPrintMember(target) %}'s invite.
             {% else %}
-                {%s targetPretty %} left the room.
+                {%= p.prettyPrintMember(target) %} left the room.
             {% endif %}
     {% endswitch %}
 {% endfunc %}
@@ -175,53 +173,77 @@
     {% endswitch %}
 {% endfunc %}
 
-{% stripspace %}
-{% func (p *RoomChatPage) printEvent(ev gomatrix.Event) %}
+{% func printStateChange(ev gomatrix.Event, key, thing string) %}
     {% code
-        memberInfo := p.MemberMap[ev.Sender]
+        prev := Str(ev.PrevContent[key])
+        cur := Str(ev.Content[key])
     %}
 
+    {%s ev.Sender %}
+
+    {% if cur != "" && prev == "" %}
+        set the {%s thing %} to "{%s cur %}".
+    {% elseif cur == "" && prev != "" %}
+        removed the {%s thing %} "{%s prev %}".
+    {% else %}
+        changed the {%s thing %} to "{%s cur %}" from "{%s prev %}".
+    {% endif %}
+{% endfunc %}
+
+{% func (p *RoomChatPage) prettyPrintMember(mxid string) %}
+    {% code memberInfo := p.MemberMap[mxid] %}
+
+    <a href="./room/{%s p.RoomInfo.RoomID %}/members/{%s mxid %}">
+        {% if memberInfo.AvatarURL.IsValid() %}
+            <img class="avatar userAvatar" src="{%s memberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
+        {% else %}
+            <img class="avatar userAvatar" src="./img/logo_missing.png" />
+        {% endif %}
+
+        {%s memberInfo.GetName() %}
+    </a>
+{% endfunc %}
+
+{% stripspace %}
+{% func (p *RoomChatPage) printEvent(ev gomatrix.Event) %}
     <tr>
         {%= p.printPermalinkColumn(ev) %}
         {% switch ev.Type %}
             {% case "m.room.message" %}
-                <td nowrap>
-                    <a href="./room/{%s p.RoomInfo.RoomID %}/members/{%s ev.Sender %}">
-
-                        {% if memberInfo.AvatarURL.IsValid() %}
-                            <img class="avatar userAvatar" src="{%s memberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
-                        {% else %}
-                            <img class="avatar userAvatar" src="./img/logo_missing.png" />
-                        {% endif %}
-
+                {% if ev.Content["msgtype"] == "m.emote" %}
+                    <td nowrap></td>
+                    <td>
+                        *{% space %}{%= p.prettyPrintMember(ev.Sender) %}
+                        {% space %}{%= p.textForMRoomMessageEvent(ev) %}
+                    </td>
+                {% else %}
+                    <td nowrap>
                         {% if ev.Content["msgtype"] == "m.emote" %}*{% space %}{% endif %}
+                        {%= p.prettyPrintMember(ev.Sender) %}
+                    </td>
+                    <td>{%= p.textForMRoomMessageEvent(ev) %}</td>
+                {% endif %}
 
-                        {%s memberInfo.GetName() %}
-                    </a>
-                </td>
-                <td>{%= p.textForMRoomMessageEvent(ev) %}</td>
             {% case "m.room.member" %}
-                <td></td>
+                <td nowrap></td>
                 <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
+            {% case "m.room.name" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "name", "room name") %}</td>
             {% case "m.room.topic" %}
-                <td></td>
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "topic", "room topic") %}</td>
+            {% case "m.room.avatar" %}
+                <td nowrap></td>
                 <td>
-                    {%s ev.Sender %}{% space %}
-                    {% code
-                        prevTopic := Str(ev.PrevContent["topic"])
-                        curTopic := Str(ev.Content["topic"])
-                    %}
-                    {% if curTopic != "" && prevTopic == "" %}
-                        set the topic to "{%s curTopic %}".
-                    {% elseif curTopic == "" && prevTopic != "" %}
-                        removed the topic "{%s prevTopic %}".
-                    {% else %}
-                        changed the topic to "{%s curTopic %}" from "{%s prevTopic %}".
-                    {% endif %}
+                    Room Avatar Renderer.
                 </td>
+            {% case "m.room.power_levels" %}
+                <td nowrap></td>
+                <td>{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
             {% default %}
-                <td>{%s ev.Type %}</td>
-                <td>Default Event Renderer.</td>
+                <td nowrap>{%s ev.Type %}</td>
+                <td>Cannot Understand Event.</td>
         {% endswitch %}
     </tr>
 {% endfunc %}
