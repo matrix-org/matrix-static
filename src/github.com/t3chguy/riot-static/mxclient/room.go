@@ -96,19 +96,25 @@ func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 	return 0, false
 }
 
-const overcompensatePaginationQuantity = 32
+// overcompenesatePaginationBy, number to try and keep as a buffer at the end of our in-memory timeline so we don't
+// backpaginate on every single call.
+const overcompensateBackpaginationBy = 32
 
-func (r *Room) getBackwardEventRange(index, offset, number int) []gomatrix.Event {
+func (r *Room) getBackwardEventRange(anchorIndex, offset, number int) []gomatrix.Event {
 	length := len(r.eventList)
 
-	if delta := index + offset + number + overcompensatePaginationQuantity; delta >= length {
+	// delta is the number of events we should have, to comfortably handle this request, if we do not have this many
+	// then ask the mxclient to backpaginate this room by at least delta-length events.
+	// TODO if numNew = 0, we are at end of TL as we know it, mark this room as such.
+	if delta := anchorIndex + offset + number + overcompensateBackpaginationBy; delta >= length {
+		// if no error encountered then we have new events, update our previously calculated length by the len of these.
 		if numNew, err := r.client.backpaginateRoom(r, delta-length); err == nil {
 			length += numNew
 		}
 	}
-	index = utils.Min(index+offset, length)
 
-	return r.eventList[index:utils.Min(index+number, length)]
+	startIndex := utils.Min(anchorIndex+offset, length)
+	return r.eventList[startIndex:utils.Min(startIndex+number, length)]
 }
 
 func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event {
