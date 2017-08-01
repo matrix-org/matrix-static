@@ -40,6 +40,7 @@ func registerGuest(configPath, homeserverURL string) error {
 	}
 
 	// TODO consider SRV Query on start instead.
+	// SRV is primarily for S-S API so not 100% appropriate.
 	register.HomeServer = homeserverURL
 
 	configJson, err := json.Marshal(register)

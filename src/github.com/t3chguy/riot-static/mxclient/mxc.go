@@ -35,10 +35,12 @@ type MXCURL struct {
 	homeserverURL string
 }
 
+// NewMXCURL constructs an MXCURL based on the mxc and the baseUrl to any Homeserver which can access the MXCURL.
 func NewMXCURL(url string, baseUrl string) *MXCURL {
 	return &MXCURL{url, baseUrl}
 }
 
+// IsValid returns a boolean of whether or not this MXCURL appears valid.
 func (m *MXCURL) IsValid() bool {
 	ok, _, _ := m.split()
 	return ok
@@ -71,6 +73,7 @@ func (m *MXCURL) mapMxcUrl(kind string) *url.URL {
 	return hsURL
 }
 
+// ToThumbUrl returns a http/s URL string representation of the MXCURL at the width&height specified.
 func (m *MXCURL) ToThumbURL(width, height int, method string) string {
 	mediaUrl := m.mapMxcUrl("thumbnail")
 
@@ -88,6 +91,7 @@ func (m *MXCURL) ToThumbURL(width, height int, method string) string {
 	return mediaUrl.String()
 }
 
+// ToThumbUrl returns a http/s URL string representation of the original file uploaded at the MXCURL.s
 func (m *MXCURL) ToURL() string {
 	return m.mapMxcUrl("download").String()
 }

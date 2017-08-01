@@ -38,9 +38,10 @@ type RespInitialSync struct {
 	//Presence   []*PresenceEvent       `json:"presence"`
 }
 
-// Our Client extension adds some methods and ties in a RoomStore (Ordered Map)
+// Our Client extension adds some methods
 type Client struct{ *gomatrix.Client }
 
+// Register makes an HTTP request according to http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-rooms-roomid-initialsync
 func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSync, err error) {
 	urlPath := m.BuildURLWithQuery([]string{"rooms", roomID, "initialSync"}, map[string]string{
 		"limit": strconv.Itoa(limit),
@@ -51,11 +52,10 @@ func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSyn
 
 const minimumPagination = 64
 
-// TODO split into runs of max 999 recursively otherwise we get capped.
+// TODO split into runs of max size recursively otherwise synapse may enforce its own limit (999?)
 func (m *Client) backpaginateRoom(room *Room, amount int) (int, error) {
 	amount = utils.Max(amount, minimumPagination)
-	backPaginationToken, _ := room.GetTokens()
-	resp, err := m.Messages(room.ID, backPaginationToken, "", 'b', amount)
+	resp, err := m.Messages(room.ID, room.backPaginationToken, "", 'b', amount)
 
 	if err != nil {
 		return -1, err
@@ -67,9 +67,7 @@ func (m *Client) backpaginateRoom(room *Room, amount int) (int, error) {
 
 func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 	amount = utils.Max(amount, minimumPagination)
-
-	_, forwardPaginationToken := room.GetTokens()
-	resp, err := m.Messages(room.ID, forwardPaginationToken, "", 'f', amount)
+	resp, err := m.Messages(room.ID, room.forwardPaginationToken, "", 'f', amount)
 
 	if err != nil {
 		return -1, err
@@ -80,6 +78,7 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 	return len(resp.Chunk), nil
 }
 
+// NewRawClient returns a wrapped client with http client timeouts applied.
 func NewRawClient(homeserverURL, userID, accessToken string) (*Client, error) {
 	cli, err := gomatrix.NewClient(homeserverURL, userID, accessToken)
 	cli.Client = &http.Client{
@@ -88,6 +87,7 @@ func NewRawClient(homeserverURL, userID, accessToken string) (*Client, error) {
 	return &Client{cli}, err
 }
 
+// NewClient returns a Client configured by the config file found at configPath or an error if encountered.
 func NewClient(configPath string) (*Client, error) {
 	var config *gomatrix.RespRegister
 

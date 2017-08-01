@@ -47,6 +47,7 @@ type Room struct {
 	HasReachedHistoricEndOfTimeline bool
 }
 
+// ForwardPaginateRoom queries the API for any events newer than the latest one currently in the timeline and appends them.
 func (r *Room) ForwardPaginateRoom() {
 	r.client.forwardpaginateRoom(r, 0)
 }
@@ -82,10 +83,6 @@ func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken stri
 		r.eventList = append([]gomatrix.Event{event}, r.eventList...)
 	}
 	r.forwardPaginationToken = newToken
-}
-
-func (r *Room) GetTokens() (string, string) {
-	return r.backPaginationToken, r.forwardPaginationToken
 }
 
 func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
@@ -139,10 +136,12 @@ func (r *Room) getForwardEventRange(index, offset, number int) []gomatrix.Event 
 	return r.eventList[utils.Max(topIndex-number, 0):topIndex]
 }
 
+// GetState returns an instance of RoomState believed to represent the current state of the room.
 func (r *Room) GetState() RoomState {
 	return r.latestRoomState
 }
 
+// GetEventPage returns a paginated slice of events, as well as whether this slice rests at either/both ends of the timeline.
 func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []gomatrix.Event, atTopEnd, atBottomEnd bool, err error) {
 	var anchorIndex int
 	if anchor != "" {
@@ -171,6 +170,7 @@ func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []g
 
 const RoomInitialSyncLimit = 256
 
+// NewRoom fetches :roomId/initialSync for a room and instantiates a room to represent it.
 func (m *Client) NewRoom(roomID string) (*Room, error) {
 	resp, err := m.RoomInitialSync(roomID, RoomInitialSyncLimit)
 
@@ -204,6 +204,7 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	return newRoom, nil
 }
 
+// RoomInfo summates basic currentState parameters
 func (r *Room) RoomInfo() RoomInfo {
 	return RoomInfo{
 		r.ID,

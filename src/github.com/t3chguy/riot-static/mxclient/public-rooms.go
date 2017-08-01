@@ -46,6 +46,7 @@ func processRoomDirectory(homeserverBaseUrl string, roomList []gomatrix.PublicRo
 	return
 }
 
+// NewWorldReadableRooms instantiates a WorldReadableRooms Collection
 func (m *Client) NewWorldReadableRooms() *WorldReadableRooms {
 	worldReadableRooms := &WorldReadableRooms{mxclient: m}
 	if err := worldReadableRooms.Update(); err != nil {
@@ -55,6 +56,7 @@ func (m *Client) NewWorldReadableRooms() *WorldReadableRooms {
 	return worldReadableRooms
 }
 
+// Update updates the state of the WorldReadableRooms Collection by doing an API Call.
 func (r *WorldReadableRooms) Update() error {
 	resp, err := r.mxclient.PublicRooms(0, "", "")
 	if err != nil {
@@ -76,15 +78,10 @@ func (r *WorldReadableRooms) Update() error {
 //	return nil
 //}
 
+// GetPage returns a paginated slice of the WorldReadableRooms Collection
 func (r *WorldReadableRooms) GetPage(page, pageSize int) []gomatrix.PublicRoomsChunk {
 	r.roomsMutex.RLock()
 	defer r.roomsMutex.RUnlock()
 	start, end := utils.CalcPaginationStartEnd(page, pageSize, len(r.rooms))
 	return r.rooms[start:end]
-}
-
-func (r *WorldReadableRooms) GetAll() []gomatrix.PublicRoomsChunk {
-	r.roomsMutex.RLock()
-	defer r.roomsMutex.RUnlock()
-	return r.rooms
 }

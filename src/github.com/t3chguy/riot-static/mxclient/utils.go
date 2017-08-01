@@ -30,6 +30,7 @@ import "github.com/matrix-org/gomatrix"
 //	return tmp
 //}
 
+// ReverseEventsCopy returns a copy of the input slice with all elements in reverse order.
 func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
 	var newEvents []gomatrix.Event
 	for i := len(events) - 1; i >= 0; i-- {
@@ -38,6 +39,7 @@ func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
 	return newEvents
 }
 
+// ShouldHideEvent returns a bool the event should be ignored in the timeline view, mimicking riot-web
 func ShouldHideEvent(ev gomatrix.Event) bool {
 	// m.room.create ?
 

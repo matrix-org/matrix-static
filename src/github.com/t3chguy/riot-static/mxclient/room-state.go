@@ -49,6 +49,7 @@ type RoomState struct {
 	MemberMap   map[string]*MemberInfo
 }
 
+// NewRoomState creates a RoomState with defaults applied.
 func NewRoomState(client *Client) *RoomState {
 	return &RoomState{
 		client:    client,
@@ -56,14 +57,17 @@ func NewRoomState(client *Client) *RoomState {
 	}
 }
 
+// NumMembers returns the number of members with membership=join
 func (rs RoomState) NumMembers() int {
 	return len(rs.memberList)
 }
 
+// GetNumMemberEvents returns the total number of member events found in room state (i.e total number of unique users)
 func (rs *RoomState) GetNumMemberEvents() int {
 	return len(rs.MemberMap)
 }
 
+// UpdateOnEvent iterates the Room State based on the event observed.
 func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	if event.StateKey == nil {
 		fmt.Println("Debug Event", event)
@@ -139,6 +143,9 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	}
 }
 
+// TODO do this on m.room.member but more smartly
+// TODO sort the return values of this
+// CalculateMemberList returns the slice of members with membership=join
 func (rs *RoomState) CalculateMemberList() []*MemberInfo {
 	memberList := make([]*MemberInfo, 0, len(rs.MemberMap))
 	for _, member := range rs.MemberMap {
@@ -150,6 +157,7 @@ func (rs *RoomState) CalculateMemberList() []*MemberInfo {
 	return memberList
 }
 
+// Members is an accessor for RoomState.memberList
 func (rs RoomState) Members() []*MemberInfo {
 	return rs.memberList
 }
@@ -174,6 +182,7 @@ func (p ServerUserCounts) Less(i, j int) bool {
 }
 func (p ServerUserCounts) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
+// Servers iterates over the Member List (membership=join), splits each MXID and counts the number of each homeserver url.
 func (rs RoomState) Servers() ServerUserCounts {
 	serverMap := make(map[string]int)
 	for _, member := range rs.CalculateMemberList() {

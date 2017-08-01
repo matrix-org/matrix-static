@@ -25,6 +25,8 @@ type Sanitizer struct {
 	*bluemonday.Policy
 }
 
+// Sanitize will parse and clean up the HTML of the input string, then sanitize allowed tags.
+// TODO consider passing err back out of this instead of just ok
 func (s *Sanitizer) Sanitize(str string) (sanitizedStr string, ok bool) {
 	reader := strings.NewReader(str)
 	root, err := html.Parse(reader)
@@ -39,6 +41,7 @@ func (s *Sanitizer) Sanitize(str string) (sanitizedStr string, ok bool) {
 	return string(s.SanitizeBytes(b.Bytes())), true
 }
 
+// InitSanitizer sets up and returns a bluemonday policy.
 func InitSanitizer() *Sanitizer {
 	p := bluemonday.NewPolicy()
 

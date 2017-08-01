@@ -16,6 +16,9 @@ package mxclient
 
 type PowerLevel int
 
+// TODO don't bother with this and have a map similar to react-sdk "Roles.js"
+
+// String is the Stringer implementation for PowerLevel
 func (powerLevel PowerLevel) String() string {
 	switch int(powerLevel) {
 	case 100:
@@ -31,6 +34,7 @@ func (powerLevel PowerLevel) String() string {
 	}
 }
 
+// Int allows a quick denature of PowerLevel to an int
 func (powerLevel PowerLevel) Int() int {
 	return int(powerLevel)
 }
@@ -43,6 +47,7 @@ type MemberInfo struct {
 	PowerLevel  PowerLevel
 }
 
+// NewMemberInfo returns a new MemberInfo with defaults (membership=leave) applied.
 func NewMemberInfo(mxid string) *MemberInfo {
 	return &MemberInfo{
 		MXID:       mxid,
@@ -50,6 +55,9 @@ func NewMemberInfo(mxid string) *MemberInfo {
 	}
 }
 
+// GetName returns either the user's DisplayName, or if empty, their MXID.
+// TODO make this disambiguate users if their DisplayName is not unique,
+// implementation tips say to make a map of DisplayNames (or Set?) -> MXID?
 func (memberInfo MemberInfo) GetName() string {
 	if memberInfo.DisplayName != "" {
 		return memberInfo.DisplayName
