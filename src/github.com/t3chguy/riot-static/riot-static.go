@@ -136,19 +136,16 @@ func main() {
 
 			events := mxclient.ReverseEventsCopy(jobResult.Events)
 
-			var reachedRoomCreate bool
-			if numEvents > 0 {
-				reachedRoomCreate = events[0].Type == "m.room.create" && *events[0].StateKey == ""
-			}
-
 			templates.WritePageTemplate(c.Writer, &templates.RoomChatPage{
-				RoomInfo:          jobResult.RoomInfo,
-				MemberMap:         jobResult.MemberMap,
-				Events:            events,
-				PageSize:          RoomTimelineSize,
-				ReachedRoomCreate: reachedRoomCreate,
-				CurrentOffset:     offset,
-				Anchor:            eventID,
+				RoomInfo:      jobResult.RoomInfo,
+				MemberMap:     jobResult.MemberMap,
+				Events:        events,
+				PageSize:      RoomTimelineSize,
+				CurrentOffset: offset,
+				Anchor:        eventID,
+
+				AtTopEnd:    jobResult.AtTopEnd,
+				AtBottomEnd: jobResult.AtBottomEnd,
 
 				Sanitizer:         sanitizerFn,
 				HomeserverBaseURL: client.HomeserverURL.String(),

@@ -45,9 +45,11 @@
         MemberMap           map[string]mxclient.MemberInfo
         Events              []gomatrix.Event
         PageSize            int
-        ReachedRoomCreate   bool
         CurrentOffset       int
         Anchor              string
+
+        AtTopEnd    bool
+        AtBottomEnd bool
 
         Sanitizer *sanitizer.Sanitizer
         HomeserverBaseURL string
@@ -233,6 +235,12 @@
             {% case "m.room.topic" %}
                 <td nowrap></td>
                 <td>{%= printStateChange(ev, "topic", "room topic") %}</td>
+            {% case "m.room.history_visibility" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "history_visibility", "history visibility") %}</td>
+            {% case "m.room.join_rules" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "join_rule", "join rule") %}</td>
             {% case "m.room.avatar" %}
                 <td nowrap></td>
                 <td>
@@ -261,10 +269,10 @@
 {% endfunc %}
 
 {% func (p *RoomChatPage) Head() %}
-    {% if !p.ReachedRoomCreate %}
+    {% if !p.AtTopEnd %}
         <link rel="next" href="?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset + p.PageSize %}">
     {% endif %}
-    {% if len(p.Events) > 0 %}
+    {% if !p.AtBottomEnd %}
         <link rel="prev" href="?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset - len(p.Events) %}">
     {% endif %}
 {% endfunc %}
@@ -275,7 +283,7 @@
 
 {% func (p *RoomChatPage) Body() %}
     <div class="paginate">
-        {% if p.ReachedRoomCreate %}
+        {% if p.AtTopEnd %}
             <h4>You have reached the beginning of time (for this room).</h4>
         {% else %}
             <a href="./room/{%s p.RoomInfo.RoomID %}/?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset + p.PageSize %}">
@@ -306,9 +314,13 @@
 
     <hr>
     <div class="paginate">
-        <a href="./room/{%s p.RoomInfo.RoomID %}/?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset - len(p.Events) %}">
-            <h4>Show newer messages</h4>
-        </a>
+        {% if p.AtBottomEnd %}
+            <h4>There are no newer messages yet.</h4>
+        {% else %}
+            <a href="./room/{%s p.RoomInfo.RoomID %}/?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset - len(p.Events) %}">
+                <h4>Show newer messages</h4>
+            </a>
+        {% endif %}
     </div>
     <hr>
 

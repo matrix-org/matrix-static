@@ -37,3 +37,24 @@ func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
 	}
 	return newEvents
 }
+
+func ShouldHideEvent(ev gomatrix.Event) bool {
+	// m.room.create ?
+
+	// we want to hide all unknowns +:
+	// m.room.redaction
+	// m.room.aliases
+	// m.room.canonical_alias
+
+	if ev.Type == "m.room.join_rules" ||
+		ev.Type == "m.room.member" ||
+		ev.Type == "m.room.power_levels" ||
+		ev.Type == "m.room.message" ||
+		ev.Type == "m.room.name" ||
+		ev.Type == "m.room.topic" ||
+		ev.Type == "m.room.avatar" {
+		return false
+	}
+
+	return true
+}

@@ -53,11 +53,14 @@ func (r *Room) ForwardPaginateRoom() {
 
 func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string) {
 	for _, event := range oldEvents {
-		if event.Type == "m.room.redaction" {
-			// The server has already handled these for us
-			// so just consume them to prevent them blanking on timeline
+		if ShouldHideEvent(event) {
 			continue
 		}
+		//if event.Type == "m.room.redaction" {
+		// The server has already handled these for us
+		// so just consume them to prevent them blanking on timeline
+		//continue
+		//}
 
 		r.eventList = append(r.eventList, event)
 	}
@@ -66,9 +69,12 @@ func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string)
 
 func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken string) {
 	for _, event := range newEvents {
-		if event.Type == "m.room.redaction" {
-			// TODO Handle redaction and skip adding to TL
-			// Might want an Event Map->*Event so we can skip an O(n) task
+		// TODO Handle redaction and skip adding to TL
+		//if event.Type == "m.room.redaction" {
+		// Might want an Event Map->*Event so we can skip an O(n) task
+		//}
+
+		if ShouldHideEvent(event) {
 			continue
 		}
 
@@ -155,11 +161,11 @@ func (r *Room) GetEventPage(anchor string, offset int, pageSize int) (events []g
 	}
 
 	// Consider ourselves at end if the ID matches the respective end of the stored event list.
-	if numEvents, totalNumEvents := len(events), len(r.eventList); numEvents > 0 {
+	numEvents, totalNumEvents := len(events), len(r.eventList)
+	if numEvents > 0 {
 		atTopEnd = events[numEvents-1].ID == r.eventList[totalNumEvents-1].ID
+		atBottomEnd = events[0].ID == r.eventList[0].ID
 	}
-	atBottomEnd = events[0].ID == r.eventList[0].ID
-
 	return
 }
 
@@ -175,7 +181,7 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	// filter out m.room.redactions and reverse ordering at once.
 	var filteredEventList []gomatrix.Event
 	for _, event := range resp.Messages.Chunk {
-		if event.Type == "m.room.redaction" {
+		if ShouldHideEvent(event) {
 			continue
 		}
 
