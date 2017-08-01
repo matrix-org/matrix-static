@@ -1,0 +1,7 @@
+{
+  "access_token": "super_secret_access_token",
+  "device_id": "not_so_important_device_id",
+  "home_server": "https://matrix.org",
+  "refresh_token": "not_so_important_refresh_token",
+  "user_id": "@important_user_id:matrix.org"
+}
