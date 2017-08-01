@@ -19,6 +19,7 @@ First you must create a config, there is a sample json file provided or you can 
 
 
 The main binary, `riot-static` exhibits the following controls:
+
 Accepts `PORT=` env variable to determine what port to use, defaulting to port 8000 if one is not specified. Will panic if port is in use.
 
 Accepts the following command line arguments:
