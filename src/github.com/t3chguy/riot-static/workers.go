@@ -74,12 +74,14 @@ func (ws *Workers) GetWorkerForRoomID(roomID string) Worker {
 	return ws.workers[workerID]
 }
 
+// JobForAllWorkers sends the job to the channel of each worker.
 func (ws *Workers) JobForAllWorkers(job Job) {
 	for _, worker := range ws.workers {
 		worker.Queue <- job
 	}
 }
 
+// NewWorker instantiates a worker and their necessary channels, then starts them and returns them.
 func NewWorker(id int, m *mxclient.Client) *Worker {
 	worker := &Worker{
 		ID:     id,
