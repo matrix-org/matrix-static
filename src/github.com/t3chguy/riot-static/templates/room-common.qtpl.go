@@ -34,70 +34,90 @@ func StreamPrintRoomHeader(qw422016 *qt422016.Writer, roomInfo mxclient.RoomInfo
 		qw422016.N().S(`" />`)
 		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:12
 	} else {
-		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:12
-		qw422016.N().S(`<img class="roomLogo" src="./img/logo_missing.png" />`)
-		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:14
+		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:13
+		if roomInfo.Name != "" {
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:13
+			qw422016.N().S(`<img class="roomLogo" src="./avatar/`)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:14
+			qw422016.N().U(roomInfo.Name)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:14
+			qw422016.N().S(`" />`)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:15
+		} else if roomInfo.CanonicalAlias != "" {
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:15
+			qw422016.N().S(`<img class="roomLogo" src="./avatar/`)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:16
+			qw422016.N().U(roomInfo.CanonicalAlias)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:16
+			qw422016.N().S(`" />`)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:17
+		} else {
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:17
+			qw422016.N().S(`<img class="roomLogo" src="./img/logo_missing.png" />`)
+			//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:19
+		}
+		//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:20
 	}
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:14
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:20
 	qw422016.N().S(`</td><td><h2>`)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:16
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:22
 	qw422016.E().S(roomInfo.Name)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:16
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:22
 	qw422016.N().S(`</h2></td><td class="rightAlign"><a href="./room/`)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:18
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
 	qw422016.E().S(roomInfo.RoomID)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:18
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
 	qw422016.N().S(`/members">`)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:18
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
 	qw422016.N().D(roomInfo.NumMembers)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:18
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
 	qw422016.N().S(` `)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:18
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
 	qw422016.N().S(`Members</a></td></tr><tr><td class="maxWidth">`)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:22
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
 	qw422016.E().S(roomInfo.Topic)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:22
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
 	qw422016.N().S(`</td><td class="rightAlign"><a href="./room/`)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:30
 	qw422016.E().S(roomInfo.RoomID)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:30
 	qw422016.N().S(`/servers">`)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:30
 	qw422016.N().D(roomInfo.NumServers)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:30
 	qw422016.N().S(` `)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:24
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:30
 	qw422016.N().S(`Servers</a></td></tr></table>`)
-//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 func WritePrintRoomHeader(qq422016 qtio422016.Writer, roomInfo mxclient.RoomInfo) {
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	StreamPrintRoomHeader(qw422016, roomInfo)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	qt422016.ReleaseWriter(qw422016)
-//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 func PrintRoomHeader(roomInfo mxclient.RoomInfo) string {
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	WritePrintRoomHeader(qb422016, roomInfo)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	qs422016 := string(qb422016.B)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+	//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 	return qs422016
-//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:28
+//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:34
 }
 
-//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:31
+//line src\github.com\t3chguy\riot-static\templates\room-common.qtpl:37
 func RoomBaseUrl(roomID string) string {
 	return "./room/" + roomID
 }

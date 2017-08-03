@@ -23,6 +23,7 @@ import (
 type RoomInfo struct {
 	RoomID          string
 	Name            string
+	CanonicalAlias  string
 	Topic           string
 	AvatarURL       MXCURL
 	NumMemberEvents int
@@ -209,6 +210,7 @@ func (r *Room) RoomInfo() RoomInfo {
 	return RoomInfo{
 		r.ID,
 		r.latestRoomState.CalculateName(),
+		r.latestRoomState.canonicalAlias,
 		r.latestRoomState.Topic,
 		r.latestRoomState.AvatarURL,
 		r.latestRoomState.GetNumMemberEvents(),

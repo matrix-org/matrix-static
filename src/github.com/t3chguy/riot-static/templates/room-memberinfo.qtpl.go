@@ -31,7 +31,11 @@ type RoomMemberInfoPage struct {
 func (p *RoomMemberInfoPage) StreamTitle(qw422016 *qt422016.Writer) {
 	//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:13
 	qw422016.N().S(`
-    Public Room Servers - `)
+    Public Room Member Info (`)
+	//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:14
+	qw422016.E().S(p.MemberInfo.MXID)
+	//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:14
+	qw422016.N().S(`) - `)
 	//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:14
 	qw422016.E().S(p.RoomInfo.Name)
 	//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:14
@@ -164,7 +168,11 @@ func (p *RoomMemberInfoPage) streambody(qw422016 *qt422016.Writer) {
 		//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:35
 	} else {
 		//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:35
-		qw422016.N().S(`<img src="./img/logo_missing.png" />`)
+		qw422016.N().S(`<img src="./avatar/`)
+		//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:36
+		qw422016.N().U(p.MemberInfo.GetName())
+		//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:36
+		qw422016.N().S(`" />`)
 		//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:37
 	}
 	//line src\github.com\t3chguy\riot-static\templates\room-memberinfo.qtpl:37
