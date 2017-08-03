@@ -29,7 +29,7 @@
                 {% if Room.AvatarUrl != "" %}
                     <img src="{%s Room.AvatarUrl %}" />
                 {% else %}
-                    <img src="./img/logo_missing.png" />
+                    <img src="./img/logo_missing_transparent.png" />
                 {% endif %}
             </a>
         </td>
