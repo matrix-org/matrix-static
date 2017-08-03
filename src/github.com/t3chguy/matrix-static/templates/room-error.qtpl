@@ -1,0 +1,33 @@
+{% import "github.com/t3chguy/matrix-static/mxclient" %}
+
+
+
+{% code type RoomErrorPage struct {
+    RoomInfo mxclient.RoomInfo
+    Error string
+} %}
+
+
+
+{% func (p *RoomErrorPage) Title() %}
+    Public Room ERROR - {%s p.RoomInfo.Name %} - Riot Static
+{% endfunc %}
+
+{% func (p *RoomErrorPage) Head() %}
+{% endfunc %}
+
+{% func (p *RoomErrorPage) Header() %}
+    {%= PrintRoomHeader(p.RoomInfo) %}
+{% endfunc %}
+
+{% stripspace %}
+{% func (p *RoomErrorPage) Body() %}
+
+    <div class="errMsg">
+        <h1>{%s p.Error %}</h1>
+    </div>
+
+    <a href="./">Back to Room List</a>
+
+{% endfunc %}
+{% endstripspace %}

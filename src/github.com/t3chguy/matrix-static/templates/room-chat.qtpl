@@ -1,0 +1,329 @@
+{% import "time" %}
+{% import "github.com/matrix-org/gomatrix" %}
+{% import "github.com/t3chguy/matrix-static/mxclient" %}
+{% import "github.com/t3chguy/matrix-static/sanitizer" %}
+
+
+
+{% func printTimestamp(unixTime int) %}
+    {%s time.Unix(0, int64(unixTime)*int64(time.Millisecond)).Format("2 Jan 2006 15:04:05") %}
+{% endfunc %}
+
+
+
+{% code
+    type MemberEventContent struct {
+        Membership  string
+        AvatarURL   mxclient.MXCURL
+        DisplayName string
+    }
+
+    func convertContentToMEC(content map[string]interface{}, homeserverBaseUrl string) (mec MemberEventContent) {
+        if membership, ok := content["membership"].(string); ok {
+            mec.Membership = membership
+        }
+        if avatarUrl, ok := content["avatar_url"].(string); ok {
+            mec.AvatarURL = *mxclient.NewMXCURL(avatarUrl, homeserverBaseUrl)
+        }
+        if displayName, ok := content["displayname"].(string); ok {
+            mec.DisplayName = displayName
+        }
+
+        return
+    }
+
+    func getMemberEventContent(ev gomatrix.Event, homeserverBaseUrl string) MemberEventContent {
+        return convertContentToMEC(ev.Content, homeserverBaseUrl)
+    }
+
+    func getMemberEventPrevContent(ev gomatrix.Event, homeserverBaseUrl string) MemberEventContent {
+        return convertContentToMEC(ev.PrevContent, homeserverBaseUrl)
+    }
+
+    type RoomChatPage struct {
+        RoomInfo            mxclient.RoomInfo
+        MemberMap           map[string]mxclient.MemberInfo
+        Events              []gomatrix.Event
+        PageSize            int
+        CurrentOffset       int
+        Anchor              string
+
+        AtTopEnd    bool
+        AtBottomEnd bool
+
+        Sanitizer *sanitizer.Sanitizer
+        HomeserverBaseURL string
+    }
+%}
+
+
+
+{% func (p *RoomChatPage) textForMRoomMemberEvent(ev gomatrix.Event) %}
+    {% code
+        content := getMemberEventContent(ev, p.HomeserverBaseURL)
+        prevContent := getMemberEventPrevContent(ev, p.HomeserverBaseURL)
+
+        sender := ev.Sender
+        target := *ev.StateKey
+    %}
+
+    {% switch content.Membership %}
+        {% case "invite" %}
+            {%= p.prettyPrintMember(sender) %} invited {%= p.prettyPrintMember(target) %}.
+        {% case "ban" %}
+            {% code
+                var reasonString string
+                if reason, ok := ev.Content["reason"].(string); ok {
+                    reasonString = " (" + reason + ")"
+                }
+            %}
+            {%= p.prettyPrintMember(sender) %} banned {%= p.prettyPrintMember(target) %}{%s reasonString %}.
+        {% case "join" %}
+            {% if ev.PrevContent != nil && prevContent.Membership == "join" %}
+                {% if prevContent.DisplayName == "" && content.DisplayName != "" %}
+                    {%= p.prettyPrintMember(target) %} set their display name to {%s content.DisplayName %}.
+                {% elseif prevContent.DisplayName != "" && content.DisplayName == "" %}
+                    {%= p.prettyPrintMember(target) %} removed their display name {%s prevContent.DisplayName %}.
+                {% elseif prevContent.DisplayName != content.DisplayName %}
+                    {%= p.prettyPrintMember(target) %} changed their display name from {%s prevContent.DisplayName %} to {%s content.DisplayName %}.
+                {% elseif !prevContent.AvatarURL.IsValid() && content.AvatarURL.IsValid() %}
+                    {%= p.prettyPrintMember(target) %} set a profile picture.
+                {% elseif prevContent.AvatarURL.IsValid() && !content.AvatarURL.IsValid() %}
+                    {%= p.prettyPrintMember(target) %} removed their profile picture.
+                {% elseif prevContent.AvatarURL != content.AvatarURL %}
+                    {%= p.prettyPrintMember(target) %} changed their profile picture.
+                {% endif %}
+            {% else %}
+                {%= p.prettyPrintMember(target) %}joined the room.
+            {% endif %}
+        {% case "leave" %}
+            {% if sender == target %}
+                {% if prevContent.Membership == "invite" %}
+                    {%= p.prettyPrintMember(target) %} rejected invite.
+                {% else %}
+                    {%= p.prettyPrintMember(target) %} left the room.
+                {% endif %}
+            {% elseif prevContent.Membership == "ban" %}
+                {%= p.prettyPrintMember(sender) %} unbanned {%= p.prettyPrintMember(target) %}.
+            {% elseif prevContent.Membership == "leave" %}
+                {%= p.prettyPrintMember(sender) %} kicked {%= p.prettyPrintMember(target) %}.
+            {% elseif prevContent.Membership == "invite" %}
+                {%= p.prettyPrintMember(sender) %} withdrew {%= p.prettyPrintMember(target) %}'s invite.
+            {% else %}
+                {%= p.prettyPrintMember(target) %} left the room.
+            {% endif %}
+    {% endswitch %}
+{% endfunc %}
+
+{% func (p *RoomChatPage) textForMRoomMessageEvent(ev gomatrix.Event) %}
+    {% switch ev.Content["msgtype"] %}
+        {% case "m.image" %}
+            {% code
+                url := ev.Content["url"].(string)
+
+                if thumbUrl, ok := ev.Content["thumbnail_url"].(string); ok {
+                    url = thumbUrl
+                }
+
+                mxc := mxclient.NewMXCURL(url, p.HomeserverBaseURL)
+            %}
+            <a href="{%s mxc.ToURL() %}" rel="noopener">
+                <img src="{%s mxc.ToThumbURL(360, 360, "scale") %}" />
+                <br>
+                <sup>{%s Str(ev.Content["body"]) %}</sup>
+            </a>
+        {% case "m.file" %}
+            {% code mxc := mxclient.NewMXCURL(Str(ev.Content["url"]), p.HomeserverBaseURL) %}
+            <a href="{%s mxc.ToURL() %}" rel="noopener">
+                {% if ev.Content["thumbnail_url"] != "" %}
+                    <img src="{%s mxc.ToThumbURL(360, 360, "scale") %}" />
+                    <br>
+                {% endif %}
+                <sup>{%s Str(ev.Content["body"]) %}</sup>
+            </a>
+            m.file
+        {% case "m.location" %}
+            m.location Event
+        {% case "m.video" %}
+            m.video Event
+        {% case "m.audio" %}
+            m.audio Event
+        {% default %} {% comment %}handler for "m.notice", "m.emote", "m.text"{% endcomment %}
+            {% code
+                var formattedOk bool
+                var sanitizedFormattedBody, body string
+
+                if ev.Content["format"] == "org.matrix.custom.html" {
+                    if formattedBodyStr, ok := ev.Content["formatted_body"].(string); ok {
+                        sanitizedFormattedBody, formattedOk = p.Sanitizer.Sanitize(formattedBodyStr)
+                    }
+                }
+                if !formattedOk {
+                    if bodyStr, ok := ev.Content["body"].(string); ok {
+                        body = bodyStr
+                    }
+                }
+            %}
+
+            {% if formattedOk %}
+                {%s= sanitizedFormattedBody %}
+            {% elseif body != "" %}
+                {%s body %}
+            {% else %}
+                <span class="redacted">Redacted or Malformed Event</span>
+            {% endif %}
+    {% endswitch %}
+{% endfunc %}
+
+{% func printStateChange(ev gomatrix.Event, key, thing string) %}
+    {% code
+        prev := Str(ev.PrevContent[key])
+        cur := Str(ev.Content[key])
+    %}
+
+    {%s ev.Sender %}
+
+    {% if cur != "" && prev == "" %}
+        set the {%s thing %} to "{%s cur %}".
+    {% elseif cur == "" && prev != "" %}
+        removed the {%s thing %} "{%s prev %}".
+    {% else %}
+        changed the {%s thing %} to "{%s cur %}" from "{%s prev %}".
+    {% endif %}
+{% endfunc %}
+
+{% func (p *RoomChatPage) prettyPrintMember(mxid string) %}
+    {% code memberInfo := p.MemberMap[mxid] %}
+
+    <a href="./room/{%s p.RoomInfo.RoomID %}/members/{%s mxid %}">
+        {% if memberInfo.AvatarURL.IsValid() %}
+            <img class="avatar userAvatar" src="{%s memberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
+        {% else %}
+            <img class="avatar userAvatar" src="./img/logo_missing.png" />
+        {% endif %}
+
+        {%s memberInfo.GetName() %}
+    </a>
+{% endfunc %}
+
+{% stripspace %}
+{% func (p *RoomChatPage) printEvent(ev gomatrix.Event) %}
+    <tr>
+        {%= p.printPermalinkColumn(ev) %}
+        {% switch ev.Type %}
+            {% case "m.room.message" %}
+                {% if ev.Content["msgtype"] == "m.emote" %}
+                    <td nowrap></td>
+                    <td>
+                        *{% space %}{%= p.prettyPrintMember(ev.Sender) %}
+                        {% space %}{%= p.textForMRoomMessageEvent(ev) %}
+                    </td>
+                {% else %}
+                    <td nowrap>
+                        {% if ev.Content["msgtype"] == "m.emote" %}*{% space %}{% endif %}
+                        {%= p.prettyPrintMember(ev.Sender) %}
+                    </td>
+                    <td>{%= p.textForMRoomMessageEvent(ev) %}</td>
+                {% endif %}
+
+            {% case "m.room.member" %}
+                <td nowrap></td>
+                <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
+            {% case "m.room.name" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "name", "room name") %}</td>
+            {% case "m.room.topic" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "topic", "room topic") %}</td>
+            {% case "m.room.history_visibility" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "history_visibility", "history visibility") %}</td>
+            {% case "m.room.join_rules" %}
+                <td nowrap></td>
+                <td>{%= printStateChange(ev, "join_rule", "join rule") %}</td>
+            {% case "m.room.avatar" %}
+                <td nowrap></td>
+                <td>
+                    Room Avatar Renderer.
+                </td>
+            {% case "m.room.power_levels" %}
+                <td nowrap></td>
+                <td>{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
+            {% default %}
+                <td nowrap>{%s ev.Type %}</td>
+                <td>Cannot Understand Event.</td>
+        {% endswitch %}
+    </tr>
+{% endfunc %}
+
+{% func (p *RoomChatPage) printPermalinkColumn(ev gomatrix.Event) %}
+    <td class="timestamp" nowrap>
+        <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}">{%= printTimestamp(ev.Timestamp) %}</a>
+    </td>
+{% endfunc %}
+
+
+
+{% func (p *RoomChatPage) Title() %}
+    Public Room Timeline - {% space %}{%s p.RoomInfo.Name %}{% space %} - Riot Static
+{% endfunc %}
+
+{% func (p *RoomChatPage) Head() %}
+    {% if !p.AtTopEnd %}
+        <link rel="next" href="?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset + p.PageSize %}">
+    {% endif %}
+    {% if !p.AtBottomEnd %}
+        <link rel="prev" href="?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset - len(p.Events) %}">
+    {% endif %}
+{% endfunc %}
+
+{% func (p *RoomChatPage) Header() %}
+    {%= PrintRoomHeader(p.RoomInfo) %}
+{% endfunc %}
+
+{% func (p *RoomChatPage) Body() %}
+    <div class="paginate">
+        {% if p.AtTopEnd %}
+            <h4>You have reached the beginning of time (for this room).</h4>
+        {% else %}
+            <a href="./room/{%s p.RoomInfo.RoomID %}/?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset + p.PageSize %}">
+                <h4>Load older messages</h4>
+            </a>
+        {% endif %}
+    </div>
+    <hr>
+
+    {% if len(p.Events) > 0 %}
+        <table id="timeline">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>&nbsp;</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for _, event := range p.Events %}
+                    {%= p.printEvent(event) %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <h3>No Events</h3>
+    {% endif %}
+
+    <hr>
+    <div class="paginate">
+        {% if p.AtBottomEnd %}
+            <h4>There are no newer messages yet.</h4>
+        {% else %}
+            <a href="./room/{%s p.RoomInfo.RoomID %}/?anchor={%s p.Anchor %}&offset={%d p.CurrentOffset - len(p.Events) %}">
+                <h4>Show newer messages</h4>
+            </a>
+        {% endif %}
+    </div>
+    <hr>
+
+    <a href="./">Back to Room List</a>
+{% endfunc %}
+{% endstripspace %}

@@ -1,4 +1,4 @@
-Riot Static
+Matrix Static
 ===========
 
 ### Installation
@@ -18,7 +18,7 @@ First you must create a config, there is a sample json file provided or you can 
 
 
 
-The main binary, `riot-static` exhibits the following controls:
+The main binary, `matrix-static` exhibits the following controls:
 
 Accepts `PORT=` env variable to determine what port to use, defaulting to port 8000 if one is not specified. Will panic if port is in use.
 
@@ -40,4 +40,4 @@ Accepts the following command line arguments:
 
 Currently hosted at https://stormy-bastion-98790.herokuapp.com/
 
-Discussion Matrix Room is [#riot-static:matrix.org](https://matrix.to/#/#riot-static:matrix.org)
+Discussion Matrix Room is [#matrix-static:matrix.org](https://matrix.to/#/#matrix-static:matrix.org)
