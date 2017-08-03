@@ -28,7 +28,7 @@ import (
 	"github.com/t3chguy/riot-static/sanitizer"
 	"github.com/t3chguy/riot-static/templates"
 	"github.com/t3chguy/riot-static/utils"
-	"image/jpeg"
+	"image/png"
 	"net/http"
 	"os"
 	"strconv"
@@ -89,15 +89,13 @@ func main() {
 		}
 
 		buffer := new(bytes.Buffer)
-		err = jpeg.Encode(buffer, img, &jpeg.Options{
-			Quality: 100,
-		})
+		err = png.Encode(buffer, img)
 
 		if err != nil {
 			panic(err)
 		}
 
-		c.Writer.Header().Set("Content-Type", "image/jpeg")
+		c.Writer.Header().Set("Content-Type", "image/png")
 		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 		_, err = c.Writer.Write(buffer.Bytes())
 
