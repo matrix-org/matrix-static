@@ -15,8 +15,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"github.com/disintegration/letteravatar"
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/t3chguy/go-gin-prometheus"
@@ -24,9 +28,12 @@ import (
 	"github.com/t3chguy/riot-static/sanitizer"
 	"github.com/t3chguy/riot-static/templates"
 	"github.com/t3chguy/riot-static/utils"
+	"image/jpeg"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
+	"unicode"
 )
 
 // TODO Cache memberList+serverList until it changes
@@ -60,6 +67,44 @@ func main() {
 	if *enablePprof {
 		pprof.Register(router, nil)
 	}
+
+	avatarRouter := router.Group(*publicServePrefix)
+	avatarRouter.Use(gin.Recovery())
+
+	generatedAvatarCache := persistence.NewInMemoryStore(0)
+	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, 0, func(c *gin.Context) {
+		identifier := c.Param("identifier")
+
+		var avatarChar byte
+		if (identifier[0] == '#' || identifier[0] == '!' || identifier[0] == '@') && len(identifier) > 1 {
+			avatarChar = identifier[1]
+		} else {
+			avatarChar = identifier[0]
+		}
+
+		img, err := letteravatar.Draw(100, unicode.ToUpper(rune(avatarChar)), nil)
+
+		if err != nil {
+			panic(err)
+		}
+
+		buffer := new(bytes.Buffer)
+		err = jpeg.Encode(buffer, img, &jpeg.Options{
+			Quality: 100,
+		})
+
+		if err != nil {
+			panic(err)
+		}
+
+		c.Writer.Header().Set("Content-Type", "image/jpeg")
+		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+		_, err = c.Writer.Write(buffer.Bytes())
+
+		if err != nil {
+			panic(err)
+		}
+	}))
 
 	publicRouter := router.Group(*publicServePrefix)
 	publicRouter.Use(gin.Logger(), gin.Recovery())

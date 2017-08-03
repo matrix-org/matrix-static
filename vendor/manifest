@@ -15,9 +15,42 @@
 			"path": "/quantile"
 		},
 		{
+			"importpath": "github.com/bradfitz/gomemcache/memcache",
+			"repository": "https://github.com/bradfitz/gomemcache",
+			"revision": "1952afaa557dc08e8e0d89eafab110fb501c1a2b",
+			"branch": "master",
+			"path": "/memcache"
+		},
+		{
+			"importpath": "github.com/disintegration/letteravatar",
+			"repository": "https://github.com/disintegration/letteravatar",
+			"revision": "1a457b860450eb157f092fdc511993cfa621cc37",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/dustin/go-broadcast",
 			"repository": "https://github.com/dustin/go-broadcast",
 			"revision": "3bdf6d4a7164a50bc19d5f230e2981d87d2584f1",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/garyburd/redigo/internal",
+			"repository": "https://github.com/garyburd/redigo",
+			"revision": "9e66b83d15a259978be267d0b61838c42c3904e3",
+			"branch": "master",
+			"path": "/internal"
+		},
+		{
+			"importpath": "github.com/garyburd/redigo/redis",
+			"repository": "https://github.com/garyburd/redigo",
+			"revision": "9e66b83d15a259978be267d0b61838c42c3904e3",
+			"branch": "master",
+			"path": "/redis"
+		},
+		{
+			"importpath": "github.com/gin-contrib/cache",
+			"repository": "https://github.com/gin-contrib/cache",
+			"revision": "bc56748ee71c18f6848a8e3b77f38e5fc911a71d",
 			"branch": "master"
 		},
 		{
@@ -30,6 +63,12 @@
 			"importpath": "github.com/gin-gonic/gin",
 			"repository": "https://github.com/gin-gonic/gin",
 			"revision": "d5b353c5d5a560322e6d96121c814115562501f7",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/golang/freetype",
+			"repository": "https://github.com/golang/freetype",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
 			"branch": "master"
 		},
 		{
@@ -151,6 +190,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/robfig/go-cache",
+			"repository": "https://github.com/robfig/go-cache",
+			"revision": "9fc39e0dbf62c034ec4e45e6120fc69433a3ec51",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/t3chguy/go-gin-prometheus",
 			"repository": "https://github.com/t3chguy/go-gin-prometheus",
 			"revision": "438209f97511bd122d35d14f9ec8b0a2b62b3a3a",
@@ -180,6 +225,20 @@
 			"revision": "6abbd1b822699a4925c76df1740b266f17c2c9ae",
 			"branch": "master",
 			"path": "/qtc"
+		},
+		{
+			"importpath": "golang.org/x/image/font",
+			"repository": "https://go.googlesource.com/image",
+			"revision": "426cfd8eeb6e08ab1932954e09e3c2cb2bc6e36d",
+			"branch": "master",
+			"path": "/font"
+		},
+		{
+			"importpath": "golang.org/x/image/math/fixed",
+			"repository": "https://go.googlesource.com/image",
+			"revision": "426cfd8eeb6e08ab1932954e09e3c2cb2bc6e36d",
+			"branch": "master",
+			"path": "/math/fixed"
 		},
 		{
 			"importpath": "golang.org/x/net/context",
