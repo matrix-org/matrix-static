@@ -72,8 +72,8 @@ func main() {
 	avatarRouter := router.Group(*publicServePrefix)
 	avatarRouter.Use(gin.Recovery())
 
-	generatedAvatarCache := persistence.NewInMemoryStore(0)
-	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, 0, func(c *gin.Context) {
+	generatedAvatarCache := persistence.NewInMemoryStore(time.Hour)
+	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, time.Hour, func(c *gin.Context) {
 		identifier := c.Param("identifier")
 		if (identifier[0] == '#' || identifier[0] == '!' || identifier[0] == '@') && len(identifier) > 1 {
 			identifier = identifier[1:]
