@@ -29,7 +29,13 @@
                 {% if Room.AvatarUrl != "" %}
                     <img src="{%s Room.AvatarUrl %}" />
                 {% else %}
-                    <img src="./img/logo_missing.png" />
+                    {% if Room.Name != "" %}
+                        <img src="./avatar/{%u Room.Name %}" />
+                    {% elseif Room.CanonicalAlias != "" %}
+                        <img src="./avatar/{%u Room.CanonicalAlias %}" />
+                    {% else %}
+                        <img src="./img/logo_missing.png" />
+                    {% endif %}
                 {% endif %}
             </a>
         </td>

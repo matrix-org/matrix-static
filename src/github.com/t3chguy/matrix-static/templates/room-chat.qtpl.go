@@ -724,7 +724,11 @@ func (p *RoomChatPage) streamprettyPrintMember(qw422016 *qt422016.Writer, mxid s
 	} else {
 		//line src\github.com\t3chguy\matrix-static\templates\room-chat.qtpl:201
 		qw422016.N().S(`
-            <img class="avatar userAvatar" src="./img/logo_missing.png" />
+            <img class="avatar userAvatar" src="./avatar/`)
+		//line src\github.com\t3chguy\matrix-static\templates\room-chat.qtpl:202
+		qw422016.N().U(memberInfo.GetName())
+		//line src\github.com\t3chguy\matrix-static\templates\room-chat.qtpl:202
+		qw422016.N().S(`" />
         `)
 		//line src\github.com\t3chguy\matrix-static\templates\room-chat.qtpl:203
 	}

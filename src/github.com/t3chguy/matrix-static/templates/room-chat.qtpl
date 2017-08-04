@@ -199,7 +199,7 @@
         {% if memberInfo.AvatarURL.IsValid() %}
             <img class="avatar userAvatar" src="{%s memberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
         {% else %}
-            <img class="avatar userAvatar" src="./img/logo_missing.png" />
+            <img class="avatar userAvatar" src="./avatar/{%u memberInfo.GetName() %}" />
         {% endif %}
 
         {%s memberInfo.GetName() %}
