@@ -69,9 +69,9 @@ func main() {
 		pprof.Register(router, nil)
 	}
 
+	// This is temporary until generated server-side in Synapse as suggested by riot-web issues.
 	avatarRouter := router.Group(*publicServePrefix)
 	avatarRouter.Use(gin.Recovery())
-
 	generatedAvatarCache := persistence.NewInMemoryStore(time.Hour)
 	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, time.Hour, func(c *gin.Context) {
 		identifier := c.Param("identifier")
