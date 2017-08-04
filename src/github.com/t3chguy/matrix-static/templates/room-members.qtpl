@@ -1,0 +1,84 @@
+{% import "github.com/t3chguy/matrix-static/mxclient" %}
+
+
+
+{% code type RoomMembersPage struct {
+    RoomInfo mxclient.RoomInfo
+    Members  []mxclient.MemberInfo
+    PageSize int
+    Page     int
+} %}
+
+
+
+{% func (p *RoomMembersPage) printMemberRow(Member *mxclient.MemberInfo) %}
+    <tr>
+        <td><a href="{%s p.BaseUrl() %}{%s Member.MXID %}">{%s Member.MXID %}</a></td>
+        <td>
+            {% if Member.AvatarURL.IsValid() %}
+                <img class="memberListAvatar" src="{%s Member.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
+            {% else %}
+                <img class="memberListAvatar" src="./avatar/{%u Member.GetName() %}" />
+            {% endif %}
+        </td>
+        <td>{%s Member.DisplayName %}</td>
+        <td>{%s Member.PowerLevel.String() %} ({%d Member.PowerLevel.Int() %})</td>
+    </tr>
+{% endfunc %}
+
+
+
+{% func (p *RoomMembersPage) Title() %}
+    Public Room Members - {%s p.RoomInfo.Name %} - Riot Static
+{% endfunc %}
+
+{% func (p *RoomMembersPage) Head() %}
+{% endfunc %}
+
+{% func (p *RoomMembersPage) Header() %}
+    {%= PrintRoomHeader(p.RoomInfo) %}
+{% endfunc %}
+
+{% stripspace %}
+{% func (p *RoomMembersPage) Body() %}
+
+    <div>{%d p.RoomInfo.NumMemberEvents %}{% space %} users have interacted with this room.</div>
+
+    {%= PaginatorCurPage(p) %}
+
+    <table>
+        <thead>
+            <tr>
+                <td>MXID</td>
+                <td>Avatar</td>
+                <td>Display Name</td>
+                <td>Power Level</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for _, Member := range p.Members %}
+                {%= p.printMemberRow(&Member) %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {%= PaginatorFooter(p) %}
+
+{% endfunc %}
+{% endstripspace %}
+
+
+
+{% code
+
+    func (p *RoomMembersPage) CurPage() int {
+        return p.Page
+    }
+    func (p *RoomMembersPage) HasNextPage() bool {
+        return len(p.Members) == p.PageSize
+    }
+    func (p *RoomMembersPage) BaseUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/members/"
+    }
+
+%}

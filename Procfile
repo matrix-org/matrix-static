@@ -1,1 +1,1 @@
-web: riot-static
+web: matrix-static
