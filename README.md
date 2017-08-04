@@ -3,6 +3,7 @@ Matrix Static
 
 ### Installation
 `git clone` this repository and follow instructions at [getgb.io](https://getgb.io).
+Before building you must execute `qtc` to build the templates from sources.
 Use gb to build the project using `gb build` then execute it from the `bin/` directory.
 
 
