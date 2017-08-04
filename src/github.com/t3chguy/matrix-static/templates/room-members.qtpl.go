@@ -60,7 +60,11 @@ func (p *RoomMembersPage) streamprintMemberRow(qw422016 *qt422016.Writer, Member
 	} else {
 		//line src\github.com\t3chguy\matrix-static\templates\room-members.qtpl:20
 		qw422016.N().S(`
-                <img class="memberListAvatar" src="./img/logo_missing.png" />
+                <img class="memberListAvatar" src="./avatar/`)
+		//line src\github.com\t3chguy\matrix-static\templates\room-members.qtpl:21
+		qw422016.N().U(Member.GetName())
+		//line src\github.com\t3chguy\matrix-static\templates\room-members.qtpl:21
+		qw422016.N().S(`" />
             `)
 		//line src\github.com\t3chguy\matrix-static\templates\room-members.qtpl:22
 	}

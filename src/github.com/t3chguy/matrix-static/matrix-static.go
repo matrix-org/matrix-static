@@ -34,6 +34,7 @@ import (
 	"strconv"
 	"time"
 	"unicode"
+	"unicode/utf8"
 )
 
 // TODO Cache memberList+serverList until it changes
@@ -74,34 +75,33 @@ func main() {
 	generatedAvatarCache := persistence.NewInMemoryStore(0)
 	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, 0, func(c *gin.Context) {
 		identifier := c.Param("identifier")
-
-		var avatarChar byte
 		if (identifier[0] == '#' || identifier[0] == '!' || identifier[0] == '@') && len(identifier) > 1 {
-			avatarChar = identifier[1]
-		} else {
-			avatarChar = identifier[0]
+			identifier = identifier[1:]
 		}
 
-		img, err := letteravatar.Draw(100, unicode.ToUpper(rune(avatarChar)), nil)
+		avatarChar, _ := utf8.DecodeRuneInString(identifier)
+		img, err := letteravatar.Draw(100, unicode.ToUpper(avatarChar), nil)
 
 		if err != nil {
-			panic(err)
+			c.Error(err)
+			return
 		}
 
 		buffer := new(bytes.Buffer)
 		err = png.Encode(buffer, img)
 
 		if err != nil {
-			panic(err)
+			c.Error(err)
+			return
 		}
 
 		c.Writer.Header().Set("Content-Type", "image/png")
 		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 		_, err = c.Writer.Write(buffer.Bytes())
 
-		if err != nil {
-			panic(err)
-		}
+		//if err != nil {
+		//	panic(err)
+		//}
 	}))
 
 	publicRouter := router.Group(*publicServePrefix)
