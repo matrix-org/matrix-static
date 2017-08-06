@@ -1,4 +1,4 @@
-img {
+img.avatar {
     -webkit-border-radius: 50%;
     -moz-border-radius: 50%;
     border-radius: 50%;
@@ -7,17 +7,20 @@ img {
 img.userAvatar {
     height: 20px;
 }
-img.memberListAvatar {
+img.userAvatarMedium {
     height: 36px;
 }
 * {
     font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
 }
-td.roomLogo {
+img.roomAvatar {
+    height: 64px;
+}
+td.roomAvatar {
     width: 80px;
 }
-img.roomLogo {
-    height: 64px;
+td.roomAvatar img {
+    height: 96px;
 }
 table#roomHeader {
     width: 100%;

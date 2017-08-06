@@ -16,9 +16,9 @@
         <td><a href="{%s p.BaseUrl() %}{%s Member.MXID %}">{%s Member.MXID %}</a></td>
         <td>
             {% if Member.AvatarURL.IsValid() %}
-                <img class="memberListAvatar" src="{%s Member.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
+                <img class="avatar userAvatarMedium" src="{%s Member.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
             {% else %}
-                <img class="memberListAvatar" src="./avatar/{%u Member.GetName() %}" />
+                <img class="avatar userAvatarMedium" src="./avatar/{%u Member.GetName() %}" />
             {% endif %}
         </td>
         <td>{%s Member.DisplayName %}</td>

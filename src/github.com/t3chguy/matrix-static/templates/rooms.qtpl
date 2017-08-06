@@ -27,14 +27,14 @@
         <td>
             <a href="./room/{%s Room.RoomID %}">
                 {% if Room.AvatarUrl != "" %}
-                    <img src="{%s Room.AvatarUrl %}" />
+                    <img class="avatar roomAvatar" src="{%s Room.AvatarUrl %}" />
                 {% else %}
                     {% if Room.Name != "" %}
-                        <img src="./avatar/{%u Room.Name %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u Room.Name %}" />
                     {% elseif Room.CanonicalAlias != "" %}
-                        <img src="./avatar/{%u Room.CanonicalAlias %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u Room.CanonicalAlias %}" />
                     {% else %}
-                        <img src="./img/logo_missing.png" />
+                        <img class="avatar roomAvatar" src="./img/logo_missing.png" />
                     {% endif %}
                 {% endif %}
             </a>
