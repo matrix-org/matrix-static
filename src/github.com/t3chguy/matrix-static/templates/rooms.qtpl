@@ -34,7 +34,7 @@
                     {% elseif Room.CanonicalAlias != "" %}
                         <img src="./avatar/{%u Room.CanonicalAlias %}" />
                     {% else %}
-                        <img src="./img/logo_missing.png" />
+                        <img src="./img/logo_missing_transparent.png" />
                     {% endif %}
                 {% endif %}
             </a>
