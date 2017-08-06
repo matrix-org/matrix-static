@@ -142,6 +142,9 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	}
 }
 
+// RecalculateMemberListAndServers does member list calculation, sorting and server calculations.
+// ideally called at the end of concatenating so that its done as infrequently as possible
+// whilst still never causing outdated information.
 func (rs *RoomState) RecalculateMemberListAndServers() {
 	for mxid, powerlevel := range rs.PowerLevels.Users {
 		if _, ok := rs.MemberMap[mxid]; ok {
