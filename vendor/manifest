@@ -8,15 +8,67 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/beorn7/perks/quantile",
+			"repository": "https://github.com/beorn7/perks",
+			"revision": "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9",
+			"branch": "master",
+			"path": "/quantile"
+		},
+		{
+			"importpath": "github.com/bradfitz/gomemcache/memcache",
+			"repository": "https://github.com/bradfitz/gomemcache",
+			"revision": "1952afaa557dc08e8e0d89eafab110fb501c1a2b",
+			"branch": "master",
+			"path": "/memcache"
+		},
+		{
+			"importpath": "github.com/disintegration/letteravatar",
+			"repository": "https://github.com/disintegration/letteravatar",
+			"revision": "1a457b860450eb157f092fdc511993cfa621cc37",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/dustin/go-broadcast",
 			"repository": "https://github.com/dustin/go-broadcast",
 			"revision": "3bdf6d4a7164a50bc19d5f230e2981d87d2584f1",
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/garyburd/redigo/internal",
+			"repository": "https://github.com/garyburd/redigo",
+			"revision": "9e66b83d15a259978be267d0b61838c42c3904e3",
+			"branch": "master",
+			"path": "/internal"
+		},
+		{
+			"importpath": "github.com/garyburd/redigo/redis",
+			"repository": "https://github.com/garyburd/redigo",
+			"revision": "9e66b83d15a259978be267d0b61838c42c3904e3",
+			"branch": "master",
+			"path": "/redis"
+		},
+		{
+			"importpath": "github.com/gin-contrib/cache",
+			"repository": "https://github.com/gin-contrib/cache",
+			"revision": "bc56748ee71c18f6848a8e3b77f38e5fc911a71d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gin-contrib/pprof",
+			"repository": "https://github.com/gin-contrib/pprof",
+			"revision": "c16e1831d0a55e9138ae133788f8d5cb66e4f10b",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/gin-gonic/gin",
 			"repository": "https://github.com/gin-gonic/gin",
 			"revision": "d5b353c5d5a560322e6d96121c814115562501f7",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/golang/freetype",
+			"repository": "https://github.com/golang/freetype",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
 			"branch": "master"
 		},
 		{
@@ -78,9 +130,75 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/matttproud/golang_protobuf_extensions/pbutil",
+			"repository": "https://github.com/matttproud/golang_protobuf_extensions",
+			"revision": "c12348ce28de40eed0136aa2b644d0ee0650e56c",
+			"branch": "master",
+			"path": "/pbutil"
+		},
+		{
+			"importpath": "github.com/mcuadros/go-gin-prometheus",
+			"repository": "https://github.com/mcuadros/go-gin-prometheus",
+			"revision": "94650356b1ceb6fc4cb416097daeb3630a9e017d",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/microcosm-cc/bluemonday",
 			"repository": "https://github.com/microcosm-cc/bluemonday",
 			"revision": "e79763773ab6222ca1d5a7cbd9d62d83c1f77081",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/prometheus/client_golang/prometheus",
+			"repository": "https://github.com/prometheus/client_golang",
+			"revision": "94ff84a9a6ebb5e6eb9172897c221a64df3443bc",
+			"branch": "master",
+			"path": "/prometheus"
+		},
+		{
+			"importpath": "github.com/prometheus/client_model/go",
+			"repository": "https://github.com/prometheus/client_model",
+			"revision": "6f3806018612930941127f2a7c6c453ba2c527d2",
+			"branch": "master",
+			"path": "/go"
+		},
+		{
+			"importpath": "github.com/prometheus/common/expfmt",
+			"repository": "https://github.com/prometheus/common",
+			"revision": "3e6a7635bac6573d43f49f97b47eb9bda195dba8",
+			"branch": "master",
+			"path": "/expfmt"
+		},
+		{
+			"importpath": "github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg",
+			"repository": "https://github.com/prometheus/common",
+			"revision": "3e6a7635bac6573d43f49f97b47eb9bda195dba8",
+			"branch": "master",
+			"path": "/internal/bitbucket.org/ww/goautoneg"
+		},
+		{
+			"importpath": "github.com/prometheus/common/model",
+			"repository": "https://github.com/prometheus/common",
+			"revision": "3e6a7635bac6573d43f49f97b47eb9bda195dba8",
+			"branch": "master",
+			"path": "/model"
+		},
+		{
+			"importpath": "github.com/prometheus/procfs",
+			"repository": "https://github.com/prometheus/procfs",
+			"revision": "e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/robfig/go-cache",
+			"repository": "https://github.com/robfig/go-cache",
+			"revision": "9fc39e0dbf62c034ec4e45e6120fc69433a3ec51",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/t3chguy/go-gin-prometheus",
+			"repository": "https://github.com/t3chguy/go-gin-prometheus",
+			"revision": "438209f97511bd122d35d14f9ec8b0a2b62b3a3a",
 			"branch": "master"
 		},
 		{
@@ -107,6 +225,20 @@
 			"revision": "6abbd1b822699a4925c76df1740b266f17c2c9ae",
 			"branch": "master",
 			"path": "/qtc"
+		},
+		{
+			"importpath": "golang.org/x/image/font",
+			"repository": "https://go.googlesource.com/image",
+			"revision": "426cfd8eeb6e08ab1932954e09e3c2cb2bc6e36d",
+			"branch": "master",
+			"path": "/font"
+		},
+		{
+			"importpath": "golang.org/x/image/math/fixed",
+			"repository": "https://go.googlesource.com/image",
+			"revision": "426cfd8eeb6e08ab1932954e09e3c2cb2bc6e36d",
+			"branch": "master",
+			"path": "/math/fixed"
 		},
 		{
 			"importpath": "golang.org/x/net/context",

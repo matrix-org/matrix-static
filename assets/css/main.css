@@ -25,6 +25,12 @@ footer a {
     margin-left: 1em;
     margin-right: 1em;
 }
+img {
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+}
+
 img.userAvatar {
     height: 20px;
 }

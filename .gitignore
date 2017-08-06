@@ -18,3 +18,4 @@ bin/
 pkg/
 /config.json
 /vendor/src/github.com/constabulary
+*.qtpl.go
