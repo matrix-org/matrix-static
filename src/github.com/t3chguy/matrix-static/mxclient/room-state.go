@@ -45,6 +45,7 @@ type RoomState struct {
 	Aliases        []string
 
 	PowerLevels PowerLevels
+	serverList  []ServerUserCount
 	memberList  []*MemberInfo
 	MemberMap   map[string]*MemberInfo
 }
@@ -116,8 +117,6 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 		if displayName, ok := event.Content["displayname"].(string); ok {
 			currentMemberState.DisplayName = displayName
 		}
-
-		rs.memberList = rs.CalculateMemberList()
 	case "m.room.power_levels":
 		// ez convert to powerLevels
 		if data, err := json.Marshal(event.Content); err == nil {
@@ -143,18 +142,38 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	}
 }
 
-// TODO do this on m.room.member but more smartly
-// TODO sort the return values of this
-// CalculateMemberList returns the slice of members with membership=join
-func (rs *RoomState) CalculateMemberList() []*MemberInfo {
-	memberList := make([]*MemberInfo, 0, len(rs.MemberMap))
+func (rs *RoomState) RecalculateMemberListAndServers() {
+	for mxid, powerlevel := range rs.PowerLevels.Users {
+		if _, ok := rs.MemberMap[mxid]; ok {
+			rs.MemberMap[mxid].PowerLevel = PowerLevel(powerlevel)
+		} else {
+			fmt.Println(mxid)
+		}
+	}
+
+	memberList := make(MemberList, 0)
 	for _, member := range rs.MemberMap {
 		if member.Membership == "join" {
 			memberList = append(memberList, member)
 		}
 	}
 
-	return memberList
+	serverMap := make(map[string]int)
+	for _, member := range memberList {
+		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
+			serverMap[mxidSplit[1]]++
+		}
+	}
+
+	serverList := make(ServerUserCounts, 0, len(serverMap))
+	for server, num := range serverMap {
+		serverList = append(serverList, ServerUserCount{server, num})
+	}
+
+	sort.Sort(serverList)
+	rs.serverList = serverList
+	sort.Sort(memberList)
+	rs.memberList = memberList
 }
 
 // Members is an accessor for RoomState.memberList
@@ -162,12 +181,12 @@ func (rs RoomState) Members() []*MemberInfo {
 	return rs.memberList
 }
 
-// implements sort.Interface
 type ServerUserCount struct {
 	ServerName string
 	NumUsers   int
 }
 
+// implements sort.Interface
 type ServerUserCounts []ServerUserCount
 
 func (p ServerUserCounts) Len() int { return len(p) }
@@ -183,21 +202,8 @@ func (p ServerUserCounts) Less(i, j int) bool {
 func (p ServerUserCounts) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
 // Servers iterates over the Member List (membership=join), splits each MXID and counts the number of each homeserver url.
-func (rs RoomState) Servers() ServerUserCounts {
-	serverMap := make(map[string]int)
-	for _, member := range rs.CalculateMemberList() {
-		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
-			serverMap[mxidSplit[1]]++
-		}
-	}
-
-	serverList := make(ServerUserCounts, 0, len(serverMap))
-	for server, num := range serverMap {
-		serverList = append(serverList, ServerUserCount{server, num})
-	}
-
-	sort.Sort(serverList)
-	return serverList
+func (rs RoomState) Servers() []ServerUserCount {
+	return rs.serverList
 }
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room

@@ -67,6 +67,7 @@ func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string)
 		r.eventList = append(r.eventList, event)
 	}
 	r.backPaginationToken = newToken
+	r.latestRoomState.RecalculateMemberListAndServers()
 }
 
 func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken string) {
@@ -84,6 +85,7 @@ func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken stri
 		r.eventList = append([]gomatrix.Event{event}, r.eventList...)
 	}
 	r.forwardPaginationToken = newToken
+	r.latestRoomState.RecalculateMemberListAndServers()
 }
 
 func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
@@ -201,6 +203,8 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	for _, event := range resp.State {
 		newRoom.latestRoomState.UpdateOnEvent(&event, true)
 	}
+
+	newRoom.latestRoomState.RecalculateMemberListAndServers()
 
 	return newRoom, nil
 }
