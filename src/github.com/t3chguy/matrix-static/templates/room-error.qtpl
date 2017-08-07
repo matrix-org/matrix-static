@@ -8,9 +8,9 @@
 } %}
 
 
-
+{% stripspace %}
 {% func (p *RoomErrorPage) Title() %}
-    Public Room ERROR - {%s p.RoomInfo.Name %} - Riot Static
+    Matrix Static - Public Room ERROR - {% space %}{%s p.RoomInfo.Name %}
 {% endfunc %}
 
 {% func (p *RoomErrorPage) Head() %}
@@ -20,7 +20,6 @@
     {%= PrintRoomHeader(p.RoomInfo) %}
 {% endfunc %}
 
-{% stripspace %}
 {% func (p *RoomErrorPage) Body() %}
 
     <div class="errMsg">

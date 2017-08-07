@@ -10,8 +10,9 @@
 
 
 
+{% stripspace %}
 {% func (p *RoomMemberInfoPage) Title() %}
-    Public Room Member Info ({%s p.MemberInfo.MXID %}) - {%s p.RoomInfo.Name %} - Riot Static
+    Matrix Static - Public Room Member Info - {% space %}{%s p.RoomInfo.Name %}{% space %} - {% space %}{%s p.MemberInfo.MXID %}
 {% endfunc %}
 
 {% func (p *RoomMemberInfoPage) Head() %}
@@ -21,7 +22,6 @@
     {%= PrintRoomHeader(p.RoomInfo) %}
 {% endfunc %}
 
-{% stripspace %}
 {% func (p *RoomMemberInfoPage) body() %}
     MemberInfo of {% space %}{%s p.MemberInfo.GetName() %}{% space %} ({%s p.MemberInfo.MXID %})
     <hr>

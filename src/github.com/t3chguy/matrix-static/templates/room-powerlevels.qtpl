@@ -8,7 +8,7 @@
 } %}
 
 
-
+{% stripspace %}
 {% func printPLRow(name string, pl mxclient.PowerLevel) %}
     <tr>
         <td>{%s name %}</td>
@@ -19,7 +19,7 @@
 
 
 {% func (p *RoomPowerLevelsPage) Title() %}
-    Public Room Servers - {%s p.RoomInfo.Name %} - Riot Static
+    Matrix Static - Public Room Powerlevels - {% space %}{%s p.RoomInfo.Name %}
 {% endfunc %}
 
 {% func (p *RoomPowerLevelsPage) Head() %}
@@ -29,7 +29,6 @@
     {%= PrintRoomHeader(p.RoomInfo) %}
 {% endfunc %}
 
-{% stripspace %}
 {% func (p *RoomPowerLevelsPage) Body() %}
 
     Room Power Level Requirements
