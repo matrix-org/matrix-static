@@ -150,6 +150,7 @@ func (rs *RoomState) RecalculateMemberListAndServers() {
 		}
 	}
 
+	// Filter list of members with Membership=join
 	memberList := make(MemberList, 0)
 	for _, member := range rs.MemberMap {
 		if member.Membership == "join" {
@@ -157,6 +158,7 @@ func (rs *RoomState) RecalculateMemberListAndServers() {
 		}
 	}
 
+	// Create a map of servers by splitting memberList MXID's and incrementing count on server key
 	serverMap := make(map[string]int)
 	for _, member := range memberList {
 		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
@@ -164,11 +166,13 @@ func (rs *RoomState) RecalculateMemberListAndServers() {
 		}
 	}
 
+	// Fit the server map into an sortable slice
 	serverList := make(ServerUserCounts, 0, len(serverMap))
 	for server, num := range serverMap {
 		serverList = append(serverList, ServerUserCount{server, num})
 	}
 
+	// Sort and store both server and member lists
 	sort.Sort(serverList)
 	rs.serverList = serverList
 	sort.Sort(memberList)
