@@ -67,6 +67,7 @@ func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string)
 		r.eventList = append(r.eventList, event)
 	}
 	r.backPaginationToken = newToken
+	r.latestRoomState.RecalculateMemberListAndServers()
 }
 
 func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken string) {
@@ -84,6 +85,7 @@ func (r *Room) concatForwardPagination(newEvents []gomatrix.Event, newToken stri
 		r.eventList = append([]gomatrix.Event{event}, r.eventList...)
 	}
 	r.forwardPaginationToken = newToken
+	r.latestRoomState.RecalculateMemberListAndServers()
 }
 
 func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
@@ -112,7 +114,6 @@ func (r *Room) backpaginateIfNeeded(anchorIndex, offset, number int) {
 
 	// delta is the number of events we should have, to comfortably handle this request, if we do not have this many
 	// then ask the mxclient to backpaginate this room by at least delta-length events.
-	// TODO if numNew = 0, we are at end of TL as we know it, mark this room as such.
 	length := len(r.eventList)
 	if delta := anchorIndex + offset + number + overcompensateBackpaginationBy; delta >= length {
 		// if no error encountered and zero events then we are likely at the last historical event.
@@ -201,6 +202,8 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	for _, event := range resp.State {
 		newRoom.latestRoomState.UpdateOnEvent(&event, true)
 	}
+
+	newRoom.latestRoomState.RecalculateMemberListAndServers()
 
 	return newRoom, nil
 }
