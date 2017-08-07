@@ -147,8 +147,6 @@ func (rs *RoomState) RecalculateMemberListAndServers() {
 	for mxid, powerlevel := range rs.PowerLevels.Users {
 		if _, ok := rs.MemberMap[mxid]; ok {
 			rs.MemberMap[mxid].PowerLevel = PowerLevel(powerlevel)
-		} else {
-			fmt.Println(mxid)
 		}
 	}
 
