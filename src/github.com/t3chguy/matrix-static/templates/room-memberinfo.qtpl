@@ -31,7 +31,7 @@
             <td>Avatar</td>
             <td>
                 {% if p.MemberInfo.AvatarURL.IsValid() %}
-                    <a href="{%s p.MemberInfo.AvatarURL.ToURL() %}"><img class="avatar userAvatar" src="{%s p.MemberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" /></a>
+                    <a href="{%s p.MemberInfo.AvatarURL.ToURL() %}"><img class="avatar userAvatarBig" src="{%s p.MemberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" /></a>
                 {% else %}
                     <img class="avatar userAvatarBig" src="./avatar/{%u p.MemberInfo.GetName() %}" />
                 {% endif %}
