@@ -23,7 +23,7 @@
 
 {% stripspace %}
 {% func (p *RoomMemberInfoPage) body() %}
-    MemberInfo of {% space %}{%s p.MemberInfo.MXID %}
+    MemberInfo of {% space %}{%s p.MemberInfo.GetName() %}{% space %} ({%s p.MemberInfo.MXID %})
     <hr>
 
     <table>
