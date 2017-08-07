@@ -10,7 +10,7 @@
 } %}
 
 
-
+{% stripspace %}
 {% func (p *RoomMembersPage) printMemberRow(Member *mxclient.MemberInfo) %}
     <tr>
         <td><a href="{%s p.BaseUrl() %}{%s Member.MXID %}">{%s Member.MXID %}</a></td>
@@ -29,7 +29,7 @@
 
 
 {% func (p *RoomMembersPage) Title() %}
-    Public Room Members - {%s p.RoomInfo.Name %} - Riot Static
+    Matrix Static - Public Room Members - {% space %}{%s p.RoomInfo.Name %}{% space %} - {% space %}{%d p.RoomInfo.NumMembers %}{% space %} members
 {% endfunc %}
 
 {% func (p *RoomMembersPage) Head() %}
@@ -39,7 +39,6 @@
     {%= PrintRoomHeader(p.RoomInfo) %}
 {% endfunc %}
 
-{% stripspace %}
 {% func (p *RoomMembersPage) Body() %}
 
     <div>{%d p.RoomInfo.NumMemberEvents %}{% space %} users have interacted with this room.</div>
@@ -78,7 +77,7 @@
         return len(p.Members) == p.PageSize
     }
     func (p *RoomMembersPage) BaseUrl() string {
-        return RoomBaseUrl(p.RoomInfo.RoomID) + "/members/"
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/members"
     }
 
 %}

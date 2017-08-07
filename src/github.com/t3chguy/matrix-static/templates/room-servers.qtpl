@@ -11,6 +11,7 @@
 
 
 
+{% stripspace %}
 {% func (p *RoomServersPage) printServer(server mxclient.ServerUserCount) %}
     <tr>
         <td><img class="avatar serverAvatar" src="./avatar/{%u server.ServerName %}" /> {%s server.ServerName %}</td>
@@ -21,7 +22,7 @@
 
 
 {% func (p *RoomServersPage) Title() %}
-    Public Room Servers - {%s p.RoomInfo.Name %} - Riot Static
+    Matrix Static - Public Room Servers - {% space %}{%s p.RoomInfo.Name %}{% space %} - {% space %}{%d p.RoomInfo.NumServers %}{% space %} servers
 {% endfunc %}
 
 {% func (p *RoomServersPage) Head() %}
@@ -31,7 +32,6 @@
     {%= PrintRoomHeader(p.RoomInfo) %}
 {% endfunc %}
 
-{% stripspace %}
 {% func (p *RoomServersPage) Body() %}
 
     {%= PaginatorCurPage(p) %}
@@ -66,7 +66,7 @@
         return len(p.Servers) == p.PageSize
     }
     func (p *RoomServersPage) BaseUrl() string {
-        return RoomBaseUrl(p.RoomInfo.RoomID) + "/servers/"
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/servers"
     }
 
 %}

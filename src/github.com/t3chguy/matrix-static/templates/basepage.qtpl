@@ -30,7 +30,7 @@ PrintPage prints Page p
 
 Base page implementation. Other pages may inherit from it if they need overriding only certain Page methods
 {% code type BasePage struct {} %}
-{% func (p *BasePage) Title() %}Spiders Welcome{% endfunc %}
+{% func (p *BasePage) Title() %}Matrix Static{% endfunc %}
 {% func (p *BasePage) Head() %}{% endfunc %}
 {% func (p *BasePage) Header() %}Default Header{% endfunc %}
 {% func (p *BasePage) Body() %}Default Body{% endfunc %}

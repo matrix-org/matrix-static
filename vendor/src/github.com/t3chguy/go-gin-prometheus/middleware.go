@@ -47,8 +47,8 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 	p.reqDur = prometheus.NewSummary(
 		prometheus.SummaryOpts{
 			Subsystem: subsystem,
-			Name:      "request_duration_seconds",
-			Help:      "The HTTP request latencies in seconds.",
+			Name:      "request_duration_microseconds",
+			Help:      "The HTTP request latencies in microseconds.",
 		},
 	)
 	prometheus.MustRegister(p.reqDur)
@@ -106,7 +106,7 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 		c.Next()
 
 		status := strconv.Itoa(c.Writer.Status())
-		elapsed := float64(time.Since(start)) / float64(time.Second)
+		elapsed := float64(time.Since(start)) / float64(time.Microsecond)
 		resSz := float64(c.Writer.Size())
 
 		p.reqDur.Observe(elapsed)
