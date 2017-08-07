@@ -114,7 +114,6 @@ func (r *Room) backpaginateIfNeeded(anchorIndex, offset, number int) {
 
 	// delta is the number of events we should have, to comfortably handle this request, if we do not have this many
 	// then ask the mxclient to backpaginate this room by at least delta-length events.
-	// TODO if numNew = 0, we are at end of TL as we know it, mark this room as such.
 	length := len(r.eventList)
 	if delta := anchorIndex + offset + number + overcompensateBackpaginationBy; delta >= length {
 		// if no error encountered and zero events then we are likely at the last historical event.
