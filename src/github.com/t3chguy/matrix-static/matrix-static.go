@@ -64,6 +64,7 @@ func main() {
 	sanitizerFn := sanitizer.InitSanitizer()
 
 	router := gin.New()
+	router.RedirectTrailingSlash = false
 
 	if *enablePprof {
 		pprof.Register(router, nil)
@@ -108,7 +109,7 @@ func main() {
 	publicRouter.Use(gin.Logger(), gin.Recovery())
 
 	if *enablePrometheusMetrics {
-		ginProm := ginprometheus.NewPrometheus("gin")
+		ginProm := ginprometheus.NewPrometheus("http")
 		publicRouter.Use(ginProm.HandlerFunc())
 		router.GET(ginProm.MetricsPath, ginprometheus.PrometheusHandler())
 	}
