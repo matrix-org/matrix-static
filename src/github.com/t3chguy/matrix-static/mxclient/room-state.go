@@ -16,7 +16,6 @@ package mxclient
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/matrix-org/gomatrix"
 	"sort"
 	"strings"
@@ -71,7 +70,6 @@ func (rs *RoomState) GetNumMemberEvents() int {
 // UpdateOnEvent iterates the Room State based on the event observed.
 func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	if event.StateKey == nil {
-		fmt.Println("Debug Event", event)
 		return
 	}
 

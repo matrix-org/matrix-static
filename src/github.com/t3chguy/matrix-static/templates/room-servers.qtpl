@@ -13,7 +13,7 @@
 
 {% func (p *RoomServersPage) printServer(server mxclient.ServerUserCount) %}
     <tr>
-        <td>{%s server.ServerName %}</td>
+        <td><img class="avatar serverAvatar" src="./avatar/{%u server.ServerName %}" /> {%s server.ServerName %}</td>
         <td>{%d server.NumUsers %}</td>
     </tr>
 {% endfunc %}

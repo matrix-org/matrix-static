@@ -32,7 +32,11 @@ Pages are ints and can be +/- 1 to get siblings
                 {% if curPage > 1 %}
                     <a href="{%s baseUrl %}?page={%d curPage -1 %}">Previous Page</a>
                 {% elseif curPage == 1 %}
-                    <a href="{%s baseUrl %}?page=0">See All</a>
+                    {% if p.HasNextPage() %}
+                        <a href="{%s baseUrl %}?page=0">See All</a>
+                    {% else %}
+                        Only Page
+                    {% endif %}
                 {% endif %}
             </span>
             {% space %}
@@ -41,7 +45,7 @@ Pages are ints and can be +/- 1 to get siblings
                     <a href="{%s baseUrl %}?page=1">First Page</a>
                 {% elseif p.HasNextPage() %}
                     <a href="{%s baseUrl %}?page={%d curPage +1 %}">Next Page</a>
-                {% else %}
+                {% elseif curPage > 1 %}
                     <a href="{%s baseUrl %}?page=0">See All</a>
                 {% endif %}
             </span>

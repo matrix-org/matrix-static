@@ -25,22 +25,22 @@
 {% func (p *RoomsPage) printRoomRow(Room gomatrix.PublicRoomsChunk) %}
     <tr>
         <td>
-            <a href="./room/{%s Room.RoomID %}">
+            <a href="./room/{%s Room.RoomID %}/">
                 {% if Room.AvatarUrl != "" %}
-                    <img src="{%s Room.AvatarUrl %}" />
+                    <img class="avatar roomAvatar" src="{%s Room.AvatarUrl %}" />
                 {% else %}
                     {% if Room.Name != "" %}
-                        <img src="./avatar/{%u Room.Name %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u Room.Name %}" />
                     {% elseif Room.CanonicalAlias != "" %}
-                        <img src="./avatar/{%u Room.CanonicalAlias %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u Room.CanonicalAlias %}" />
                     {% else %}
-                        <img src="./img/logo_missing.png" />
+                        <img class="avatar roomAvatar" src="./img/logo_missing_transparent.png" />
                     {% endif %}
                 {% endif %}
             </a>
         </td>
         <td>
-            <a href="./room/{%s Room.RoomID %}">
+            <a href="./room/{%s Room.RoomID %}/">
                 <div>{%= StrFallback(Room.Name, Room.CanonicalAlias, Room.RoomID) %}</div>
                 <sup>{%s Room.CanonicalAlias %}</sup>
             </a>

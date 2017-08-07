@@ -1,4 +1,31 @@
-img {
+/* Theming taken from https://github.com/vector-im/riot-web/blob/cf5cf02529f95a094d88051c12fdb87a03d87335/src/skins/vector/css/themes/_base.scss */
+body {
+    color: #454545;
+    background-color: #ffffff;
+}
+#roomList {
+    border-collapse: collapse;
+}
+#roomList > tbody > tr:nth-of-type(2n+1) {
+    background-color: #eaf5f0;
+}
+#roomList td {
+    padding: 0 3px;
+    border: 1px solid transparent;
+}
+/* Theming end */
+header + hr + div {
+    text-align: center;
+}
+footer {
+    margin-top: 1em;
+}
+footer a {
+    padding: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+img.avatar {
     -webkit-border-radius: 50%;
     -moz-border-radius: 50%;
     border-radius: 50%;
@@ -7,17 +34,27 @@ img {
 img.userAvatar {
     height: 20px;
 }
-img.memberListAvatar {
+img.userAvatarMedium {
     height: 36px;
 }
+img.userAvatarBig {
+    height: 96px;
+}
+
 * {
     font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
 }
-td.roomLogo {
+img.serverAvatar {
+    height: 20px;
+}
+img.roomAvatar {
+    height: 64px;
+}
+td.roomAvatar {
     width: 80px;
 }
-img.roomLogo {
-    height: 64px;
+td.roomAvatar img {
+    height: 96px;
 }
 table#roomHeader {
     width: 100%;
