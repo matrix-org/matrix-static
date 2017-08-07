@@ -37,6 +37,10 @@ img.userAvatar {
 img.userAvatarMedium {
     height: 36px;
 }
+img.userAvatarBig {
+    height: 96px;
+}
+
 * {
     font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
 }
