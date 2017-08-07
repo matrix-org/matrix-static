@@ -11,7 +11,7 @@
 
 
 {% func (p *RoomMemberInfoPage) Title() %}
-    Public Room Servers - {%s p.RoomInfo.Name %} - Riot Static
+    Public Room Member Info ({%s p.MemberInfo.MXID %}) - {%s p.RoomInfo.Name %} - Riot Static
 {% endfunc %}
 
 {% func (p *RoomMemberInfoPage) Head() %}
@@ -23,7 +23,7 @@
 
 {% stripspace %}
 {% func (p *RoomMemberInfoPage) body() %}
-    MemberInfo of {% space %}{%s p.MemberInfo.MXID %}
+    MemberInfo of {% space %}{%s p.MemberInfo.GetName() %}{% space %} ({%s p.MemberInfo.MXID %})
     <hr>
 
     <table>
@@ -31,9 +31,9 @@
             <td>Avatar</td>
             <td>
                 {% if p.MemberInfo.AvatarURL.IsValid() %}
-                    <a href="{%s p.MemberInfo.AvatarURL.ToURL() %}"><img src="{%s p.MemberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" /></a>
+                    <a href="{%s p.MemberInfo.AvatarURL.ToURL() %}"><img class="avatar userAvatarBig" src="{%s p.MemberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" /></a>
                 {% else %}
-                    <img src="./img/logo_missing.png" />
+                    <img class="avatar userAvatarBig" src="./avatar/{%u p.MemberInfo.GetName() %}" />
                 {% endif %}
             </td>
         </tr>

@@ -6,11 +6,17 @@
 {% func PrintRoomHeader(roomInfo mxclient.RoomInfo) %}
     <table id="roomHeader">
         <tr>
-            <td class="roomLogo" rowspan="2">
+            <td class="roomAvatar" rowspan="2">
                 {% if roomInfo.AvatarURL.IsValid() %}
-                    <img class="roomLogo" src="{%s roomInfo.AvatarURL.ToThumbURL(64, 64, "crop") %}" />
+                    <img class="avatar roomAvatar" src="{%s roomInfo.AvatarURL.ToThumbURL(64, 64, "crop") %}" />
                 {% else %}
-                    <img class="roomLogo" src="./img/logo_missing.png" />
+                    {% if roomInfo.Name != "" %}
+                        <img class="avatar roomAvatar" src="./avatar/{%u roomInfo.Name %}" />
+                    {% elseif roomInfo.CanonicalAlias != "" %}
+                        <img class="avatar roomAvatar" src="./avatar/{%u roomInfo.CanonicalAlias %}" />
+                    {% else %}
+                        <img class="avatar roomAvatar" src="./img/logo_missing.png" />
+                    {% endif %}
                 {% endif %}
             </td>
             <td><h2>{%s roomInfo.Name %}</h2></td>

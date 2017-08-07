@@ -2,9 +2,15 @@ Matrix Static
 ===========
 
 ### Installation
-`git clone` this repository and follow instructions at [getgb.io](https://getgb.io).
-Use gb to build the project using `gb build` then execute it from the `bin/` directory.
+`git clone` or download this repository as an archive and extract then follow below instructions.
 
+```
+go get github.com/constabulary/gb/...
+go get github.com/valyala/quicktemplate/qtc
+qtc
+gb build
+```
+After this, executables will be in the `bin` directory.
 
 
 ### Usage

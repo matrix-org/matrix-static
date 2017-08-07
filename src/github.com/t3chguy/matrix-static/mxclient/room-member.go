@@ -39,6 +39,23 @@ func (powerLevel PowerLevel) Int() int {
 	return int(powerLevel)
 }
 
+// implements sort.Interface
+type MemberList []*MemberInfo
+
+func (ml MemberList) Len() int { return len(ml) }
+func (ml MemberList) Less(i, j int) bool {
+	a, b := ml[i], ml[j]
+	plA, plB := a.PowerLevel.Int(), b.PowerLevel.Int()
+	if plA == plB {
+		// Secondary sort is Low->High Lexicographically on GetName()
+		return a.GetName() < b.GetName()
+	}
+
+	// Primary Sort is High->Low on PowerLevel
+	return plA > plB
+}
+func (ml MemberList) Swap(i, j int) { ml[i], ml[j] = ml[j], ml[i] }
+
 type MemberInfo struct {
 	MXID        string
 	Membership  string

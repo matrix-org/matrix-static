@@ -16,7 +16,6 @@ package mxclient
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/matrix-org/gomatrix"
 	"sort"
 	"strings"
@@ -45,6 +44,7 @@ type RoomState struct {
 	Aliases        []string
 
 	PowerLevels PowerLevels
+	serverList  []ServerUserCount
 	memberList  []*MemberInfo
 	MemberMap   map[string]*MemberInfo
 }
@@ -70,7 +70,6 @@ func (rs *RoomState) GetNumMemberEvents() int {
 // UpdateOnEvent iterates the Room State based on the event observed.
 func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	if event.StateKey == nil {
-		fmt.Println("Debug Event", event)
 		return
 	}
 
@@ -116,8 +115,6 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 		if displayName, ok := event.Content["displayname"].(string); ok {
 			currentMemberState.DisplayName = displayName
 		}
-
-		rs.memberList = rs.CalculateMemberList()
 	case "m.room.power_levels":
 		// ez convert to powerLevels
 		if data, err := json.Marshal(event.Content); err == nil {
@@ -143,18 +140,43 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	}
 }
 
-// TODO do this on m.room.member but more smartly
-// TODO sort the return values of this
-// CalculateMemberList returns the slice of members with membership=join
-func (rs *RoomState) CalculateMemberList() []*MemberInfo {
-	memberList := make([]*MemberInfo, 0, len(rs.MemberMap))
+// RecalculateMemberListAndServers does member list calculation, sorting and server calculations.
+// ideally called at the end of concatenating so that its done as infrequently as possible
+// whilst still never causing outdated information.
+func (rs *RoomState) RecalculateMemberListAndServers() {
+	for mxid, powerlevel := range rs.PowerLevels.Users {
+		if _, ok := rs.MemberMap[mxid]; ok {
+			rs.MemberMap[mxid].PowerLevel = PowerLevel(powerlevel)
+		}
+	}
+
+	// Filter list of members with Membership=join
+	memberList := make(MemberList, 0)
 	for _, member := range rs.MemberMap {
 		if member.Membership == "join" {
 			memberList = append(memberList, member)
 		}
 	}
 
-	return memberList
+	// Create a map of servers by splitting memberList MXID's and incrementing count on server key
+	serverMap := make(map[string]int)
+	for _, member := range memberList {
+		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
+			serverMap[mxidSplit[1]]++
+		}
+	}
+
+	// Fit the server map into an sortable slice
+	serverList := make(ServerUserCounts, 0, len(serverMap))
+	for server, num := range serverMap {
+		serverList = append(serverList, ServerUserCount{server, num})
+	}
+
+	// Sort and store both server and member lists
+	sort.Sort(serverList)
+	rs.serverList = serverList
+	sort.Sort(memberList)
+	rs.memberList = memberList
 }
 
 // Members is an accessor for RoomState.memberList
@@ -162,12 +184,12 @@ func (rs RoomState) Members() []*MemberInfo {
 	return rs.memberList
 }
 
-// implements sort.Interface
 type ServerUserCount struct {
 	ServerName string
 	NumUsers   int
 }
 
+// implements sort.Interface
 type ServerUserCounts []ServerUserCount
 
 func (p ServerUserCounts) Len() int { return len(p) }
@@ -183,21 +205,8 @@ func (p ServerUserCounts) Less(i, j int) bool {
 func (p ServerUserCounts) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
 // Servers iterates over the Member List (membership=join), splits each MXID and counts the number of each homeserver url.
-func (rs RoomState) Servers() ServerUserCounts {
-	serverMap := make(map[string]int)
-	for _, member := range rs.CalculateMemberList() {
-		if mxidSplit := strings.SplitN(member.MXID, ":", 2); len(mxidSplit) == 2 {
-			serverMap[mxidSplit[1]]++
-		}
-	}
-
-	serverList := make(ServerUserCounts, 0, len(serverMap))
-	for server, num := range serverMap {
-		serverList = append(serverList, ServerUserCount{server, num})
-	}
-
-	sort.Sort(serverList)
-	return serverList
+func (rs RoomState) Servers() []ServerUserCount {
+	return rs.serverList
 }
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room

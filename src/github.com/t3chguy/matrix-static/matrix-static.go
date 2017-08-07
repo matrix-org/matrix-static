@@ -15,8 +15,12 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"github.com/disintegration/letteravatar"
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/t3chguy/go-gin-prometheus"
@@ -24,9 +28,13 @@ import (
 	"github.com/t3chguy/matrix-static/sanitizer"
 	"github.com/t3chguy/matrix-static/templates"
 	"github.com/t3chguy/matrix-static/utils"
+	"image/png"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 // TODO Cache memberList+serverList until it changes
@@ -60,6 +68,41 @@ func main() {
 	if *enablePprof {
 		pprof.Register(router, nil)
 	}
+
+	// This is temporary until generated server-side in Synapse as suggested by riot-web issues.
+	avatarRouter := router.Group(*publicServePrefix)
+	avatarRouter.Use(gin.Recovery())
+	generatedAvatarCache := persistence.NewInMemoryStore(time.Hour)
+	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, time.Hour, func(c *gin.Context) {
+		identifier := c.Param("identifier")
+		if (identifier[0] == '#' || identifier[0] == '!' || identifier[0] == '@') && len(identifier) > 1 {
+			identifier = identifier[1:]
+		}
+
+		avatarChar, _ := utf8.DecodeRuneInString(identifier)
+		img, err := letteravatar.Draw(100, unicode.ToUpper(avatarChar), nil)
+
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		buffer := new(bytes.Buffer)
+		err = png.Encode(buffer, img)
+
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		c.Writer.Header().Set("Content-Type", "image/png")
+		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
+		_, err = c.Writer.Write(buffer.Bytes())
+
+		//if err != nil {
+		//	panic(err)
+		//}
+	}))
 
 	publicRouter := router.Group(*publicServePrefix)
 	publicRouter.Use(gin.Logger(), gin.Recovery())
