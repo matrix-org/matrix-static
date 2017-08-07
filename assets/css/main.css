@@ -40,6 +40,9 @@ img.userAvatarMedium {
 * {
     font-family: 'Open Sans',Arial,Helvetica,Sans-Serif;
 }
+img.serverAvatar {
+    height: 20px;
+}
 img.roomAvatar {
     height: 64px;
 }
