@@ -1,0 +1,27 @@
+{% code type ErrorPage struct {
+    Error string
+} %}
+
+
+{% stripspace %}
+{% func (p *ErrorPage) Title() %}
+    Matrix Static - Alias ERROR
+{% endfunc %}
+
+{% func (p *ErrorPage) Head() %}
+{% endfunc %}
+
+{% func (p *ErrorPage) Header() %}
+    <h1>matrix-static</h1>
+{% endfunc %}
+
+{% func (p *ErrorPage) Body() %}
+
+    <div class="errMsg">
+        <h4>{%s p.Error %}</h4>
+    </div>
+
+    <a href="./">Back to Room List</a>
+
+{% endfunc %}
+{% endstripspace %}
