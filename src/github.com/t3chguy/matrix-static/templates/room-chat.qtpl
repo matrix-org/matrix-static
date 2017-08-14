@@ -257,7 +257,7 @@
 {% endfunc %}
 
 {% func (p *RoomChatPage) printPermalinkColumn(ev gomatrix.Event) %}
-    <td class="timestamp" class="fullWidth">
+    <td class="timestamp fullWidth">
         <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}">{%= printTimestamp(ev.Timestamp) %}</a>
     </td>
 {% endfunc %}
