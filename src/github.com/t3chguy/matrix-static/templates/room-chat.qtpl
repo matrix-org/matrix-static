@@ -213,13 +213,13 @@
         {% switch ev.Type %}
             {% case "m.room.message" %}
                 {% if ev.Content["msgtype"] == "m.emote" %}
-                    <td nowrap></td>
+                    <td class="fullWidth"></td>
                     <td>
                         *{% space %}{%= p.prettyPrintMember(ev.Sender) %}
                         {% space %}{%= p.textForMRoomMessageEvent(ev) %}
                     </td>
                 {% else %}
-                    <td nowrap>
+                    <td class="fullWidth">
                         {% if ev.Content["msgtype"] == "m.emote" %}*{% space %}{% endif %}
                         {%= p.prettyPrintMember(ev.Sender) %}
                     </td>
@@ -227,37 +227,37 @@
                 {% endif %}
 
             {% case "m.room.member" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
             {% case "m.room.name" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>{%= printStateChange(ev, "name", "room name") %}</td>
             {% case "m.room.topic" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>{%= printStateChange(ev, "topic", "room topic") %}</td>
             {% case "m.room.history_visibility" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>{%= printStateChange(ev, "history_visibility", "history visibility") %}</td>
             {% case "m.room.join_rules" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>{%= printStateChange(ev, "join_rule", "join rule") %}</td>
             {% case "m.room.avatar" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>
                     Room Avatar Renderer.
                 </td>
             {% case "m.room.power_levels" %}
-                <td nowrap></td>
+                <td class="fullWidth"></td>
                 <td>{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
             {% default %}
-                <td nowrap>{%s ev.Type %}</td>
+                <td class="fullWidth">{%s ev.Type %}</td>
                 <td>Cannot Understand Event.</td>
         {% endswitch %}
     </tr>
 {% endfunc %}
 
 {% func (p *RoomChatPage) printPermalinkColumn(ev gomatrix.Event) %}
-    <td class="timestamp" nowrap>
+    <td class="timestamp" class="fullWidth">
         <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}">{%= printTimestamp(ev.Timestamp) %}</a>
     </td>
 {% endfunc %}
