@@ -7,6 +7,7 @@ Pages are ints and can be +/- 1 to get siblings
     CurPage() int
     HasNextPage() bool
     BaseUrl() string
+    BackUrl() string
 } %}
 
 {% func PaginatorCurPage(p Paginator) %}
@@ -24,6 +25,7 @@ Pages are ints and can be +/- 1 to get siblings
     {% code
         curPage := p.CurPage()
         baseUrl := p.BaseUrl()
+        backUrl := p.BackUrl()
     %}
 
     <footer>
@@ -50,9 +52,9 @@ Pages are ints and can be +/- 1 to get siblings
                 {% endif %}
             </span>
         </span>
-        {% if baseUrl != "./" %}
+        {% if backUrl != "" %}
             <span style="float: right;">
-                <a href="./">Back to Room List</a>
+                <a href="{%s backUrl %}">Back to Room</a>
             </span>
         {% endif %}
         <span style="clear: both;"></span>
