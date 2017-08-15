@@ -11,7 +11,7 @@ Pages are ints and can be +/- 1 to get siblings
 
 {% func PaginatorCurPage(p Paginator) %}
     {% code curPage := p.CurPage() %}
-    <div>
+    <div class="page-current">
         {% if curPage > 0 %}
             Page {% space %}{%d curPage %}
         {% else %}
@@ -26,36 +26,34 @@ Pages are ints and can be +/- 1 to get siblings
         baseUrl := p.BaseUrl()
     %}
 
-    <footer>
-        <span style="float: left;">
-            <span>
-                {% if curPage > 1 %}
-                    <a href="{%s baseUrl %}?page={%d curPage -1 %}">Previous Page</a>
-                {% elseif curPage == 1 %}
-                    {% if p.HasNextPage() %}
-                        <a href="{%s baseUrl %}?page=0">See All</a>
-                    {% else %}
-                        Only Page
-                    {% endif %}
-                {% endif %}
-            </span>
-            {% space %}
-            <span>
-                {% if curPage == 0 %}
-                    <a href="{%s baseUrl %}?page=1">First Page</a>
-                {% elseif p.HasNextPage() %}
-                    <a href="{%s baseUrl %}?page={%d curPage +1 %}">Next Page</a>
-                {% elseif curPage > 1 %}
+    <footer class="paginator">
+        <span class="page-prev">
+            {% if curPage > 1 %}
+                <a href="{%s baseUrl %}?page={%d curPage -1 %}">Previous Page</a>
+            {% elseif curPage == 1 %}
+                {% if p.HasNextPage() %}
                     <a href="{%s baseUrl %}?page=0">See All</a>
+                {% else %}
+                    Only Page
                 {% endif %}
-            </span>
+            {% endif %}
         </span>
+
+        {% space %}
+
+        <span class="page-next">
+            {% if curPage == 0 %}
+                <a href="{%s baseUrl %}?page=1">First Page</a>
+            {% elseif p.HasNextPage() %}
+                <a href="{%s baseUrl %}?page={%d curPage +1 %}">Next Page</a>
+            {% elseif curPage > 1 %}
+                <a href="{%s baseUrl %}?page=0">See All</a>
+            {% endif %}
+        </span>
+
         {% if baseUrl != "./" %}
-            <span style="float: right;">
-                <a href="./">Back to Room List</a>
-            </span>
+            <a href="./">Back to Room List</a>
         {% endif %}
-        <span style="clear: both;"></span>
     </footer>
 {% endfunc %}
 
