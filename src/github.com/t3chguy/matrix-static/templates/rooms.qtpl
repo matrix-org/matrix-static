@@ -42,7 +42,7 @@
                 {% endif %}
             {% endif %}
         </div>
-        <aside class="room-population">{%d Room.NumJoinedMembers %}</aside>
+        <aside class="room-population">{%d Room.NumJoinedMembers %} members</aside>
         <p class="room-topic">{%s Room.Topic %}</p>
     </a></li>
 {% endfunc %}
