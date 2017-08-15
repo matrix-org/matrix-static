@@ -41,7 +41,8 @@ type RoomState struct {
 	Name           string
 	canonicalAlias string
 	AvatarURL      MXCURL
-	Aliases        []string
+	aliasMap       map[string][]string
+	Aliases        RoomAliases
 
 	PowerLevels PowerLevels
 	serverList  []ServerUserCount
@@ -54,6 +55,7 @@ func NewRoomState(client *Client) *RoomState {
 	return &RoomState{
 		client:    client,
 		MemberMap: make(map[string]*MemberInfo),
+		aliasMap:  make(map[string][]string),
 	}
 }
 
@@ -76,7 +78,22 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	stateKey := *event.StateKey
 
 	switch event.Type {
-	case "m.room.aliases": // We do not (yet) care about m.room.aliases
+	case "dummy":
+	case "m.room.aliases":
+		if aliases, ok := event.Content["aliases"].([]interface{}); ok {
+			numAliases := len(aliases)
+			if numAliases == 0 {
+				break
+			}
+
+			processedAliases := make([]string, 0, numAliases)
+			for _, alias := range aliases {
+				if processedAlias, ok := alias.(string); ok {
+					processedAliases = append(processedAliases, processedAlias)
+				}
+			}
+			rs.aliasMap[stateKey] = processedAliases
+		}
 	case "m.room.canonical_alias":
 		if alias, ok := event.Content["alias"].(string); ok {
 			rs.canonicalAlias = alias
@@ -177,6 +194,18 @@ func (rs *RoomState) RecalculateMemberListAndServers() {
 	rs.serverList = serverList
 	sort.Sort(memberList)
 	rs.memberList = memberList
+
+	// Recalculate Room Aliases
+	roomAliases := make(RoomAliases, 0)
+	for server, aliases := range rs.aliasMap {
+		sort.Strings(aliases)
+		roomAliases = append(roomAliases, RoomServerAliases{server, aliases})
+	}
+
+	// Sort and store the aliases list
+	sort.Sort(roomAliases)
+	rs.Aliases = roomAliases
+
 }
 
 // Members is an accessor for RoomState.memberList
@@ -204,6 +233,27 @@ func (p ServerUserCounts) Less(i, j int) bool {
 }
 func (p ServerUserCounts) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
+type RoomServerAliases struct {
+	ServerName string
+	Aliases    []string
+}
+
+// implements sort.Interface
+type RoomAliases []RoomServerAliases
+
+func (p RoomAliases) Len() int { return len(p) }
+func (p RoomAliases) Less(i, j int) bool {
+	a, b := p[i], p[j]
+	numA, numB := len(a.Aliases), len(b.Aliases)
+	if numA == numB {
+		// Secondary Sort is Low->High Lexicographically on ServerName
+		return a.ServerName < b.ServerName
+	}
+	// Primary Sort is High->Low on len(Aliases)
+	return numA > numB
+}
+func (p RoomAliases) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+
 // Servers iterates over the Member List (membership=join), splits each MXID and counts the number of each homeserver url.
 func (rs RoomState) Servers() []ServerUserCount {
 	return rs.serverList
@@ -211,7 +261,6 @@ func (rs RoomState) Servers() []ServerUserCount {
 
 // Partial implementation of http://matrix.org/docs/spec/client_server/r0.2.0.html#calculating-the-display-name-for-a-room
 // Does not handle based on members if there is no Name/Alias (yet)
-// Falls back to first alias. TODO find edge case rooms for which this is needed.
 func (rs RoomState) CalculateName() string {
 	if rs.Name != "" {
 		return rs.Name
@@ -219,9 +268,5 @@ func (rs RoomState) CalculateName() string {
 	if rs.canonicalAlias != "" {
 		return rs.canonicalAlias
 	}
-	if len(rs.Aliases) > 0 {
-		return rs.Aliases[0]
-	}
-
 	return "Empty Room"
 }
