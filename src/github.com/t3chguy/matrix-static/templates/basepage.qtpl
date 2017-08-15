@@ -22,8 +22,9 @@ PrintPage prints Page p
         <header>
             {%= p.Header() %}
         </header>
-        <hr>
+        <main>
         {%= p.Body() %}
+        </main>
     </body>
     </html>
 {% endfunc %}
