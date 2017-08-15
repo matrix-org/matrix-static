@@ -26,52 +26,37 @@
 {% endfunc %}
 
 {% func (p *RoomsPage) printRoomRow(Room gomatrix.PublicRoomsChunk) %}
-    <tr>
-        <td>
-            <a href="./room/{%s Room.RoomID %}/">
-                {% if Room.AvatarUrl != "" %}
-                    <img class="avatar roomAvatar" src="{%s Room.AvatarUrl %}" alt="{%s Room.RoomID %}" />
+    <li><a href="./room/{%s Room.RoomID %}/">
+        <h3>{%= StrFallback(Room.Name, Room.CanonicalAlias, Room.RoomID) %}</h3>
+        <h4>{%s Room.CanonicalAlias %}</h4>
+        <div class="room-logo">
+            {% if Room.AvatarUrl != "" %}
+                <img class="avatar roomAvatar" src="{%s Room.AvatarUrl %}" alt="{%s Room.RoomID %}" />
+            {% else %}
+                {% if Room.Name != "" %}
+                    <img class="avatar roomAvatar" src="./avatar/{%u Room.Name %}" alt="{%s Room.RoomID %}" />
+                {% elseif Room.CanonicalAlias != "" %}
+                    <img class="avatar roomAvatar" src="./avatar/{%u Room.CanonicalAlias %}" alt="{%s Room.RoomID %}" />
                 {% else %}
-                    {% if Room.Name != "" %}
-                        <img class="avatar roomAvatar" src="./avatar/{%u Room.Name %}" alt="{%s Room.RoomID %}" />
-                    {% elseif Room.CanonicalAlias != "" %}
-                        <img class="avatar roomAvatar" src="./avatar/{%u Room.CanonicalAlias %}" alt="{%s Room.RoomID %}" />
-                    {% else %}
-                        <img class="avatar roomAvatar" src="./img/logo_missing_transparent.png" alt="{%s Room.RoomID %}" />
-                    {% endif %}
+                    <img class="avatar roomAvatar" src="./img/logo_missing_transparent.png" alt="{%s Room.RoomID %}" />
                 {% endif %}
-            </a>
-        </td>
-        <td>
-            <a href="./room/{%s Room.RoomID %}/">
-                <div>{%= StrFallback(Room.Name, Room.CanonicalAlias, Room.RoomID) %}</div>
-                <sup>{%s Room.CanonicalAlias %}</sup>
-            </a>
-        </td>
-        <td>{%d Room.NumJoinedMembers %}</td>
-        <td>{%s Room.Topic %}</td>
-    </tr>
+            {% endif %}
+        </div>
+        <aside class="room-population">{%d Room.NumJoinedMembers %} members</aside>
+        <p class="room-topic">{%s Room.Topic %}</p>
+    </a></li>
 {% endfunc %}
 
 {% func (p *RoomsPage) Body() %}
 
     {%= PaginatorCurPage(p) %}
 
-    <table id="roomList">
-        <thead>
-            <tr>
-                <th>Logo</th>
-                <th>Name & Alias</th>
-                <th>#Members</th>
-                <th>Topic</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for _, Room := range p.Rooms %}
-                {%= p.printRoomRow(Room) %}
-            {% endfor %}
-        </tbody>
-    </table>
+    <h2>Matrix Rooms</h2>
+    <nav class="rooms"><ul>
+        {% for _, Room := range p.Rooms %}
+            {%= p.printRoomRow(Room) %}
+        {% endfor %}
+    </ul></nav>
 
     {%= PaginatorFooter(p) %}
 
