@@ -23,6 +23,7 @@ import (
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/go-gin-prometheus"
 	"github.com/t3chguy/matrix-static/mxclient"
 	"github.com/t3chguy/matrix-static/sanitizer"
@@ -134,7 +135,8 @@ func main() {
 		// TODO better error page
 		if err != nil || resp.RoomID == "" {
 			templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
-				Error: "Unable to resolve Room Alias: " + err.Error(),
+				ErrType: "Unable to resolve Room Alias.",
+				Error:   err,
 			})
 			return
 		}
@@ -147,13 +149,43 @@ func main() {
 		// Load room worker into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
+
+			if roomID[0] != '!' {
+				templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+					ErrType: "Unable to Load Room.",
+					Details: "Room ID must start with a '!'",
+				})
+				c.Abort()
+				return
+			}
+
 			worker := workers.GetWorkerForRoomID(roomID)
 
 			worker.Queue <- &RoomInitialSyncJob{roomID}
 			resp := (<-worker.Output).(*RoomInitialSyncResp)
 
 			if resp.err != nil {
-				c.String(http.StatusNotFound, "Room Not Found")
+				if err, ok := resp.err.(gomatrix.HTTPError); ok {
+					if respErr, ok := err.WrappedError.(gomatrix.RespError); ok {
+						var message string = respErr.Err
+						switch respErr.ErrCode {
+						case "M_GUEST_ACCESS_FORBIDDEN":
+							message = "This Room does not permit guests to peek into it."
+						}
+
+						templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+							ErrType: "Unable to Join Room.",
+							Details: message,
+						})
+						c.Abort()
+						return
+					}
+				}
+
+				templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+					ErrType: "Cannot Load Room. Internal Server Error.",
+					Error:   err,
+				})
 				c.Abort()
 				return
 			}
