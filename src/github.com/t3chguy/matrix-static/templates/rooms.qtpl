@@ -89,5 +89,8 @@
     func (p *RoomsPage) BaseUrl() string {
         return "./"
     }
+    func (p *RoomsPage) BackUrl() string {
+        return ""
+    }
 
 %}
