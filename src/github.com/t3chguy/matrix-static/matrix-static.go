@@ -40,6 +40,24 @@ import (
 
 // TODO Cache memberList+serverList until it changes
 
+func unwrapRespError(err error) (respErr gomatrix.RespError, respErrOk bool) {
+	if err, ok := err.(gomatrix.HTTPError); ok {
+		respErr, respErrOk = err.WrappedError.(gomatrix.RespError)
+	}
+	return
+}
+
+var textForRespErr = map[string]string{
+	"M_GUEST_ACCESS_FORBIDDEN": "This Room does not permit guests to peek into it.",
+}
+
+func textForRespError(respErr gomatrix.RespError) string {
+	if msg, ok := textForRespErr[respErr.ErrCode]; ok {
+		return msg
+	}
+	return respErr.Err
+}
+
 const PublicRoomsPageSize = 20
 const RoomTimelineSize = 30
 const RoomMembersPageSize = 20
@@ -165,21 +183,13 @@ func main() {
 			resp := (<-worker.Output).(*RoomInitialSyncResp)
 
 			if resp.err != nil {
-				if err, ok := resp.err.(gomatrix.HTTPError); ok {
-					if respErr, ok := err.WrappedError.(gomatrix.RespError); ok {
-						var message string = respErr.Err
-						switch respErr.ErrCode {
-						case "M_GUEST_ACCESS_FORBIDDEN":
-							message = "This Room does not permit guests to peek into it."
-						}
-
-						templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
-							ErrType: "Unable to Join Room.",
-							Details: message,
-						})
-						c.Abort()
-						return
-					}
+				if respErr, ok := unwrapRespError(resp.err); ok {
+					templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+						ErrType: "Unable to Join Room.",
+						Details: textForRespError(respErr),
+					})
+					c.Abort()
+					return
 				}
 
 				templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
@@ -192,11 +202,6 @@ func main() {
 
 			c.Set("RoomWorker", worker)
 			c.Next()
-
-			//	c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
-			//		"Error": "Failed to load room.",
-			//		"Room":  room,
-			//	})
 		})
 
 		roomRouter.GET("/", func(c *gin.Context) {
