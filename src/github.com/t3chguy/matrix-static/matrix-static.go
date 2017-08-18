@@ -48,7 +48,7 @@ func unwrapRespError(err error) (respErr gomatrix.RespError, respErrOk bool) {
 }
 
 var textForRespErr = map[string]string{
-	"M_GUEST_ACCESS_FORBIDDEN": "This Room does not permit guests to peek into it.",
+	"M_GUEST_ACCESS_FORBIDDEN": "This Room does not exist or does not permit guests to access it.",
 }
 
 func textForRespError(respErr gomatrix.RespError) string {
