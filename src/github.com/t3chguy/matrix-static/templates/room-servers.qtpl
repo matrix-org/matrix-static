@@ -68,5 +68,8 @@
     func (p *RoomServersPage) BaseUrl() string {
         return RoomBaseUrl(p.RoomInfo.RoomID) + "/servers"
     }
+    func (p *RoomServersPage) BackUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/"
+    }
 
 %}
