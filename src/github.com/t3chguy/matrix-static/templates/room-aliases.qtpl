@@ -70,5 +70,8 @@
     func (p *RoomAliasesPage) BaseUrl() string {
         return RoomBaseUrl(p.RoomInfo.RoomID) + "/aliases"
     }
+    func (p *RoomAliasesPage) BackUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/"
+    }
 
 %}
