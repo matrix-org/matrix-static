@@ -78,7 +78,6 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	stateKey := *event.StateKey
 
 	switch event.Type {
-	case "dummy":
 	case "m.room.aliases":
 		if aliases, ok := event.Content["aliases"].([]interface{}); ok {
 			numAliases := len(aliases)
