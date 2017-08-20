@@ -53,7 +53,7 @@
         </tr>
     </table>
 
-    <a href="./">Back to Room List</a>
+    <a href="./{%s p.RoomInfo.RoomID %}">Back to Room</a>
 {% endfunc %}
 
 {% func (p *RoomMemberInfoPage) Body() %}
