@@ -175,13 +175,13 @@
     {% endswitch %}
 {% endfunc %}
 
-{% func printStateChange(ev gomatrix.Event, key, thing string) %}
+{% func (p *RoomChatPage) printStateChange(ev gomatrix.Event, key, thing string) %}
     {% code
         prev := Str(ev.PrevContent[key])
         cur := Str(ev.Content[key])
     %}
 
-    {%s ev.Sender %}
+    {%= p.prettyPrintMember(ev.Sender) %}
 
     {% if cur != "" && prev == "" %}
         set the {%s thing %} to "{%s cur %}".
@@ -231,16 +231,16 @@
                 <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
             {% case "m.room.name" %}
                 <td class="fullWidth"></td>
-                <td>{%= printStateChange(ev, "name", "room name") %}</td>
+                <td>{%= p.printStateChange(ev, "name", "room name") %}</td>
             {% case "m.room.topic" %}
                 <td class="fullWidth"></td>
-                <td>{%= printStateChange(ev, "topic", "room topic") %}</td>
+                <td>{%= p.printStateChange(ev, "topic", "room topic") %}</td>
             {% case "m.room.history_visibility" %}
                 <td class="fullWidth"></td>
-                <td>{%= printStateChange(ev, "history_visibility", "history visibility") %}</td>
+                <td>{%= p.printStateChange(ev, "history_visibility", "history visibility") %}</td>
             {% case "m.room.join_rules" %}
                 <td class="fullWidth"></td>
-                <td>{%= printStateChange(ev, "join_rule", "join rule") %}</td>
+                <td>{%= p.printStateChange(ev, "join_rule", "join rule") %}</td>
             {% case "m.room.avatar" %}
                 <td class="fullWidth"></td>
                 <td>
