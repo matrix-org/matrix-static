@@ -23,7 +23,7 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/matrix-org/dugong"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/t3chguy/go-gin-prometheus"
 	"github.com/t3chguy/matrix-static/mxclient"
 	"github.com/t3chguy/matrix-static/sanitizer"

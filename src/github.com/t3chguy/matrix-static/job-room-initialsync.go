@@ -14,7 +14,7 @@
 
 package main
 
-import log "github.com/sirupsen/logrus"
+import log "github.com/Sirupsen/logrus"
 
 type RoomInitialSyncResp struct {
 	err error
