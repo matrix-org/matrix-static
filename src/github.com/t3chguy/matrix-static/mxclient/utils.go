@@ -56,7 +56,7 @@ func TextForRespError(respErr gomatrix.RespError) string {
 	if msg, ok := textForRespError[respErr.ErrCode]; ok {
 		return msg
 	}
-	return respErr.Err
+	return respErr.Err + " (" + respErr.ErrCode + ")"
 }
 
 // ShouldHideEvent returns a bool the event should be ignored in the timeline view, mimicking riot-web
