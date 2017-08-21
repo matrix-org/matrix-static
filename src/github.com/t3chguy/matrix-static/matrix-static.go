@@ -114,6 +114,7 @@ func main() {
 
 	publicRouter.Static("/img", "./assets/img")
 	publicRouter.Static("/css", "./assets/css")
+	publicRouter.StaticFile("/robots.txt", "./assets/robots.txt")
 
 	publicRouter.GET("/", func(c *gin.Context) {
 		page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
