@@ -17,6 +17,7 @@ package mxclient
 import (
 	"encoding/json"
 	"errors"
+	log "github.com/Sirupsen/logrus"
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/matrix-static/utils"
 	"io/ioutil"
@@ -54,14 +55,19 @@ const minimumPagination = 64
 
 // TODO split into runs of max size recursively otherwise synapse may enforce its own limit (999?)
 func (m *Client) backpaginateRoom(room *Room, amount int) (int, error) {
+	loggerWithFields := log.WithField("roomID", room.ID).WithField("amount", amount)
+	loggerWithFields.Info("Backpaginating Room")
+
 	amount = utils.Max(amount, minimumPagination)
 	resp, err := m.Messages(room.ID, room.backPaginationToken, "", 'b', amount)
 
 	if err != nil {
+		loggerWithFields.WithError(err).Error("Failed Backpaginating Room")
 		return -1, err
 	}
 
 	room.concatBackpagination(resp.Chunk, resp.End)
+	loggerWithFields.Info("Finished Backpaginating Room")
 	return len(resp.Chunk), nil
 }
 
