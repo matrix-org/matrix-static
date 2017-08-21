@@ -208,12 +208,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/sirupsen/logrus",
-			"repository": "https://github.com/sirupsen/logrus",
-			"revision": "84573d5f03ab3740f524c7842c3a9bf617961d32",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/t3chguy/go-gin-prometheus",
 			"repository": "https://github.com/t3chguy/go-gin-prometheus",
 			"revision": "438209f97511bd122d35d14f9ec8b0a2b62b3a3a",
