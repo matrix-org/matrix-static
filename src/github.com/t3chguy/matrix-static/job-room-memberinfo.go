@@ -14,10 +14,7 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/t3chguy/matrix-static/mxclient"
-)
+import "github.com/t3chguy/matrix-static/mxclient"
 
 type RoomMemberNotFoundError struct {
 	roomID string
@@ -25,7 +22,7 @@ type RoomMemberNotFoundError struct {
 }
 
 func (err *RoomMemberNotFoundError) Error() string {
-	return fmt.Sprintf("Member %s not found in %s.", err.mxid, err.roomID)
+	return "Member " + err.mxid + " not found in " + err.roomID + "."
 }
 
 type RoomMemberInfoResp struct {

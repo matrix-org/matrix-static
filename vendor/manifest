@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/Sirupsen/logrus",
+			"repository": "https://github.com/Sirupsen/logrus",
+			"revision": "84573d5f03ab3740f524c7842c3a9bf617961d32",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/andybalholm/cascadia",
 			"repository": "https://github.com/andybalholm/cascadia",
 			"revision": "349dd0209470eabd9514242c688c403c0926d266",
@@ -118,6 +124,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/matrix-org/dugong",
+			"repository": "https://github.com/matrix-org/dugong",
+			"revision": "193b8f88e381d12f2d53023fba25e43fc81dc5ac",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/matrix-org/gomatrix",
 			"repository": "https://github.com/t3chguy/gomatrix",
 			"revision": "c709943824ff40cbeb45238e30dcb931ee04f635",
@@ -196,6 +208,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/sirupsen/logrus",
+			"repository": "https://github.com/sirupsen/logrus",
+			"revision": "84573d5f03ab3740f524c7842c3a9bf617961d32",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/t3chguy/go-gin-prometheus",
 			"repository": "https://github.com/t3chguy/go-gin-prometheus",
 			"revision": "438209f97511bd122d35d14f9ec8b0a2b62b3a3a",
@@ -227,6 +245,13 @@
 			"path": "/qtc"
 		},
 		{
+			"importpath": "golang.org/x/crypto/ssh/terminal",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035",
+			"branch": "master",
+			"path": "/ssh/terminal"
+		},
+		{
 			"importpath": "golang.org/x/image/font",
 			"repository": "https://go.googlesource.com/image",
 			"revision": "426cfd8eeb6e08ab1932954e09e3c2cb2bc6e36d",
@@ -253,6 +278,13 @@
 			"revision": "5f8847ae0d0e90b6a9dc8148e7ad616874625171",
 			"branch": "master",
 			"path": "/html"
+		},
+		{
+			"importpath": "golang.org/x/sys/windows",
+			"repository": "https://go.googlesource.com/sys",
+			"revision": "07c182904dbd53199946ba614a412c61d3c548f5",
+			"branch": "master",
+			"path": "/windows"
 		},
 		{
 			"importpath": "gopkg.in/go-playground/validator.v8",

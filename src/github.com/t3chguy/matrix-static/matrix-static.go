@@ -17,12 +17,13 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"github.com/disintegration/letteravatar"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/matrix-org/dugong"
+	log "github.com/sirupsen/logrus"
 	"github.com/t3chguy/go-gin-prometheus"
 	"github.com/t3chguy/matrix-static/mxclient"
 	"github.com/t3chguy/matrix-static/sanitizer"
@@ -31,6 +32,7 @@ import (
 	"image/png"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 	"unicode"
@@ -43,35 +45,65 @@ const PublicRoomsPageSize = 20
 const RoomTimelineSize = 30
 const RoomMembersPageSize = 20
 
-func main() {
-	configPath := flag.String("config-file", "./config.json", "The path to the desired config file.")
-	numWorkers := flag.Int("num-workers", 32, "Number of Worker goroutines to start.")
+type configVars struct {
+	ConfigFile string
+	NumWorkers int
 
-	publicServePrefix := flag.String("public-serve-prefix", "/", "Prefix for publicly accessible routes.")
-	enablePrometheusMetrics := flag.Bool("enable-prometheus-metrics", false, "Whether or not to enable the /metrics endpoint.")
-	enablePprof := flag.Bool("enable-pprof", false, "Whether or not to enable the /debug/pprof endpoints.")
+	PublicServePrefix       string
+	EnablePrometheusMetrics bool
+	EnablePprof             bool
+
+	LogDir string
+}
+
+func main() {
+	config := configVars{}
+
+	flag.StringVar(&config.ConfigFile, "config-file", "./config.json", "The path to the desired config file.")
+	flag.IntVar(&config.NumWorkers, "num-workers", 32, "Number of Worker goroutines to start.")
+
+	flag.StringVar(&config.PublicServePrefix, "public-serve-prefix", "/", "Prefix for publicly accessible routes.")
+	flag.BoolVar(&config.EnablePrometheusMetrics, "enable-prometheus-metrics", false, "Whether or not to enable the /metrics endpoint.")
+	flag.BoolVar(&config.EnablePprof, "enable-pprof", false, "Whether or not to enable the /debug/pprof endpoints.")
+	flag.StringVar(&config.LogDir, "logger-directory", "", "Where to write the info, warn and error logs to.")
 
 	flag.Parse()
 
-	client, err := mxclient.NewClient(*configPath)
+	if config.LogDir != "" {
+		log.AddHook(dugong.NewFSHook(
+			filepath.Join(config.LogDir, "info.log"),
+			filepath.Join(config.LogDir, "warn.log"),
+			filepath.Join(config.LogDir, "error.log"),
+			&log.TextFormatter{
+				TimestampFormat:  "2006-01-02 15:04:05.000000",
+				DisableColors:    true,
+				DisableTimestamp: false,
+				DisableSorting:   false,
+			}, &dugong.DailyRotationSchedule{GZip: false},
+		))
+	}
+
+	log.Infof("Matrix-Static (%+v)", config)
+
+	client, err := mxclient.NewClient(config.ConfigFile)
 	if err != nil {
-		fmt.Println(err)
+		log.WithError(err).Error("Unable to start new Client")
 		return
 	}
 
 	worldReadableRooms := client.NewWorldReadableRooms()
-	workers := NewWorkers(uint32(*numWorkers), client)
+	workers := NewWorkers(uint32(config.NumWorkers), client)
 	sanitizerFn := sanitizer.InitSanitizer()
 
 	router := gin.New()
 	router.RedirectTrailingSlash = false
 
-	if *enablePprof {
+	if config.EnablePprof {
 		pprof.Register(router, nil)
 	}
 
 	// This is temporary until generated server-side in Synapse as suggested by riot-web issues.
-	avatarRouter := router.Group(*publicServePrefix)
+	avatarRouter := router.Group(config.PublicServePrefix)
 	avatarRouter.Use(gin.Recovery())
 	generatedAvatarCache := persistence.NewInMemoryStore(time.Hour)
 	avatarRouter.GET("/avatar/:identifier", cache.CachePage(generatedAvatarCache, time.Hour, func(c *gin.Context) {
@@ -100,15 +132,15 @@ func main() {
 		c.Writer.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 		_, err = c.Writer.Write(buffer.Bytes())
 
-		//if err != nil {
-		//	panic(err)
-		//}
+		if err != nil {
+			log.WithError(err).Error("Failed to write Image Buffer out.")
+		}
 	}))
 
-	publicRouter := router.Group(*publicServePrefix)
+	publicRouter := router.Group(config.PublicServePrefix)
 	publicRouter.Use(gin.Logger(), gin.Recovery())
 
-	if *enablePrometheusMetrics {
+	if config.EnablePrometheusMetrics {
 		ginProm := ginprometheus.NewPrometheus("http")
 		publicRouter.Use(ginProm.HandlerFunc())
 		router.GET(ginProm.MetricsPath, ginprometheus.PrometheusHandler())
@@ -274,7 +306,7 @@ func main() {
 
 	go startForwardPaginator(workers)
 	go startPublicRoomListTimer(worldReadableRooms)
-	fmt.Println("Listening on port " + port)
+	log.Info("Listening on port " + port)
 
 	srv := &http.Server{
 		ReadTimeout:  5 * time.Second,
@@ -284,7 +316,7 @@ func main() {
 		Addr:         ":" + port,
 	}
 
-	panic(srv.ListenAndServe())
+	log.Fatal(srv.ListenAndServe())
 }
 
 const LoadPublicRoomsPeriod = time.Hour
@@ -293,6 +325,7 @@ func startPublicRoomListTimer(worldReadableRooms *mxclient.WorldReadableRooms) {
 	t := time.NewTicker(LoadPublicRoomsPeriod)
 	for {
 		<-t.C
+		log.Info("Reloading public room list")
 		worldReadableRooms.Update()
 	}
 }
@@ -303,6 +336,7 @@ func startForwardPaginator(workers *Workers) {
 	t := time.NewTicker(LazyForwardPaginateRooms)
 	for {
 		<-t.C
+		log.Info("Forward paginating all loaded rooms")
 		workers.JobForAllWorkers(RoomForwardPaginateJob{})
 	}
 }
