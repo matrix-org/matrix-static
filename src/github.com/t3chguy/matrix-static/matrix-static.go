@@ -23,7 +23,6 @@ import (
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/go-gin-prometheus"
 	"github.com/t3chguy/matrix-static/mxclient"
 	"github.com/t3chguy/matrix-static/sanitizer"
@@ -37,26 +36,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
-// TODO Cache memberList+serverList until it changes
-
-func unwrapRespError(err error) (respErr gomatrix.RespError, respErrOk bool) {
-	if err, ok := err.(gomatrix.HTTPError); ok {
-		respErr, respErrOk = err.WrappedError.(gomatrix.RespError)
-	}
-	return
-}
-
-var textForRespErr = map[string]string{
-	"M_GUEST_ACCESS_FORBIDDEN": "This Room does not exist or does not permit guests to access it.",
-}
-
-func textForRespError(respErr gomatrix.RespError) string {
-	if msg, ok := textForRespErr[respErr.ErrCode]; ok {
-		return msg
-	}
-	return respErr.Err
-}
 
 const PublicRoomsPageSize = 20
 const RoomTimelineSize = 30
@@ -183,10 +162,10 @@ func main() {
 			resp := (<-worker.Output).(*RoomInitialSyncResp)
 
 			if resp.err != nil {
-				if respErr, ok := unwrapRespError(resp.err); ok {
+				if respErr, ok := mxclient.UnwrapRespError(resp.err); ok {
 					templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
 						ErrType: "Unable to Join Room.",
-						Details: textForRespError(respErr),
+						Details: mxclient.TextForRespError(respErr),
 					})
 					c.Abort()
 					return
