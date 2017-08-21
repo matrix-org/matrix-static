@@ -8,14 +8,14 @@
         <tr>
             <td class="roomAvatar" rowspan="2">
                 {% if roomInfo.AvatarURL.IsValid() %}
-                    <img class="avatar roomAvatar" src="{%s roomInfo.AvatarURL.ToThumbURL(64, 64, "crop") %}" />
+                    <img class="avatar roomAvatar" src="{%s roomInfo.AvatarURL.ToThumbURL(64, 64, "crop") %}" alt="{%s roomInfo.RoomID %}" />
                 {% else %}
                     {% if roomInfo.Name != "" %}
-                        <img class="avatar roomAvatar" src="./avatar/{%u roomInfo.Name %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u roomInfo.Name %}" alt="{%s roomInfo.RoomID %}" />
                     {% elseif roomInfo.CanonicalAlias != "" %}
-                        <img class="avatar roomAvatar" src="./avatar/{%u roomInfo.CanonicalAlias %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u roomInfo.CanonicalAlias %}" alt="{%s roomInfo.RoomID %}" />
                     {% else %}
-                        <img class="avatar roomAvatar" src="./img/logo_missing.png" />
+                        <img class="avatar roomAvatar" src="./img/logo_missing.png" alt="{%s roomInfo.RoomID %}" />
                     {% endif %}
                 {% endif %}
             </td>

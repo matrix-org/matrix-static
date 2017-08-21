@@ -14,7 +14,7 @@
 {% stripspace %}
 {% func (p *RoomServersPage) printServer(server mxclient.ServerUserCount) %}
     <tr>
-        <td><img class="avatar serverAvatar" src="./avatar/{%u server.ServerName %}" /> {%s server.ServerName %}</td>
+        <td><img class="avatar serverAvatar" src="./avatar/{%u server.ServerName %}" alt="{%s server.ServerName %}" /> {%s server.ServerName %}</td>
         <td>{%d server.NumUsers %}</td>
     </tr>
 {% endfunc %}
@@ -67,6 +67,9 @@
     }
     func (p *RoomServersPage) BaseUrl() string {
         return RoomBaseUrl(p.RoomInfo.RoomID) + "/servers"
+    }
+    func (p *RoomServersPage) BackUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/"
     }
 
 %}
