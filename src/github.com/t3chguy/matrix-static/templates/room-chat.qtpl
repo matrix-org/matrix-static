@@ -128,22 +128,24 @@
                     url = thumbUrl
                 }
 
-                mxcURL := mxclient.NewMXCURL(url, p.HomeserverBaseURL).ToThumbURL(360, 360, "scale")
+                mxc := mxclient.NewMXCURL(url, p.HomeserverBaseURL)
+                mxcThumbURL := mxc.ToThumbURL(360, 360, "scale")
                 alt := Str(ev.Content["body"])
             %}
             <a href="{%s mxc.ToURL() %}" rel="noopener">
-                <img class="m.image" src="{%s mxcURL %}" alt="{%s alt %}" />
+                <img class="m.image" src="{%s mxcThumbURL %}" alt="{%s alt %}" />
                 <br>
                 <sup>{%s Str(ev.Content["body"]) %}</sup>
             </a>
         {% case "m.file" %}
             {% code
-                mxcURL := mxclient.NewMXCURL(Str(ev.Content["url"]), p.HomeserverBaseURL).ToThumbURL(360, 360, "scale")
+                mxc := mxclient.NewMXCURL(Str(ev.Content["url"]), p.HomeserverBaseURL)
+                mxcThumbURL := mxc.ToThumbURL(360, 360, "scale")
                 alt := Str(ev.Content["body"])
             %}
             <a href="{%s mxc.ToURL() %}" rel="noopener">
                 {% if ev.Content["thumbnail_url"] != "" %}
-                    <img class="m.file" src="{%s mxcURL %}" alt="{%s alt %}" />
+                    <img class="m.file" src="{%s mxcThumbURL %}" alt="{%s alt %}" />
                     <br>
                 {% endif %}
                 <sup>{%s Str(ev.Content["body"]) %}</sup>
