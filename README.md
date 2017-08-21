@@ -44,6 +44,6 @@ Accepts the following command line arguments:
 
 ### Support
 
-Currently hosted at https://stormy-bastion-98790.herokuapp.com/
+Currently hosted at https://view.matrix.org
 
 Discussion Matrix Room is [#matrix-static:matrix.org](https://matrix.to/#/#matrix-static:matrix.org)

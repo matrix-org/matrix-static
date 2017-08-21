@@ -68,7 +68,8 @@ func ShouldHideEvent(ev gomatrix.Event) bool {
 	// m.room.aliases
 	// m.room.canonical_alias
 
-	if ev.Type == "m.room.join_rules" ||
+	if ev.Type == "m.room.history_visibility" ||
+		ev.Type == "m.room.join_rules" ||
 		ev.Type == "m.room.member" ||
 		ev.Type == "m.room.power_levels" ||
 		ev.Type == "m.room.message" ||

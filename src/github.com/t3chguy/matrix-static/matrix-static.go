@@ -232,11 +232,9 @@ func main() {
 
 		roomRouter.GET("/servers", func(c *gin.Context) {
 			worker := c.MustGet("RoomWorker").(Worker)
-			page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
-
 			worker.Queue <- RoomServersJob{
 				c.Param("roomID"),
-				page,
+				utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1),
 				RoomServersPageSize,
 			}
 
@@ -252,13 +250,25 @@ func main() {
 			*/
 		})
 
+		const RoomAliasesPageSize = 10
+
+		roomRouter.GET("/aliases", func(c *gin.Context) {
+			worker := c.MustGet("RoomWorker").(Worker)
+			worker.Queue <- RoomAliasesJob{
+				c.Param("roomID"),
+				utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1),
+				RoomAliasesPageSize,
+			}
+
+			jobResult := templates.RoomAliasesPage((<-worker.Output).(RoomAliasesResp))
+			templates.WritePageTemplate(c.Writer, &jobResult)
+		})
+
 		roomRouter.GET("/members", func(c *gin.Context) {
 			worker := c.MustGet("RoomWorker").(Worker)
-			page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
-
 			worker.Queue <- RoomMembersJob{
 				c.Param("roomID"),
-				page,
+				utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1),
 				RoomMembersPageSize,
 			}
 
