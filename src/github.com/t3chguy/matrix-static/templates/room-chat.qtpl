@@ -58,6 +58,7 @@
 
 
 
+{% stripspace %}
 {% func (p *RoomChatPage) textForMRoomMemberEvent(ev gomatrix.Event) %}
     {% code
         content := getMemberEventContent(ev, p.HomeserverBaseURL)
@@ -69,7 +70,7 @@
 
     {% switch content.Membership %}
         {% case "invite" %}
-            {%= p.prettyPrintMember(sender) %} invited {%= p.prettyPrintMember(target) %}.
+            {%= p.prettyPrintMember(sender) %}{% space %} invited {% space %}{%= p.prettyPrintMember(target) %}.
         {% case "ban" %}
             {% code
                 var reasonString string
@@ -79,38 +80,40 @@
             %}
             {%= p.prettyPrintMember(sender) %} banned {%= p.prettyPrintMember(target) %}{%s reasonString %}.
         {% case "join" %}
+            {%= p.prettyPrintMember(target) %}{% space %}
             {% if ev.PrevContent != nil && prevContent.Membership == "join" %}
                 {% if prevContent.DisplayName == "" && content.DisplayName != "" %}
-                    {%= p.prettyPrintMember(target) %} set their display name to {%s content.DisplayName %}.
+                    set their display name to {%s content.DisplayName %}.
                 {% elseif prevContent.DisplayName != "" && content.DisplayName == "" %}
-                    {%= p.prettyPrintMember(target) %} removed their display name {%s prevContent.DisplayName %}.
+                    removed their display name {%s prevContent.DisplayName %}.
                 {% elseif prevContent.DisplayName != content.DisplayName %}
-                    {%= p.prettyPrintMember(target) %} changed their display name from {%s prevContent.DisplayName %} to {%s content.DisplayName %}.
+                    changed their display name from {%s prevContent.DisplayName %} to {%s content.DisplayName %}.
                 {% elseif !prevContent.AvatarURL.IsValid() && content.AvatarURL.IsValid() %}
-                    {%= p.prettyPrintMember(target) %} set a profile picture.
+                    set a profile picture.
                 {% elseif prevContent.AvatarURL.IsValid() && !content.AvatarURL.IsValid() %}
-                    {%= p.prettyPrintMember(target) %} removed their profile picture.
+                    removed their profile picture.
                 {% elseif prevContent.AvatarURL != content.AvatarURL %}
-                    {%= p.prettyPrintMember(target) %} changed their profile picture.
+                    changed their profile picture.
                 {% endif %}
             {% else %}
-                {%= p.prettyPrintMember(target) %}joined the room.
+                joined the room.
             {% endif %}
         {% case "leave" %}
             {% if sender == target %}
+                {%= p.prettyPrintMember(target) %}{% space %}
                 {% if prevContent.Membership == "invite" %}
-                    {%= p.prettyPrintMember(target) %} rejected invite.
+                    rejected invite.
                 {% else %}
-                    {%= p.prettyPrintMember(target) %} left the room.
+                    left the room.
                 {% endif %}
             {% elseif prevContent.Membership == "ban" %}
-                {%= p.prettyPrintMember(sender) %} unbanned {%= p.prettyPrintMember(target) %}.
+                {%= p.prettyPrintMember(sender) %}{% space %} unbanned {% space %}{%= p.prettyPrintMember(target) %}.
             {% elseif prevContent.Membership == "leave" %}
-                {%= p.prettyPrintMember(sender) %} kicked {%= p.prettyPrintMember(target) %}.
+                {%= p.prettyPrintMember(sender) %}{% space %} kicked {% space %}{%= p.prettyPrintMember(target) %}.
             {% elseif prevContent.Membership == "invite" %}
-                {%= p.prettyPrintMember(sender) %} withdrew {%= p.prettyPrintMember(target) %}'s invite.
+                {%= p.prettyPrintMember(sender) %}{% space %} withdrew {% space %}{%= p.prettyPrintMember(target) %}'s invite.
             {% else %}
-                {%= p.prettyPrintMember(target) %} left the room.
+                {%= p.prettyPrintMember(target) %}{% space %} left the room.
             {% endif %}
     {% endswitch %}
 {% endfunc %}
@@ -206,7 +209,6 @@
     </a>
 {% endfunc %}
 
-{% stripspace %}
 {% func (p *RoomChatPage) printEvent(ev gomatrix.Event) %}
     <tr>
         {%= p.printPermalinkColumn(ev) %}
