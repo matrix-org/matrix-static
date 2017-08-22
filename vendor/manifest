@@ -274,11 +274,10 @@
 			"path": "/html"
 		},
 		{
-			"importpath": "golang.org/x/sys/windows",
+			"importpath": "golang.org/x/sys",
 			"repository": "https://go.googlesource.com/sys",
 			"revision": "07c182904dbd53199946ba614a412c61d3c548f5",
-			"branch": "master",
-			"path": "/windows"
+			"branch": "master"
 		},
 		{
 			"importpath": "gopkg.in/go-playground/validator.v8",
