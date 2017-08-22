@@ -39,8 +39,6 @@ import (
 	"unicode/utf8"
 )
 
-// TODO Cache memberList+serverList until it changes
-
 const PublicRoomsPageSize = 20
 const RoomTimelineSize = 30
 const RoomMembersPageSize = 20
@@ -159,29 +157,63 @@ func main() {
 		})
 	})
 
+	roomAliasCache := persistence.NewInMemoryStore(time.Hour)
+	publicRouter.GET("/alias/:roomAlias", cache.CachePage(roomAliasCache, time.Hour, func(c *gin.Context) {
+		roomAlias := c.Param("roomAlias")
+		resp, err := client.GetRoomDirectoryAlias(roomAlias)
+
+		// TODO better error page
+		if err != nil || resp.RoomID == "" {
+			templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+				ErrType: "Unable to resolve Room Alias.",
+				Error:   err,
+			})
+			return
+		}
+
+		c.Redirect(http.StatusTemporaryRedirect, "/room/"+resp.RoomID+"/")
+	}))
+
 	roomRouter := publicRouter.Group("/room/:roomID/")
 	{
 		// Load room worker into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
+
+			if roomID[0] != '!' {
+				templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+					ErrType: "Unable to Load Room.",
+					Details: "Room ID must start with a '!'",
+				})
+				c.Abort()
+				return
+			}
+
 			worker := workers.GetWorkerForRoomID(roomID)
 
 			worker.Queue <- &RoomInitialSyncJob{roomID}
 			resp := (<-worker.Output).(*RoomInitialSyncResp)
 
 			if resp.err != nil {
-				c.String(http.StatusNotFound, "Room Not Found")
+				if respErr, ok := mxclient.UnwrapRespError(resp.err); ok {
+					templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+						ErrType: "Unable to Join Room.",
+						Details: mxclient.TextForRespError(respErr),
+					})
+					c.Abort()
+					return
+				}
+
+				templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+					ErrType: "Cannot Load Room. Internal Server Error.",
+					Error:   err,
+				})
 				c.Abort()
 				return
 			}
 
 			c.Set("RoomWorker", worker)
 			c.Next()
-
-			//	c.HTML(http.StatusInternalServerError, "room_error.html", gin.H{
-			//		"Error": "Failed to load room.",
-			//		"Room":  room,
-			//	})
 		})
 
 		roomRouter.GET("/", func(c *gin.Context) {
