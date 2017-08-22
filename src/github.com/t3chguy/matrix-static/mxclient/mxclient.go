@@ -51,6 +51,17 @@ func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSyn
 	return
 }
 
+type RespRoomDirectoryAlias struct {
+	RoomID  string   `json:"room_id"`
+	Servers []string `json:"servers"`
+}
+
+func (m *Client) GetRoomDirectoryAlias(roomAlias string) (resp *RespRoomDirectoryAlias, err error) {
+	urlPath := m.BuildURL("directory", "room", roomAlias)
+	_, err = m.MakeRequest("GET", urlPath, nil, &resp)
+	return
+}
+
 const minimumPagination = 64
 
 // TODO split into runs of max size recursively otherwise synapse may enforce its own limit (999?)

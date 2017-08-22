@@ -39,6 +39,26 @@ func ReverseEventsCopy(events []gomatrix.Event) []gomatrix.Event {
 	return newEvents
 }
 
+// UnwrapRespError takes an error and if it is a HTTPError returns the WrappedError.RespError it contains
+func UnwrapRespError(err error) (respErr gomatrix.RespError, respErrOk bool) {
+	if err, ok := err.(gomatrix.HTTPError); ok {
+		respErr, respErrOk = err.WrappedError.(gomatrix.RespError)
+	}
+	return
+}
+
+var textForRespError = map[string]string{
+	"M_GUEST_ACCESS_FORBIDDEN": "This Room does not exist or does not permit guests to access it.",
+}
+
+// TextForRespError returns a string representation of the RespError if known, defaulting to the Err field of the RespError.
+func TextForRespError(respErr gomatrix.RespError) string {
+	if msg, ok := textForRespError[respErr.ErrCode]; ok {
+		return msg
+	}
+	return respErr.Err + " (" + respErr.ErrCode + ")"
+}
+
 // ShouldHideEvent returns a bool the event should be ignored in the timeline view, mimicking riot-web
 func ShouldHideEvent(ev gomatrix.Event) bool {
 	// m.room.create ?
