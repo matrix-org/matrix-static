@@ -15,7 +15,6 @@
 package main
 
 import (
-	//"fmt"
 	"github.com/t3chguy/matrix-static/mxclient"
 	"hash/fnv"
 )
@@ -36,7 +35,6 @@ type Worker struct {
 func (w *Worker) Start() {
 	for {
 		job := <-w.Queue
-		//fmt.Println(job)
 		job.Work(w)
 	}
 }
@@ -68,9 +66,6 @@ func hash(roomID string) uint32 {
 
 func (ws *Workers) GetWorkerForRoomID(roomID string) Worker {
 	workerID := mod32(hash(roomID), ws.numWorkers)
-
-	//fmt.Println("getWorker", roomID, hash(roomID), hash(roomID), workerID, ws.numWorkers, len(ws.workers))
-
 	return ws.workers[workerID]
 }
 

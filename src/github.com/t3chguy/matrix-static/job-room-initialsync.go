@@ -14,6 +14,8 @@
 
 package main
 
+import log "github.com/Sirupsen/logrus"
+
 type RoomInitialSyncResp struct {
 	err error
 }
@@ -26,9 +28,13 @@ func (job RoomInitialSyncJob) Work(w *Worker) {
 	resp := &RoomInitialSyncResp{}
 
 	if _, exists := w.rooms[job.roomID]; !exists {
+		loggerWithFields := log.WithField("worker", w.ID).WithField("roomID", job.roomID)
+		loggerWithFields.Info("Started Initial Syncing Room")
 		if newRoom, err := w.client.NewRoom(job.roomID); err == nil {
+			loggerWithFields.Info("Finished Initial Syncing Room")
 			w.rooms[job.roomID] = newRoom
 		} else {
+			loggerWithFields.WithError(err).Error("Failed Initial Syncing Room")
 			resp.err = err
 		}
 	}
