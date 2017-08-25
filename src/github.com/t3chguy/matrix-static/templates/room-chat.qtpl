@@ -83,11 +83,11 @@
             {%= p.prettyPrintMember(target) %}{% space %}
             {% if ev.PrevContent != nil && prevContent.Membership == "join" %}
                 {% if prevContent.DisplayName == "" && content.DisplayName != "" %}
-                    set their display name to {%s content.DisplayName %}.
+                    set their display name to {% space %}{%s content.DisplayName %}.
                 {% elseif prevContent.DisplayName != "" && content.DisplayName == "" %}
-                    removed their display name {%s prevContent.DisplayName %}.
+                    removed their display name {% space %}{%s prevContent.DisplayName %}.
                 {% elseif prevContent.DisplayName != content.DisplayName %}
-                    changed their display name from {%s prevContent.DisplayName %} to {%s content.DisplayName %}.
+                    changed their display name from {% space %}{%s prevContent.DisplayName %}{% space %} to {% space %}{%s content.DisplayName %}.
                 {% elseif !prevContent.AvatarURL.IsValid() && content.AvatarURL.IsValid() %}
                     set a profile picture.
                 {% elseif prevContent.AvatarURL.IsValid() && !content.AvatarURL.IsValid() %}
@@ -258,9 +258,20 @@
             {% case "m.room.power_levels" %}
                 <td class="fullWidth"></td>
                 <td>{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
-            {% default %}
-                <td class="fullWidth">{%s ev.Type %}</td>
-                <td>Cannot Understand Event.</td>
+            {% case "im.vector.modular.widgets" %}
+                <td class="fullWidth"></td>
+                {% code
+                    widgetName := StringerfaceFallback(ev.Content["name"], ev.PrevContent["name"], ev.Content["type"], ev.PrevContent["type"])
+                    if widgetName == "" {
+                        widgetName = "Unknown"
+                    }
+
+                    mode := "removed"
+                    if ev.Content["url"] != nil {
+                        mode = "added"
+                    }
+                %}
+                <td>{%s widgetName %}{% space %} widget {% space %}{%s mode %}{% space %} by {% space %}{%= p.prettyPrintMember(ev.Sender) %}</td>
         {% endswitch %}
     </tr>
 {% endfunc %}

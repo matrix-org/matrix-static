@@ -70,7 +70,20 @@ Base page implementation. Other pages may inherit from it if they need overridin
 {% endfunc %}
 {% endstripspace %}
 
-{% code func Str(a interface{}) string {
-    str, _ := a.(string)
-    return str
-} %}
+{% code
+
+    func Str(a interface{}) string {
+        str, _ := a.(string)
+        return str
+    }
+
+    func StringerfaceFallback(strings ...interface{}) string {
+        for _, iface := range strings {
+            if str, ok := iface.(string); ok {
+                return str
+            }
+        }
+        return ""
+    }
+
+%}

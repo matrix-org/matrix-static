@@ -79,5 +79,9 @@ func ShouldHideEvent(ev gomatrix.Event) bool {
 		return false
 	}
 
+	if ev.Type == "im.vector.modular.widgets" {
+		return false
+	}
+
 	return true
 }

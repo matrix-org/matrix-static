@@ -2,6 +2,7 @@
 body {
     color: #454545;
     background-color: #ffffff;
+    -webkit-rtl-ordering: visual;
 }
 #roomList {
     border-collapse: collapse;
