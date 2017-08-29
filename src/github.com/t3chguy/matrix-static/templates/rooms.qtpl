@@ -30,14 +30,14 @@
         <td>
             <a href="./room/{%s Room.RoomID %}/">
                 {% if Room.AvatarUrl != "" %}
-                    <img class="avatar roomAvatar" src="{%s Room.AvatarUrl %}" />
+                    <img class="avatar roomAvatar" src="{%s Room.AvatarUrl %}" alt="{%s Room.RoomID %}" />
                 {% else %}
                     {% if Room.Name != "" %}
-                        <img class="avatar roomAvatar" src="./avatar/{%u Room.Name %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u Room.Name %}" alt="{%s Room.RoomID %}" />
                     {% elseif Room.CanonicalAlias != "" %}
-                        <img class="avatar roomAvatar" src="./avatar/{%u Room.CanonicalAlias %}" />
+                        <img class="avatar roomAvatar" src="./avatar/{%u Room.CanonicalAlias %}" alt="{%s Room.RoomID %}" />
                     {% else %}
-                        <img class="avatar roomAvatar" src="./img/logo_missing_transparent.png" />
+                        <img class="avatar roomAvatar" src="./img/logo_missing_transparent.png" alt="{%s Room.RoomID %}" />
                     {% endif %}
                 {% endif %}
             </a>
@@ -88,6 +88,9 @@
     }
     func (p *RoomsPage) BaseUrl() string {
         return "./"
+    }
+    func (p *RoomsPage) BackUrl() string {
+        return ""
     }
 
 %}

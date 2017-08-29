@@ -31,9 +31,11 @@
             <td>Avatar</td>
             <td>
                 {% if p.MemberInfo.AvatarURL.IsValid() %}
-                    <a href="{%s p.MemberInfo.AvatarURL.ToURL() %}"><img class="avatar userAvatarBig" src="{%s p.MemberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" /></a>
+                    <a href="{%s p.MemberInfo.AvatarURL.ToURL() %}">
+                        <img class="avatar userAvatarBig" src="{%s p.MemberInfo.AvatarURL.ToThumbURL(48, 48, "crop") %}" alt="{%s p.MemberInfo.MXID %}" />
+                    </a>
                 {% else %}
-                    <img class="avatar userAvatarBig" src="./avatar/{%u p.MemberInfo.GetName() %}" />
+                    <img class="avatar userAvatarBig" src="./avatar/{%u p.MemberInfo.GetName() %}" alt="{%s p.MemberInfo.MXID %}" />
                 {% endif %}
             </td>
         </tr>
@@ -51,7 +53,7 @@
         </tr>
     </table>
 
-    <a href="./">Back to Room List</a>
+    <a href="./{%s p.RoomInfo.RoomID %}">Back to Room</a>
 {% endfunc %}
 
 {% func (p *RoomMemberInfoPage) Body() %}

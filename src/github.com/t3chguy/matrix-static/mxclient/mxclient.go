@@ -17,6 +17,7 @@ package mxclient
 import (
 	"encoding/json"
 	"errors"
+	log "github.com/Sirupsen/logrus"
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/matrix-static/utils"
 	"io/ioutil"
@@ -50,18 +51,34 @@ func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSyn
 	return
 }
 
+type RespRoomDirectoryAlias struct {
+	RoomID  string   `json:"room_id"`
+	Servers []string `json:"servers"`
+}
+
+func (m *Client) GetRoomDirectoryAlias(roomAlias string) (resp *RespRoomDirectoryAlias, err error) {
+	urlPath := m.BuildURL("directory", "room", roomAlias)
+	_, err = m.MakeRequest("GET", urlPath, nil, &resp)
+	return
+}
+
 const minimumPagination = 64
 
 // TODO split into runs of max size recursively otherwise synapse may enforce its own limit (999?)
 func (m *Client) backpaginateRoom(room *Room, amount int) (int, error) {
+	loggerWithFields := log.WithField("roomID", room.ID).WithField("amount", amount)
+	loggerWithFields.Info("Backpaginating Room")
+
 	amount = utils.Max(amount, minimumPagination)
 	resp, err := m.Messages(room.ID, room.backPaginationToken, "", 'b', amount)
 
 	if err != nil {
+		loggerWithFields.WithError(err).Error("Failed Backpaginating Room")
 		return -1, err
 	}
 
 	room.concatBackpagination(resp.Chunk, resp.End)
+	loggerWithFields.Info("Finished Backpaginating Room")
 	return len(resp.Chunk), nil
 }
 

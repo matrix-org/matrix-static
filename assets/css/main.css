@@ -2,6 +2,7 @@
 body {
     color: #454545;
     background-color: #ffffff;
+    -webkit-rtl-ordering: visual;
 }
 #roomList {
     border-collapse: collapse;
@@ -55,6 +56,9 @@ td.roomAvatar {
 }
 td.roomAvatar img {
     height: 96px;
+}
+td.fullWidth {
+    white-space: nowrap;
 }
 table#roomHeader {
     width: 100%;

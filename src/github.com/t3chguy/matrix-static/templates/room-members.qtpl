@@ -16,9 +16,9 @@
         <td><a href="{%s p.BaseUrl() %}{%s Member.MXID %}">{%s Member.MXID %}</a></td>
         <td>
             {% if Member.AvatarURL.IsValid() %}
-                <img class="avatar userAvatarMedium" src="{%s Member.AvatarURL.ToThumbURL(48, 48, "crop") %}" />
+                <img class="avatar userAvatarMedium" src="{%s Member.AvatarURL.ToThumbURL(48, 48, "crop") %}" alt="{%s Member.MXID %}"  />
             {% else %}
-                <img class="avatar userAvatarMedium" src="./avatar/{%u Member.GetName() %}" />
+                <img class="avatar userAvatarMedium" src="./avatar/{%u Member.GetName() %}" alt="{%s Member.MXID %}" />
             {% endif %}
         </td>
         <td>{%s Member.DisplayName %}</td>
@@ -78,6 +78,9 @@
     }
     func (p *RoomMembersPage) BaseUrl() string {
         return RoomBaseUrl(p.RoomInfo.RoomID) + "/members"
+    }
+    func (p *RoomMembersPage) BackUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/"
     }
 
 %}
