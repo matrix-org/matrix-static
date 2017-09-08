@@ -17,13 +17,13 @@ package main
 import (
 	"bytes"
 	"flag"
+	log "github.com/Sirupsen/logrus"
 	"github.com/disintegration/letteravatar"
 	"github.com/gin-contrib/cache"
 	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/matrix-org/dugong"
-	log "github.com/Sirupsen/logrus"
 	"github.com/t3chguy/go-gin-prometheus"
 	"github.com/t3chguy/matrix-static/mxclient"
 	"github.com/t3chguy/matrix-static/sanitizer"
@@ -79,6 +79,10 @@ func main() {
 				DisableSorting:   false,
 			}, &dugong.DailyRotationSchedule{GZip: false},
 		))
+	}
+
+	defaultSettings := UserSettings{
+		PageSize: &RoomTimelineSize,
 	}
 
 	log.Infof("Matrix-Static (%+v)", config)
@@ -148,6 +152,12 @@ func main() {
 	publicRouter.Static("/css", "./assets/css")
 	publicRouter.StaticFile("/robots.txt", "./assets/robots.txt")
 
+	publicRouter.Use(func(c *gin.Context) {
+		settings, _ := defaultSettings.LoadUserSettings(c.Cookie(CookieName))
+		c.Set("UserSettings", settings)
+		c.Next()
+	})
+
 	publicRouter.GET("/", func(c *gin.Context) {
 		page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
 		templates.WritePageTemplate(c.Writer, &templates.RoomsPage{
@@ -155,6 +165,14 @@ func main() {
 			PageSize: PublicRoomsPageSize,
 			Page:     page,
 		})
+	})
+
+	publicRouter.GET("/settings", func(c *gin.Context) {
+		settings := c.MustGet("UserSettings").(UserSettings)
+	})
+
+	publicRouter.POST("/settings", func(c *gin.Context) {
+
 	})
 
 	roomAliasCache := persistence.NewInMemoryStore(time.Hour)
@@ -218,6 +236,8 @@ func main() {
 
 		roomRouter.GET("/", func(c *gin.Context) {
 			worker := c.MustGet("RoomWorker").(Worker)
+			settings := c.MustGet("UserSettings").(UserSettings)
+
 			offset := utils.StrToIntDefault(c.DefaultQuery("offset", "0"), 0)
 			eventID := c.DefaultQuery("anchor", "")
 
@@ -225,7 +245,7 @@ func main() {
 				c.Param("roomID"),
 				eventID,
 				offset,
-				RoomTimelineSize,
+				settings.PageSize,
 			})
 
 			jobResult := (<-worker.Output).(RoomEventsResp)
