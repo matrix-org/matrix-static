@@ -5,8 +5,14 @@
 
 
 
+{% code
+    func parseEventTimestamp(unixTime int) time.Time {
+        return time.Unix(0, int64(unixTime)*int64(time.Millisecond))
+    }
+%}
+
 {% func printTimestamp(unixTime int) %}
-    {%s time.Unix(0, int64(unixTime)*int64(time.Millisecond)).Format("2 Jan 2006 15:04:05") %}
+    {%s parseEventTimestamp(unixTime).Format("2 Jan 2006 15:04:05") %}
 {% endfunc %}
 
 
@@ -32,11 +38,11 @@
         return
     }
 
-    func getMemberEventContent(ev gomatrix.Event, homeserverBaseUrl string) MemberEventContent {
+    func getMemberEventContent(ev *gomatrix.Event, homeserverBaseUrl string) MemberEventContent {
         return convertContentToMEC(ev.Content, homeserverBaseUrl)
     }
 
-    func getMemberEventPrevContent(ev gomatrix.Event, homeserverBaseUrl string) MemberEventContent {
+    func getMemberEventPrevContent(ev *gomatrix.Event, homeserverBaseUrl string) MemberEventContent {
         return convertContentToMEC(ev.PrevContent, homeserverBaseUrl)
     }
 
@@ -59,7 +65,7 @@
 
 
 {% stripspace %}
-{% func (p *RoomChatPage) textForMRoomMemberEvent(ev gomatrix.Event) %}
+{% func (p *RoomChatPage) textForMRoomMemberEvent(ev *gomatrix.Event) %}
     {% code
         content := getMemberEventContent(ev, p.HomeserverBaseURL)
         prevContent := getMemberEventPrevContent(ev, p.HomeserverBaseURL)
@@ -118,7 +124,7 @@
     {% endswitch %}
 {% endfunc %}
 
-{% func (p *RoomChatPage) textForMRoomMessageEvent(ev gomatrix.Event) %}
+{% func (p *RoomChatPage) textForMRoomMessageEvent(ev *gomatrix.Event) %}
     {% switch ev.Content["msgtype"] %}
         {% case "m.image" %}
             {% code
@@ -184,7 +190,7 @@
     {% endswitch %}
 {% endfunc %}
 
-{% func (p *RoomChatPage) printStateChange(ev gomatrix.Event, key, thing string) %}
+{% func (p *RoomChatPage) printStateChange(ev *gomatrix.Event, key, thing string) %}
     {% code
         prev := Str(ev.PrevContent[key])
         cur := Str(ev.Content[key])
@@ -216,19 +222,44 @@
     </a>
 {% endfunc %}
 
-{% func (p *RoomChatPage) printEvent(ev gomatrix.Event) %}
+{% code
+    func needsDateSeparator(ev, prevEv *gomatrix.Event) bool {
+        if prevEv == nil {
+            return true
+        }
+        y1, m1, d1 := parseEventTimestamp(ev.Timestamp).Date()
+        y2, m2, d2 := parseEventTimestamp(prevEv.Timestamp).Date()
+        return y1 != y2 || m1 != m2 || d1 != d2
+    }
+%}
+
+{% func (p *RoomChatPage) printEvent(ev, prevEv *gomatrix.Event) %}
+    {% if needsDateSeparator(ev, prevEv) %}
+        <tr class="timestamp dateSep">
+            <td colspan="3">{%s parseEventTimestamp(ev.Timestamp).Format("2 Jan 2006") %}</td>
+        </tr>
+    {% endif %}
+
     <tr>
-        {%= p.printPermalinkColumn(ev) %}
+        <td class="timestamp nowrap">
+            {% code
+                time := parseEventTimestamp(ev.Timestamp)
+                title := time.Format("2 Jan 2006 15:04:05")
+            %}
+            <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}" title="{%s title %}">
+                {%s time.Format("15:04:05") %}
+            </a>
+        </td>
         {% switch ev.Type %}
             {% case "m.room.message" %}
                 {% if ev.Content["msgtype"] == "m.emote" %}
-                    <td class="fullWidth"></td>
+                    <td></td>
                     <td>
                         *{% space %}{%= p.prettyPrintMember(ev.Sender) %}
                         {% space %}{%= p.textForMRoomMessageEvent(ev) %}
                     </td>
                 {% else %}
-                    <td class="fullWidth">
+                    <td class="nowrap">
                         {% if ev.Content["msgtype"] == "m.emote" %}*{% space %}{% endif %}
                         {%= p.prettyPrintMember(ev.Sender) %}
                     </td>
@@ -236,30 +267,30 @@
                 {% endif %}
 
             {% case "m.room.member" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
             {% case "m.room.name" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>{%= p.printStateChange(ev, "name", "room name") %}</td>
             {% case "m.room.topic" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>{%= p.printStateChange(ev, "topic", "room topic") %}</td>
             {% case "m.room.history_visibility" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>{%= p.printStateChange(ev, "history_visibility", "history visibility") %}</td>
             {% case "m.room.join_rules" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>{%= p.printStateChange(ev, "join_rule", "join rule") %}</td>
             {% case "m.room.avatar" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>
                     Room Avatar Renderer.
                 </td>
             {% case "m.room.power_levels" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 <td>{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
             {% case "im.vector.modular.widgets" %}
-                <td class="fullWidth"></td>
+                <td></td>
                 {% code
                     widgetName := StringerfaceFallback(ev.Content["name"], ev.PrevContent["name"], ev.Content["type"], ev.PrevContent["type"])
                     if widgetName == "" {
@@ -274,12 +305,6 @@
                 <td>{%s widgetName %}{% space %} widget {% space %}{%s mode %}{% space %} by {% space %}{%= p.prettyPrintMember(ev.Sender) %}</td>
         {% endswitch %}
     </tr>
-{% endfunc %}
-
-{% func (p *RoomChatPage) printPermalinkColumn(ev gomatrix.Event) %}
-    <td class="timestamp fullWidth">
-        <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}">{%= printTimestamp(ev.Timestamp) %}</a>
-    </td>
 {% endfunc %}
 
 
@@ -323,8 +348,10 @@
                 </tr>
             </thead>
             <tbody>
+                {% code var prevEv gomatrix.Event %}
                 {% for _, event := range p.Events %}
-                    {%= p.printEvent(event) %}
+                    {%= p.printEvent(&event, &prevEv) %}
+                    {% code prevEv = event %}
                 {% endfor %}
             </tbody>
         </table>
