@@ -196,7 +196,7 @@
         cur := Str(ev.Content[key])
     %}
 
-    {%= p.prettyPrintMember(ev.Sender) %}
+    {%= p.prettyPrintMember(ev.Sender) %}{% space %}
 
     {% if cur != "" && prev == "" %}
         set the {% space %}{%s thing %}{% space %} to "{%s cur %}".
