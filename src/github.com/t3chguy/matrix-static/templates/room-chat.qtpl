@@ -199,11 +199,11 @@
     {%= p.prettyPrintMember(ev.Sender) %}
 
     {% if cur != "" && prev == "" %}
-        set the {%s thing %} to "{%s cur %}".
+        set the {% space %}{%s thing %}{% space %} to "{%s cur %}".
     {% elseif cur == "" && prev != "" %}
-        removed the {%s thing %} "{%s prev %}".
+        removed the {% space %}{%s thing %}{% space %} "{%s prev %}".
     {% else %}
-        changed the {%s thing %} to "{%s cur %}" from "{%s prev %}".
+        changed the {% space %}{%s thing %}{% space %} to "{%s cur %}" from "{%s prev %}".
     {% endif %}
 {% endfunc %}
 
