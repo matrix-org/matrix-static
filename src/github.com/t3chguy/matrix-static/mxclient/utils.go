@@ -68,19 +68,26 @@ func ShouldHideEvent(ev gomatrix.Event) bool {
 	// m.room.aliases
 	// m.room.canonical_alias
 
-	if ev.Type == "m.room.history_visibility" ||
-		ev.Type == "m.room.join_rules" ||
-		ev.Type == "m.room.member" ||
-		ev.Type == "m.room.power_levels" ||
-		ev.Type == "m.room.message" ||
-		ev.Type == "m.room.name" ||
-		ev.Type == "m.room.topic" ||
-		ev.Type == "m.room.avatar" {
-		return false
-	}
+	if ev.StateKey == nil {
+		// Message Event
+		if ev.Type == "m.room.message" {
+			return false
+		}
+	} else {
+		// State Event
+		if ev.Type == "m.room.history_visibility" ||
+			ev.Type == "m.room.join_rules" ||
+			ev.Type == "m.room.member" ||
+			ev.Type == "m.room.power_levels" ||
+			ev.Type == "m.room.name" ||
+			ev.Type == "m.room.topic" ||
+			ev.Type == "m.room.avatar" {
+			return false
+		}
 
-	if ev.Type == "im.vector.modular.widgets" {
-		return false
+		if ev.Type == "im.vector.modular.widgets" {
+			return false
+		}
 	}
 
 	return true
