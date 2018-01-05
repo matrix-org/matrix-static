@@ -97,3 +97,6 @@ h2 {
 span.redacted {
     color: red;
 }
+tr.evHighlight {
+    background-color: yellow;
+}
