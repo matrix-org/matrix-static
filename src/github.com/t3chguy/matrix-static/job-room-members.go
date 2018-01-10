@@ -50,4 +50,5 @@ func (job RoomMembersJob) Work(w *Worker) {
 		job.pageSize,
 		job.page,
 	}
+	room.Access()
 }

@@ -35,4 +35,5 @@ func (job RoomPowerLevelsJob) Work(w *Worker) {
 		room.RoomInfo(),
 		powerLevels,
 	}
+	room.Access()
 }

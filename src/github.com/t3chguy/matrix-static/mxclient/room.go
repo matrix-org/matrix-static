@@ -18,6 +18,7 @@ import (
 	"errors"
 	"github.com/matrix-org/gomatrix"
 	"github.com/t3chguy/matrix-static/utils"
+	"time"
 )
 
 type RoomInfo struct {
@@ -46,6 +47,12 @@ type Room struct {
 	latestRoomState RoomState
 
 	HasReachedHistoricEndOfTimeline bool
+
+	LastAccess time.Time
+}
+
+func (r *Room) Access() {
+	r.LastAccess = time.Now()
 }
 
 // ForwardPaginateRoom queries the API for any events newer than the latest one currently in the timeline and appends them.
@@ -197,6 +204,7 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 		backPaginationToken:    resp.Messages.Start,
 		eventList:              filteredEventList,
 		latestRoomState:        *NewRoomState(m),
+		LastAccess:             time.Now(),
 	}
 
 	for _, event := range resp.State {

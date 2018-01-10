@@ -34,6 +34,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -176,6 +177,13 @@ func main() {
 
 	roomRouter := publicRouter.Group("/room/:roomID/")
 	{
+		roomRouter.GET("/$:eventID", func(c *gin.Context) {
+			eventID := c.Param("eventID")
+			roomID := c.Param("roomID")
+
+			c.Redirect(http.StatusTemporaryRedirect, "/room/"+roomID+"/?anchor=$"+eventID+"&highlight")
+		})
+
 		// Load room worker into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
@@ -244,6 +252,7 @@ func main() {
 			}
 
 			events := mxclient.ReverseEventsCopy(jobResult.Events)
+			_, highlight := c.GetQuery("highlight")
 
 			templates.WritePageTemplate(c.Writer, &templates.RoomChatPage{
 				RoomInfo:      jobResult.RoomInfo,
@@ -258,6 +267,7 @@ func main() {
 
 				Sanitizer:         sanitizerFn,
 				HomeserverBaseURL: client.HomeserverURL.String(),
+				Highlight:         highlight,
 			})
 		})
 
@@ -362,13 +372,17 @@ func startPublicRoomListTimer(worldReadableRooms *mxclient.WorldReadableRooms) {
 	}
 }
 
-const LazyForwardPaginateRooms = time.Minute
+const LazyForwardPaginateRooms = 2 * time.Minute
 
 func startForwardPaginator(workers *Workers) {
-	t := time.NewTicker(LazyForwardPaginateRooms)
+	//t := time.NewTicker(LazyForwardPaginateRooms)
+	wg := sync.WaitGroup{}
 	for {
-		<-t.C
+		//<-t.C
+		time.Sleep(LazyForwardPaginateRooms)
+		wg.Add(int(workers.numWorkers))
 		log.Info("Forward paginating all loaded rooms")
-		workers.JobForAllWorkers(RoomForwardPaginateJob{})
+		workers.JobForAllWorkers(RoomForwardPaginateJob{&wg})
+		wg.Wait()
 	}
 }

@@ -57,8 +57,9 @@
         AtTopEnd    bool
         AtBottomEnd bool
 
-        Sanitizer *sanitizer.Sanitizer
+        Sanitizer         *sanitizer.Sanitizer
         HomeserverBaseURL string
+        Highlight         bool
     }
 %}
 
@@ -233,14 +234,18 @@
     }
 %}
 
-{% func (p *RoomChatPage) printEvent(ev, prevEv *gomatrix.Event) %}
+{% func (p *RoomChatPage) printEvent(ev, prevEv *gomatrix.Event, highlight bool) %}
     {% if needsDateSeparator(ev, prevEv) %}
         <tr class="timestamp dateSep">
             <td colspan="3">{%s parseEventTimestamp(ev.Timestamp).Format("2 Jan 2006") %}</td>
         </tr>
     {% endif %}
 
+    {% if highlight %}
+    <tr class="evHighlight">
+    {% else %}
     <tr>
+    {% endif %}
         <td class="timestamp nowrap">
             {% code
                 time := parseEventTimestamp(ev.Timestamp)
@@ -348,9 +353,12 @@
                 </tr>
             </thead>
             <tbody>
-                {% code var prevEv gomatrix.Event %}
-                {% for _, event := range p.Events %}
-                    {%= p.printEvent(&event, &prevEv) %}
+                {% code
+                    var prevEv gomatrix.Event
+                    numEvents := len(p.Events)
+                %}
+                {% for i, event := range p.Events %}
+                    {%= p.printEvent(&event, &prevEv, i == numEvents - 1) %}
                     {% code prevEv = event %}
                 {% endfor %}
             </tbody>
