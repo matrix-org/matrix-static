@@ -177,6 +177,13 @@ func main() {
 
 	roomRouter := publicRouter.Group("/room/:roomID/")
 	{
+		roomRouter.GET("/$:eventID", func(c *gin.Context) {
+			eventID := c.Param("eventID")
+			roomID := c.Param("roomID")
+
+			c.Redirect(http.StatusTemporaryRedirect, "/room/"+roomID+"/?anchor=$"+eventID+"&highlight")
+		})
+
 		// Load room worker into request object so that we can do any clean up etc here
 		roomRouter.Use(func(c *gin.Context) {
 			roomID := c.Param("roomID")
@@ -245,6 +252,7 @@ func main() {
 			}
 
 			events := mxclient.ReverseEventsCopy(jobResult.Events)
+			_, highlight := c.GetQuery("highlight")
 
 			templates.WritePageTemplate(c.Writer, &templates.RoomChatPage{
 				RoomInfo:      jobResult.RoomInfo,
@@ -259,6 +267,7 @@ func main() {
 
 				Sanitizer:         sanitizerFn,
 				HomeserverBaseURL: client.HomeserverURL.String(),
+				Highlight:         highlight,
 			})
 		})
 
