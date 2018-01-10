@@ -52,4 +52,5 @@ func (job RoomEventsJob) Work(w *Worker) {
 		atBottomEnd,
 		err,
 	}
+	room.Access()
 }

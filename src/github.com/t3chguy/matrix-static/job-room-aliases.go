@@ -44,4 +44,5 @@ func (job RoomAliasesJob) Work(w *Worker) {
 		job.pageSize,
 		job.page,
 	}
+	room.Access()
 }

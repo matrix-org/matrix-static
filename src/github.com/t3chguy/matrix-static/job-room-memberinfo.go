@@ -59,4 +59,5 @@ func (job RoomMemberInfoJob) Work(w *Worker) {
 		memberInfo,
 		err,
 	}
+	room.Access()
 }

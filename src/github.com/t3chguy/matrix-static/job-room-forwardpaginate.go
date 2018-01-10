@@ -14,12 +14,33 @@
 
 package main
 
+import (
+	log "github.com/Sirupsen/logrus"
+	"sync"
+	"time"
+)
+
 // This Job has no Resp.
 
-type RoomForwardPaginateJob struct{}
+type RoomForwardPaginateJob struct {
+	wg *sync.WaitGroup
+}
+
+const LastAccessDiscardDuration = 30 * time.Minute
 
 func (job RoomForwardPaginateJob) Work(w *Worker) {
+	// discard old rooms first
+	numRoomsBefore := len(w.rooms)
+	for id, room := range w.rooms {
+		if room.LastAccess.Before(time.Now().Add(-LastAccessDiscardDuration)) {
+			delete(w.rooms, id)
+		}
+	}
+	numRoomsAfter := len(w.rooms)
+	log.WithField("worker", w.ID).WithField("numRooms", numRoomsAfter).Infof("Removed %d rooms", numRoomsBefore-numRoomsAfter)
+
 	for _, room := range w.rooms {
 		room.ForwardPaginateRoom()
 	}
+	job.wg.Done()
 }

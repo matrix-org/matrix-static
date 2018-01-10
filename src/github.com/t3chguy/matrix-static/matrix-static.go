@@ -34,6 +34,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -362,13 +363,17 @@ func startPublicRoomListTimer(worldReadableRooms *mxclient.WorldReadableRooms) {
 	}
 }
 
-const LazyForwardPaginateRooms = time.Minute
+const LazyForwardPaginateRooms = 2 * time.Minute
 
 func startForwardPaginator(workers *Workers) {
-	t := time.NewTicker(LazyForwardPaginateRooms)
+	//t := time.NewTicker(LazyForwardPaginateRooms)
+	wg := sync.WaitGroup{}
 	for {
-		<-t.C
+		//<-t.C
+		time.Sleep(LazyForwardPaginateRooms)
+		wg.Add(int(workers.numWorkers))
 		log.Info("Forward paginating all loaded rooms")
-		workers.JobForAllWorkers(RoomForwardPaginateJob{})
+		workers.JobForAllWorkers(RoomForwardPaginateJob{&wg})
+		wg.Wait()
 	}
 }
