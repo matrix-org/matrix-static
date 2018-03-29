@@ -40,7 +40,10 @@ type RespInitialSync struct {
 }
 
 // Our Client extension adds some methods
-type Client struct{ *gomatrix.Client }
+type Client struct {
+	*gomatrix.Client
+	MediaBaseURL string
+}
 
 // Register makes an HTTP request according to http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-rooms-roomid-initialsync
 func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSync, err error) {
@@ -96,20 +99,20 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 }
 
 // NewRawClient returns a wrapped client with http client timeouts applied.
-func NewRawClient(homeserverURL, userID, accessToken string) (*Client, error) {
+func NewRawClient(homeserverURL, mediaBaseURL, userID, accessToken string) (*Client, error) {
 	cli, err := gomatrix.NewClient(homeserverURL, userID, accessToken)
 	cli.Client = &http.Client{
 		Timeout: 30 * time.Second,
 	}
-	return &Client{cli}, err
+	return &Client{cli, mediaBaseURL}, err
 }
 
 // NewClient returns a Client configured by the config file found at configPath or an error if encountered.
-func NewClient(configPath string) (*Client, error) {
+func NewClient(mediaBaseURL, configPath string) (*Client, error) {
 	var config *gomatrix.RespRegister
 
 	if _, err := os.Stat(configPath); err != nil {
-		return nil, errors.New("Config file not found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
+		return nil, errors.New("config file not found")
 	}
 
 	file, err := ioutil.ReadFile(configPath)
@@ -120,8 +123,12 @@ func NewClient(configPath string) (*Client, error) {
 	json.Unmarshal(file, &config)
 
 	if config.HomeServer == "" {
-		return nil, errors.New("No user configuration found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
+		return nil, errors.New("no user configuration found")
 	}
 
-	return NewRawClient(config.HomeServer, config.UserID, config.AccessToken)
+	if mediaBaseURL == "" {
+		mediaBaseURL = config.HomeServer
+	}
+
+	return NewRawClient(config.HomeServer, mediaBaseURL, config.UserID, config.AccessToken)
 }

@@ -52,6 +52,8 @@ type configVars struct {
 	EnablePrometheusMetrics bool
 	EnablePprof             bool
 
+	MediaBaseURL string
+
 	LogDir string
 }
 
@@ -65,6 +67,8 @@ func main() {
 	flag.BoolVar(&config.EnablePrometheusMetrics, "enable-prometheus-metrics", false, "Whether or not to enable the /metrics endpoint.")
 	flag.BoolVar(&config.EnablePprof, "enable-pprof", false, "Whether or not to enable the /debug/pprof endpoints.")
 	flag.StringVar(&config.LogDir, "logger-directory", "", "Where to write the info, warn and error logs to.")
+
+	flag.StringVar(&config.MediaBaseURL, "media-base-url", "", "If specified, is used instead of the homeserver URL for images/media.")
 
 	flag.Parse()
 
@@ -84,10 +88,14 @@ func main() {
 
 	log.Infof("Matrix-Static (%+v)", config)
 
-	client, err := mxclient.NewClient(config.ConfigFile)
+	client, err := mxclient.NewClient(config.MediaBaseURL, config.ConfigFile)
 	if err != nil {
 		log.WithError(err).Error("Unable to start new Client")
 		return
+	}
+
+	if config.MediaBaseURL == "" {
+		config.MediaBaseURL = client.HomeserverURL.String()
 	}
 
 	worldReadableRooms := client.NewWorldReadableRooms()
@@ -266,7 +274,7 @@ func main() {
 				AtBottomEnd: jobResult.AtBottomEnd,
 
 				Sanitizer:         sanitizerFn,
-				HomeserverBaseURL: client.HomeserverURL.String(),
+				HomeserverBaseURL: config.MediaBaseURL,
 				Highlight:         highlight,
 			})
 		})

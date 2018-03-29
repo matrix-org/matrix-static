@@ -25,7 +25,7 @@ import (
 )
 
 func registerGuest(configPath, homeserverURL string) error {
-	m, err := mxclient.NewRawClient(homeserverURL, "", "")
+	m, err := mxclient.NewRawClient(homeserverURL, "", "", "")
 	if err != nil {
 		return err
 	}

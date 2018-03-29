@@ -115,7 +115,7 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 				currentMemberState.Membership = membership
 			}
 			if avatarUrl, ok := event.PrevContent["avatar_url"].(string); ok {
-				currentMemberState.AvatarURL = *NewMXCURL(avatarUrl, rs.client.HomeserverURL.String())
+				currentMemberState.AvatarURL = *NewMXCURL(avatarUrl, rs.client.MediaBaseURL)
 			}
 			if displayName, ok := event.PrevContent["displayname"].(string); ok {
 				currentMemberState.DisplayName = displayName
@@ -126,7 +126,7 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 			currentMemberState.Membership = membership
 		}
 		if avatarUrl, ok := event.Content["avatar_url"].(string); ok {
-			currentMemberState.AvatarURL = *NewMXCURL(avatarUrl, rs.client.HomeserverURL.String())
+			currentMemberState.AvatarURL = *NewMXCURL(avatarUrl, rs.client.MediaBaseURL)
 		}
 		if displayName, ok := event.Content["displayname"].(string); ok {
 			currentMemberState.DisplayName = displayName
@@ -151,7 +151,7 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 		}
 	case "m.room.avatar":
 		if url, ok := event.Content["url"].(string); ok {
-			rs.AvatarURL = *NewMXCURL(url, rs.client.HomeserverURL.String())
+			rs.AvatarURL = *NewMXCURL(url, rs.client.MediaBaseURL)
 		}
 	}
 }
