@@ -273,9 +273,9 @@ func main() {
 				AtTopEnd:    jobResult.AtTopEnd,
 				AtBottomEnd: jobResult.AtBottomEnd,
 
-				Sanitizer:         sanitizerFn,
-				HomeserverBaseURL: config.MediaBaseURL,
-				Highlight:         highlight,
+				Sanitizer:    sanitizerFn,
+				MediaBaseURL: config.MediaBaseURL,
+				Highlight:    highlight,
 			})
 		})
 

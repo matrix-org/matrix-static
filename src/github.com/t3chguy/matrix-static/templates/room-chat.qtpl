@@ -58,7 +58,7 @@
         AtBottomEnd bool
 
         Sanitizer         *sanitizer.Sanitizer
-        HomeserverBaseURL string
+        MediaBaseURL      string
         Highlight         bool
     }
 %}
@@ -68,8 +68,8 @@
 {% stripspace %}
 {% func (p *RoomChatPage) textForMRoomMemberEvent(ev *gomatrix.Event) %}
     {% code
-        content := getMemberEventContent(ev, p.HomeserverBaseURL)
-        prevContent := getMemberEventPrevContent(ev, p.HomeserverBaseURL)
+        content := getMemberEventContent(ev, p.MediaBaseURL)
+        prevContent := getMemberEventPrevContent(ev, p.MediaBaseURL)
 
         sender := ev.Sender
         target := *ev.StateKey
@@ -135,7 +135,7 @@
                     url = thumbUrl
                 }
 
-                mxc := mxclient.NewMXCURL(url, p.HomeserverBaseURL)
+                mxc := mxclient.NewMXCURL(url, p.MediaBaseURL)
                 mxcThumbURL := mxc.ToThumbURL(360, 360, "scale")
                 alt := Str(ev.Content["body"])
             %}
@@ -146,7 +146,7 @@
             </a>
         {% case "m.file" %}
             {% code
-                mxc := mxclient.NewMXCURL(Str(ev.Content["url"]), p.HomeserverBaseURL)
+                mxc := mxclient.NewMXCURL(Str(ev.Content["url"]), p.MediaBaseURL)
                 mxcThumbURL := mxc.ToThumbURL(360, 360, "scale")
                 alt := Str(ev.Content["body"])
             %}
