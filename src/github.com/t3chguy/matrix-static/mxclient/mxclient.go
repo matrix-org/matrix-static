@@ -29,17 +29,18 @@ import (
 
 // This is a Truncated RespInitialSync as we only need SOME information from it.
 type RespInitialSync struct {
-	//AccountData []gomatrix.Event `json:"account_data"`
+	// AccountData []gomatrix.Event `json:"account_data"`
 
 	Messages gomatrix.RespMessages `json:"messages"`
-	//Membership string                 `json:"membership"`
+	// Membership string                 `json:"membership"`
 	State []gomatrix.Event `json:"state"`
-	//RoomID     string                 `json:"room_id"`
-	//Receipts   []*gomatrix.Event      `json:"receipts"`
-	//Presence   []*PresenceEvent       `json:"presence"`
+	// RoomID     string                 `json:"room_id"`
+	// Receipts   []*gomatrix.Event      `json:"receipts"`
+	// Presence   []*PresenceEvent       `json:"presence"`
 }
 
 // Our Client extension adds some methods
+// and a field expanding an MXC URL
 type Client struct {
 	*gomatrix.Client
 	MediaBaseURL string
