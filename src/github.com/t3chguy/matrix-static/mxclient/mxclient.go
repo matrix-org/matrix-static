@@ -108,9 +108,19 @@ func NewRawClient(homeserverURL, mediaBaseURL, userID, accessToken string) (*Cli
 	return &Client{cli, mediaBaseURL}, err
 }
 
+// The struct representing the json config file format.
+type Config struct {
+	AccessToken  string `json:"access_token"`
+	DeviceID     string `json:"device_id"`
+	HomeServer   string `json:"home_server"`
+	RefreshToken string `json:"refresh_token"`
+	UserID       string `json:"user_id"`
+	MediaBaseUrl string `json:"media_base_url"`
+}
+
 // NewClient returns a Client configured by the config file found at configPath or an error if encountered.
-func NewClient(mediaBaseURL, configPath string) (*Client, error) {
-	var config *gomatrix.RespRegister
+func NewClient(configPath string) (*Client, error) {
+	var config Config
 
 	if _, err := os.Stat(configPath); err != nil {
 		return nil, errors.New("config file not found")
@@ -127,9 +137,9 @@ func NewClient(mediaBaseURL, configPath string) (*Client, error) {
 		return nil, errors.New("no user configuration found")
 	}
 
-	if mediaBaseURL == "" {
-		mediaBaseURL = config.HomeServer
+	if config.MediaBaseUrl == "" {
+		config.MediaBaseUrl = config.HomeServer
 	}
 
-	return NewRawClient(config.HomeServer, mediaBaseURL, config.UserID, config.AccessToken)
+	return NewRawClient(config.HomeServer, config.MediaBaseUrl, config.UserID, config.AccessToken)
 }
