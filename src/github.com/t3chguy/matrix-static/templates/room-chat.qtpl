@@ -358,7 +358,7 @@
                     numEvents := len(p.Events)
                 %}
                 {% for i, event := range p.Events %}
-                    {%= p.printEvent(&event, &prevEv, p.Highlight && i == numEvents - 1) %}
+                    {%= p.printEvent(&event, &prevEv, i == numEvents - 1) %}
                     {% code prevEv = event %}
                 {% endfor %}
             </tbody>
