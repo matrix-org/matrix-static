@@ -62,7 +62,7 @@ func (r *WorldReadableRooms) Update() error {
 	if err != nil {
 		return err
 	}
-	filteredRooms := processRoomDirectory(r.mxclient.HomeserverURL.String(), resp.Chunk)
+	filteredRooms := processRoomDirectory(r.mxclient.MediaBaseURL, resp.Chunk)
 
 	r.roomsMutex.Lock()
 	defer r.roomsMutex.Unlock()

@@ -24,8 +24,8 @@ import (
 	"io/ioutil"
 )
 
-func registerGuest(configPath, homeserverURL string) error {
-	m, err := mxclient.NewRawClient(homeserverURL, "", "")
+func registerGuest(configPath, homeserverURL, mediaBaseURL string) error {
+	m, err := mxclient.NewRawClient(homeserverURL, "", "", "")
 	if err != nil {
 		return err
 	}
@@ -36,14 +36,23 @@ func registerGuest(configPath, homeserverURL string) error {
 		return err
 	}
 	if inter != nil || register == nil {
-		return errors.New("Error encountered during guest registration")
+		return errors.New("error encountered during guest registration")
+	}
+
+	config := mxclient.Config{
+		AccessToken:  register.AccessToken,
+		DeviceID:     register.DeviceID,
+		HomeServer:   homeserverURL,
+		RefreshToken: register.RefreshToken,
+		UserID:       register.UserID,
+		MediaBaseUrl: mediaBaseURL,
 	}
 
 	// TODO consider SRV Query on start instead.
 	// SRV is primarily for S-S API so not 100% appropriate.
 	register.HomeServer = homeserverURL
 
-	configJson, err := json.Marshal(register)
+	configJson, err := json.Marshal(config)
 
 	if err != nil {
 		return err
@@ -54,10 +63,15 @@ func registerGuest(configPath, homeserverURL string) error {
 
 func main() {
 	configPath := flag.String("config-file", "./config.json", "The path to the desired config file.")
-	homeserverUrl := flag.String("homeserver-url", "https://matrix.org", "What Homeserver URL to use when registering a guest.")
+	homeserverURL := flag.String("homeserver-url", "https://matrix.org", "What Homeserver URL to use when registering a guest.")
+	mediaBaseURL := flag.String("media-base-url", "https://matrix.org", "What Homeserver URL to use for Media Repository requests.")
 	flag.Parse()
 
-	if err := registerGuest(*configPath, *homeserverUrl); err != nil {
+	if *mediaBaseURL == "" || mediaBaseURL == nil { // if media-base-url not provided, default to homeserver-url
+		mediaBaseURL = homeserverURL
+	}
+
+	if err := registerGuest(*configPath, *homeserverURL, *mediaBaseURL); err != nil {
 		fmt.Println("Error encountered when creating guest account: ", err)
 	} else {
 		fmt.Println("Guest account created successfully!!")

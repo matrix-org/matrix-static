@@ -29,18 +29,22 @@ import (
 
 // This is a Truncated RespInitialSync as we only need SOME information from it.
 type RespInitialSync struct {
-	//AccountData []gomatrix.Event `json:"account_data"`
+	// AccountData []gomatrix.Event `json:"account_data"`
 
 	Messages gomatrix.RespMessages `json:"messages"`
-	//Membership string                 `json:"membership"`
+	// Membership string                 `json:"membership"`
 	State []gomatrix.Event `json:"state"`
-	//RoomID     string                 `json:"room_id"`
-	//Receipts   []*gomatrix.Event      `json:"receipts"`
-	//Presence   []*PresenceEvent       `json:"presence"`
+	// RoomID     string                 `json:"room_id"`
+	// Receipts   []*gomatrix.Event      `json:"receipts"`
+	// Presence   []*PresenceEvent       `json:"presence"`
 }
 
 // Our Client extension adds some methods
-type Client struct{ *gomatrix.Client }
+// and a field expanding an MXC URL
+type Client struct {
+	*gomatrix.Client
+	MediaBaseURL string
+}
 
 // Register makes an HTTP request according to http://matrix.org/docs/spec/client_server/r0.2.0.html#get-matrix-client-r0-rooms-roomid-initialsync
 func (m *Client) RoomInitialSync(roomID string, limit int) (resp *RespInitialSync, err error) {
@@ -96,20 +100,30 @@ func (m *Client) forwardpaginateRoom(room *Room, amount int) (int, error) {
 }
 
 // NewRawClient returns a wrapped client with http client timeouts applied.
-func NewRawClient(homeserverURL, userID, accessToken string) (*Client, error) {
+func NewRawClient(homeserverURL, mediaBaseURL, userID, accessToken string) (*Client, error) {
 	cli, err := gomatrix.NewClient(homeserverURL, userID, accessToken)
 	cli.Client = &http.Client{
 		Timeout: 30 * time.Second,
 	}
-	return &Client{cli}, err
+	return &Client{cli, mediaBaseURL}, err
+}
+
+// The struct representing the json config file format.
+type Config struct {
+	AccessToken  string `json:"access_token"`
+	DeviceID     string `json:"device_id"`
+	HomeServer   string `json:"home_server"`
+	RefreshToken string `json:"refresh_token"`
+	UserID       string `json:"user_id"`
+	MediaBaseUrl string `json:"media_base_url"`
 }
 
 // NewClient returns a Client configured by the config file found at configPath or an error if encountered.
 func NewClient(configPath string) (*Client, error) {
-	var config *gomatrix.RespRegister
+	var config Config
 
 	if _, err := os.Stat(configPath); err != nil {
-		return nil, errors.New("Config file not found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
+		return nil, errors.New("config file not found")
 	}
 
 	file, err := ioutil.ReadFile(configPath)
@@ -120,8 +134,12 @@ func NewClient(configPath string) (*Client, error) {
 	json.Unmarshal(file, &config)
 
 	if config.HomeServer == "" {
-		return nil, errors.New("No user configuration found and Guest Registration not permitted by lack of command line flag (--create-guest-account)")
+		return nil, errors.New("no user configuration found")
 	}
 
-	return NewRawClient(config.HomeServer, config.UserID, config.AccessToken)
+	if config.MediaBaseUrl == "" {
+		config.MediaBaseUrl = config.HomeServer
+	}
+
+	return NewRawClient(config.HomeServer, config.MediaBaseUrl, config.UserID, config.AccessToken)
 }

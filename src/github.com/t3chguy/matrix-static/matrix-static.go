@@ -265,9 +265,9 @@ func main() {
 				AtTopEnd:    jobResult.AtTopEnd,
 				AtBottomEnd: jobResult.AtBottomEnd,
 
-				Sanitizer:         sanitizerFn,
-				HomeserverBaseURL: client.HomeserverURL.String(),
-				Highlight:         highlight,
+				Sanitizer:    sanitizerFn,
+				MediaBaseURL: client.MediaBaseURL,
+				Highlight:    highlight,
 			})
 		})
 
