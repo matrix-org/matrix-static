@@ -17,6 +17,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/disintegration/letteravatar"
 	"github.com/gin-contrib/cache"
@@ -177,11 +178,13 @@ func main() {
 
 	roomRouter := publicRouter.Group("/room/:roomID/")
 	{
+		const permalinkOffset = 10
+
 		roomRouter.GET("/$:eventID", func(c *gin.Context) {
 			eventID := c.Param("eventID")
 			roomID := c.Param("roomID")
 
-			c.Redirect(http.StatusTemporaryRedirect, "/room/"+roomID+"/?anchor=$"+eventID+"&highlight")
+			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/room/%s/?anchor=$%s&offset=-%d&highlight=$%s", roomID, eventID, permalinkOffset, eventID))
 		})
 
 		// Load room worker into request object so that we can do any clean up etc here
@@ -227,7 +230,7 @@ func main() {
 		roomRouter.GET("/", func(c *gin.Context) {
 			worker := c.MustGet("RoomWorker").(Worker)
 			offset := utils.StrToIntDefault(c.DefaultQuery("offset", "0"), 0)
-			eventID := c.DefaultQuery("anchor", "")
+			eventID := c.Query("anchor")
 
 			worker.Queue <- Job(RoomEventsJob{
 				c.Param("roomID"),
@@ -252,7 +255,7 @@ func main() {
 			}
 
 			events := mxclient.ReverseEventsCopy(jobResult.Events)
-			_, highlight := c.GetQuery("highlight")
+			highlight := c.Query("highlight")
 
 			templates.WritePageTemplate(c.Writer, &templates.RoomChatPage{
 				RoomInfo:      jobResult.RoomInfo,

@@ -59,7 +59,7 @@
 
         Sanitizer         *sanitizer.Sanitizer
         MediaBaseURL      string
-        Highlight         bool
+        Highlight         string
     }
 %}
 
@@ -241,61 +241,55 @@
         </tr>
     {% endif %}
 
-    {% if highlight %}
-    <tr class="evHighlight">
-    {% else %}
-    <tr>
-    {% endif %}
-        <td class="timestamp nowrap">
-            {% code
-                time := parseEventTimestamp(ev.Timestamp)
-                title := time.Format("2 Jan 2006 15:04:05")
-            %}
-            <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}" title="{%s title %}">
-                {%s time.Format("15:04:05") %}
-            </a>
-        </td>
+    {% code
+        classes := "event"
+        if highlight {
+            classes += " evHighlight"
+        }
+    %}
+
+    <tr class="{%s classes %}">
         {% switch ev.Type %}
             {% case "m.room.message" %}
                 {% if ev.Content["msgtype"] == "m.emote" %}
-                    <td></td>
-                    <td>
+                    <td class="sender"></td>
+                    <td class="message">
                         *{% space %}{%= p.prettyPrintMember(ev.Sender) %}
                         {% space %}{%= p.textForMRoomMessageEvent(ev) %}
                     </td>
                 {% else %}
-                    <td class="nowrap">
+                    <td class="sender nowrap">
                         {% if ev.Content["msgtype"] == "m.emote" %}*{% space %}{% endif %}
                         {%= p.prettyPrintMember(ev.Sender) %}
                     </td>
-                    <td>{%= p.textForMRoomMessageEvent(ev) %}</td>
+                    <td class="message">{%= p.textForMRoomMessageEvent(ev) %}</td>
                 {% endif %}
 
             {% case "m.room.member" %}
-                <td></td>
-                <td>{%= p.textForMRoomMemberEvent(ev) %}</td>
+                <td class="sender"></td>
+                <td class="message">{%= p.textForMRoomMemberEvent(ev) %}</td>
             {% case "m.room.name" %}
-                <td></td>
-                <td>{%= p.printStateChange(ev, "name", "room name") %}</td>
+                <td class="sender"></td>
+                <td class="message">{%= p.printStateChange(ev, "name", "room name") %}</td>
             {% case "m.room.topic" %}
-                <td></td>
-                <td>{%= p.printStateChange(ev, "topic", "room topic") %}</td>
+                <td class="sender"></td>
+                <td class="message">{%= p.printStateChange(ev, "topic", "room topic") %}</td>
             {% case "m.room.history_visibility" %}
-                <td></td>
-                <td>{%= p.printStateChange(ev, "history_visibility", "history visibility") %}</td>
+                <td class="sender"></td>
+                <td class="message">{%= p.printStateChange(ev, "history_visibility", "history visibility") %}</td>
             {% case "m.room.join_rules" %}
-                <td></td>
-                <td>{%= p.printStateChange(ev, "join_rule", "join rule") %}</td>
+                <td class="sender"></td>
+                <td class="message">{%= p.printStateChange(ev, "join_rule", "join rule") %}</td>
             {% case "m.room.avatar" %}
-                <td></td>
-                <td>
+                <td class="sender"></td>
+                <td class="message">
                     Room Avatar Renderer.
                 </td>
             {% case "m.room.power_levels" %}
-                <td></td>
-                <td>{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
+                <td class="sender"></td>
+                <td class="message">{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
             {% case "im.vector.modular.widgets" %}
-                <td></td>
+                <td class="sender"></td>
                 {% code
                     widgetName := StringerfaceFallback(ev.Content["name"], ev.PrevContent["name"], ev.Content["type"], ev.PrevContent["type"])
                     if widgetName == "" {
@@ -307,8 +301,17 @@
                         mode = "added"
                     }
                 %}
-                <td>{%s widgetName %}{% space %} widget {% space %}{%s mode %}{% space %} by {% space %}{%= p.prettyPrintMember(ev.Sender) %}</td>
+                <td class="message">{%s widgetName %}{% space %} widget {% space %}{%s mode %}{% space %} by {% space %}{%= p.prettyPrintMember(ev.Sender) %}</td>
         {% endswitch %}
+        <td class="timestamp nowrap">
+            {% code
+            time := parseEventTimestamp(ev.Timestamp)
+            title := time.Format("2 Jan 2006 15:04:05")
+            %}
+            <a href="https://matrix.to/#/{%s p.RoomInfo.RoomID %}/{%s ev.ID %}" title="{%s title %}">
+                {%s time.Format("15:04:05") %}
+            </a>
+        </td>
     </tr>
 {% endfunc %}
 
@@ -347,18 +350,17 @@
         <table id="timeline">
             <thead>
                 <tr>
-                    <th>Timestamp</th>
-                    <th>&nbsp;</th>
+                    <th>Sender</th>
                     <th>Message</th>
+                    <th>Time</th>
                 </tr>
             </thead>
             <tbody>
                 {% code
                     var prevEv gomatrix.Event
-                    numEvents := len(p.Events)
                 %}
-                {% for i, event := range p.Events %}
-                    {%= p.printEvent(&event, &prevEv, i == numEvents - 1) %}
+                {% for _, event := range p.Events %}
+                    {%= p.printEvent(&event, &prevEv, event.ID == p.Highlight) %}
                     {% code prevEv = event %}
                 {% endfor %}
             </tbody>
