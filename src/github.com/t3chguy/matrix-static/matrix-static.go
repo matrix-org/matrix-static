@@ -95,7 +95,7 @@ func main() {
 	sanitizerFn := sanitizer.InitSanitizer()
 
 	router := gin.New()
-	router.RedirectTrailingSlash = false
+	router.RedirectTrailingSlash = true
 
 	if config.EnablePprof {
 		pprof.Register(router, nil)
