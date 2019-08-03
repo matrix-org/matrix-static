@@ -16,5 +16,6 @@ RUN apk --update add ca-certificates
 
 WORKDIR /root/
 COPY --from=0 /src/bin/* /bin/
+COPY --from=0 /src/assets ./assets
 
 CMD ["matrix-static"]
