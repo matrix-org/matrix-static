@@ -12,9 +12,9 @@ RUN gb build
 FROM alpine
 
 # We need this otherwise we don't have a good list of CAs
-RUN apk --update add ca-certificates
+RUN apk --update add ca-certificates && mkdir /opt/matrix-static
 
-WORKDIR /root/
+WORKDIR /opt/matrix-static/
 COPY --from=0 /src/bin/* /bin/
 
 CMD ["matrix-static"]
