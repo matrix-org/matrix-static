@@ -46,4 +46,4 @@ Accepts the following command line arguments:
 
 Currently hosted at https://view.matrix.org
 
-Discussion Matrix Room is [#matrix-static:matrix.org](https://matrix.to/#/#matrix-static:matrix.org)
+Discussion Matrix Room is [#matrix-static:matrix.org](https://matrix.to/#/#matrix-static:matrix.org) (HTML at https://view.matrix.org/alias/%23matrix-static:matrix.org for this room)
