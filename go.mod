@@ -15,7 +15,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/manucorporat/sse v0.0.0-20160126180136-ee05b128a739 // indirect
 	github.com/matrix-org/dugong v0.0.0-20161101134353-193b8f88e381
-	github.com/matrix-org/gomatrix v0.0.0-20190528120928-fa4abd0af90c
+	github.com/matrix-org/gomatrix v0.0.0-20191222182050-fa4abd0af90c
 	github.com/mattn/go-isatty v0.0.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/microcosm-cc/bluemonday v0.0.0-20161202143824-e79763773ab6
