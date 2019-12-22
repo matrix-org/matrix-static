@@ -2,8 +2,8 @@ language: go
 go:
   - 1.13
 install:
+  - go mod download
   - go get github.com/valyala/quicktemplate/qtc
   - qtc
 script:
-  - go mod download
   - go build ./cmd/...
