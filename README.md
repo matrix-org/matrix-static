@@ -5,13 +5,10 @@ Matrix Static
 `git clone` or download this repository as an archive and extract then follow below instructions.
 
 ```
-go get github.com/constabulary/gb/...
 go get github.com/valyala/quicktemplate/qtc
 qtc
-gb build
+go build -o bin/ ./cmd/...
 ```
-After this, executables will be in the `bin` directory.
-
 
 ### Usage
 First you must create a config, there is a sample json file provided or you can use the helper binary `register-guest` to register a guest on a given homeserver and write an appropriate config file.
