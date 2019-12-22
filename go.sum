@@ -44,6 +44,7 @@ github.com/matrix-org/gomatrix v0.0.0-20190528120928-dc3a2baaffd0fd3e36b6bc07eaf
 github.com/matrix-org/gomatrix v0.0.0-20190528120928-dc3a2baaffd0fd3e36b6bc07eaf7d8ac5f64f9fb/go.mod h1:/gBX06Kw0exX1HrwmoBibFA98yBk/jxKpGVeyQbff+s=
 github.com/matrix-org/gomatrix v0.0.0-20190528120928-fa4abd0 h1:u5TMe3tsjNlrW1OakPUq+jJzAo+KY2LuvzVuTd0SIRc=
 github.com/matrix-org/gomatrix v0.0.0-20190528120928-fa4abd0/go.mod h1:/gBX06Kw0exX1HrwmoBibFA98yBk/jxKpGVeyQbff+s=
+github.com/matrix-org/gomatrix v0.0.0-20191222182050-fa4abd0af90c/go.mod h1:/gBX06Kw0exX1HrwmoBibFA98yBk/jxKpGVeyQbff+s=
 github.com/mattn/go-isatty v0.0.2 h1:F+DnWktyadxnOrohKLNUC9/GjFii5RJgY4GFG6ilggw=
 github.com/mattn/go-isatty v0.0.2/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=

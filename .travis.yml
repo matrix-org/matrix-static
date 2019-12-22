@@ -6,5 +6,4 @@ install:
   - qtc
 script:
   - go mod download
-  - go build
   - go build ./cmd/...
