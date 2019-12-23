@@ -16,6 +16,8 @@ package workers
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/matrix-org/matrix-static/mxclient"
+	"sort"
 	"sync"
 	"time"
 )
@@ -23,21 +25,36 @@ import (
 // This Job has no Resp.
 
 type RoomForwardPaginateJob struct {
-	Wg *sync.WaitGroup
+	Wg      *sync.WaitGroup
+	TTL     time.Duration
+	KeepMin int
 }
 
 const LastAccessDiscardDuration = 30 * time.Minute
+const KeepAtLeastNRooms = 10
 
 func (job RoomForwardPaginateJob) Work(w *Worker) {
-	// discard old rooms first
 	numRoomsBefore := len(w.rooms)
-	for id, room := range w.rooms {
-		if room.LastAccess.Before(time.Now().Add(-LastAccessDiscardDuration)) {
-			delete(w.rooms, id)
-		}
+	rooms := make([]*mxclient.Room, 0, numRoomsBefore)
+
+	// create a slice of rooms ordered by LastAccess descending
+	for _, room := range w.rooms {
+		rooms = append(rooms, room)
 	}
-	numRoomsAfter := len(w.rooms)
-	log.WithField("worker", w.ID).WithField("numRooms", numRoomsAfter).Infof("Removed %d rooms", numRoomsBefore-numRoomsAfter)
+	sort.Slice(rooms, func(i, j int) bool {
+		return rooms[i].LastAccess.After(rooms[j].LastAccess)
+	})
+
+	// discard old rooms, ignoring the first N
+	if numRoomsBefore > job.KeepMin {
+		for _, room := range rooms[job.KeepMin:] {
+			if room.LastAccess.Before(time.Now().Add(-job.TTL)) {
+				delete(w.rooms, room.ID)
+			}
+		}
+		numRoomsAfter := len(w.rooms)
+		log.WithField("worker", w.ID).WithField("numRooms", numRoomsAfter).Infof("Removed %d rooms", numRoomsBefore-numRoomsAfter)
+	}
 
 	for _, room := range w.rooms {
 		room.ForwardPaginateRoom()

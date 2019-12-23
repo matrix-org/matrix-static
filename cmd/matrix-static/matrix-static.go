@@ -58,6 +58,12 @@ type configVars struct {
 }
 
 func main() {
+	// startup checks
+	if stat, err := os.Stat("./assets"); os.IsNotExist(err) || !stat.IsDir() {
+		log.WithError(err).Error("./assets/ directory is not accessible")
+		return
+	}
+
 	config := configVars{}
 
 	flag.StringVar(&config.ConfigFile, "config-file", "./config.json", "The path to the desired config file.")
