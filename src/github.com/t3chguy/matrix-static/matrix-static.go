@@ -16,6 +16,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	log "github.com/Sirupsen/logrus"
 	"github.com/disintegration/letteravatar"
@@ -30,6 +31,7 @@ import (
 	"github.com/t3chguy/matrix-static/templates"
 	"github.com/t3chguy/matrix-static/utils"
 	"image/png"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -47,6 +49,7 @@ const RoomMembersPageSize = 20
 type configVars struct {
 	ConfigFile string
 	NumWorkers int
+	PortNumber int
 
 	PublicServePrefix       string
 	EnablePrometheusMetrics bool
@@ -60,6 +63,7 @@ func main() {
 
 	flag.StringVar(&config.ConfigFile, "config-file", "./config.json", "The path to the desired config file.")
 	flag.IntVar(&config.NumWorkers, "num-workers", 32, "Number of Worker goroutines to start.")
+	flag.IntVar(&config.PortNumber, "port", 8000, "TCP port number on which to listen for HTTP connections.")
 
 	flag.StringVar(&config.PublicServePrefix, "public-serve-prefix", "/", "Prefix for publicly accessible routes.")
 	flag.BoolVar(&config.EnablePrometheusMetrics, "enable-prometheus-metrics", false, "Whether or not to enable the /metrics endpoint.")
@@ -341,9 +345,30 @@ func main() {
 		})
 	}
 
+	// The struct representing the json config file format.
+	type Config struct {
+		AccessToken  string `json:"access_token"`
+		DeviceID     string `json:"device_id"`
+		HomeServer   string `json:"home_server"`
+		RefreshToken string `json:"refresh_token"`
+		UserID       string `json:"user_id"`
+		MediaBaseUrl string `json:"media_base_url"`
+		PortNumber   int `json:"port"`
+	}
+
+	var innerConfig Config
+
 	port := os.Getenv("PORT")
+
 	if port == "" {
-		port = "8000"
+		file, err := ioutil.ReadFile(config.ConfigFile)
+		if err != nil {
+			// return nil, err
+		}
+
+		json.Unmarshal(file, &innerConfig)
+
+		port = strconv.Itoa(innerConfig.PortNumber)
 	}
 
 	go startForwardPaginator(workers)

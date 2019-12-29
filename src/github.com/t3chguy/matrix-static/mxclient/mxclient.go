@@ -116,6 +116,7 @@ type Config struct {
 	RefreshToken string `json:"refresh_token"`
 	UserID       string `json:"user_id"`
 	MediaBaseUrl string `json:"media_base_url"`
+	PortNumber   int `json:"port"`
 }
 
 // NewClient returns a Client configured by the config file found at configPath or an error if encountered.
