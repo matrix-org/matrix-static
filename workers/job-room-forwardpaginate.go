@@ -30,9 +30,6 @@ type RoomForwardPaginateJob struct {
 	KeepMin int
 }
 
-const LastAccessDiscardDuration = 30 * time.Minute
-const KeepAtLeastNRooms = 10
-
 func (job RoomForwardPaginateJob) Work(w *Worker) {
 	numRoomsBefore := len(w.rooms)
 	rooms := make([]*mxclient.Room, 0, numRoomsBefore)
