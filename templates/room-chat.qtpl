@@ -85,7 +85,7 @@
                     reasonString = " (" + reason + ")"
                 }
             %}
-            {%= p.prettyPrintMember(sender) %} banned {%= p.prettyPrintMember(target) %}{%s reasonString %}.
+            {%= p.prettyPrintMember(sender) %}{% space %} banned {% space %}{%= p.prettyPrintMember(target) %}{%s reasonString %}.
         {% case "join" %}
             {%= p.prettyPrintMember(target) %}{% space %}
             {% if ev.PrevContent != nil && prevContent.Membership == "join" %}
