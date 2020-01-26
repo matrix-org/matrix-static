@@ -12,7 +12,7 @@
 
 {% stripspace %}
 {% func (p *RoomMemberInfoPage) Title() %}
-    Matrix Static - Public Room Member Info - {% space %}{%s p.RoomInfo.Name %}{% space %} - {% space %}{%s p.MemberInfo.MXID %}
+    {%s p.RoomInfo.Name %}{% space %} - {% space %}{%s p.MemberInfo.MXID %}{% space %} - Public Room Member Info - Matrix Static
 {% endfunc %}
 
 {% func (p *RoomMemberInfoPage) Head() %}

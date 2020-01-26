@@ -7,7 +7,7 @@
 
 {% stripspace %}
 {% func (p *ErrorPage) Title() %}
-    Matrix Static - Alias ERROR
+    Alias ERROR - Matrix Static
 {% endfunc %}
 
 {% func (p *ErrorPage) Head() %}

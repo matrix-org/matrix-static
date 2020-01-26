@@ -318,7 +318,7 @@
 
 
 {% func (p *RoomChatPage) Title() %}
-    Matrix Static - Public Room Timeline - {% space %}{%s p.RoomInfo.Name %}
+     {%s p.RoomInfo.Name %}{% space %} - Public Room Timeline - Matrix Static
 {% endfunc %}
 
 {% func (p *RoomChatPage) Head() %}
