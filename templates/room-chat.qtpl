@@ -288,6 +288,9 @@
             {% case "m.room.power_levels" %}
                 <td class="sender"></td>
                 <td class="message">{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
+            {% case "m.room.tombstone" %}
+                <td class="sender"></td>
+                <td class="message">{%= p.prettyPrintMember(ev.Sender) %} upgraded this room. New room can be found <a href="./room/{%s ev.Content["replacement_room"] %}/">here</a>.</td>
             {% case "im.vector.modular.widgets" %}
                 <td class="sender"></td>
                 {% code
