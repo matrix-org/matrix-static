@@ -13,7 +13,7 @@
 
 {% stripspace %}
 {% func (p *RoomAliasesPage) Title() %}
-    Matrix Static - Public Room Aliases - {% space %}{%s p.RoomInfo.Name %}{% space %}
+    {%s p.RoomInfo.Name %}{% space %} - Public Room Aliases - Matrix Static
 {% endfunc %}
 
 {% func (p *RoomAliasesPage) Head() %}

@@ -19,7 +19,7 @@
 
 
 {% func (p *RoomPowerLevelsPage) Title() %}
-    Matrix Static - Public Room Powerlevels - {% space %}{%s p.RoomInfo.Name %}
+    {%s p.RoomInfo.Name %}{% space %} - Public Room Powerlevels - Matrix Static
 {% endfunc %}
 
 {% func (p *RoomPowerLevelsPage) Head() %}

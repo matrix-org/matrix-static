@@ -15,7 +15,7 @@
 
 {% stripspace %}
 {% func (p *RoomsPage) Title() %}
-    Matrix Static - Public Rooms
+    Public Rooms - Matrix Static
 {% endfunc %}
 {% func (p *RoomsPage) Head() %}
     {%= PaginatorHeadLinks(p) %}

@@ -85,7 +85,7 @@
                     reasonString = " (" + reason + ")"
                 }
             %}
-            {%= p.prettyPrintMember(sender) %} banned {%= p.prettyPrintMember(target) %}{%s reasonString %}.
+            {%= p.prettyPrintMember(sender) %}{% space %} banned {% space %}{%= p.prettyPrintMember(target) %}{%s reasonString %}.
         {% case "join" %}
             {%= p.prettyPrintMember(target) %}{% space %}
             {% if ev.PrevContent != nil && prevContent.Membership == "join" %}
@@ -288,6 +288,9 @@
             {% case "m.room.power_levels" %}
                 <td class="sender"></td>
                 <td class="message">{%= p.prettyPrintMember(ev.Sender) %} changed room power levels.</td>
+            {% case "m.room.tombstone" %}
+                <td class="sender"></td>
+                <td class="message">{%= p.prettyPrintMember(ev.Sender) %} upgraded this room. New room can be found <a href="./room/{%s ev.Content["replacement_room"].(string) %}/">here</a>.</td>
             {% case "im.vector.modular.widgets" %}
                 <td class="sender"></td>
                 {% code
@@ -318,7 +321,7 @@
 
 
 {% func (p *RoomChatPage) Title() %}
-    Matrix Static - Public Room Timeline - {% space %}{%s p.RoomInfo.Name %}
+     {%s p.RoomInfo.Name %}{% space %} - Public Room Timeline - Matrix Static
 {% endfunc %}
 
 {% func (p *RoomChatPage) Head() %}
