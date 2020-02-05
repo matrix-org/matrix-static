@@ -11,7 +11,7 @@ go build -o bin/ ./cmd/...
 ```
 
 ### Docker
-```shell script
+```shell
 docker build -t matrix-static .
 docker run -v $(pwd)/config.json:/opt/matrix-static/config.json -p 8000:8000 -it matrix-static
 ```

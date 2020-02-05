@@ -32,18 +32,19 @@ type RoomForwardPaginateJob struct {
 
 func (job RoomForwardPaginateJob) Work(w *Worker) {
 	numRoomsBefore := len(w.rooms)
-	rooms := make([]*mxclient.Room, 0, numRoomsBefore)
-
-	// create a slice of rooms ordered by LastAccess descending
-	for _, room := range w.rooms {
-		rooms = append(rooms, room)
-	}
-	sort.Slice(rooms, func(i, j int) bool {
-		return rooms[i].LastAccess.After(rooms[j].LastAccess)
-	})
 
 	// discard old rooms, ignoring the first N
 	if numRoomsBefore > job.KeepMin {
+		rooms := make([]*mxclient.Room, 0, numRoomsBefore)
+
+		// create a slice of rooms ordered by LastAccess descending
+		for _, room := range w.rooms {
+			rooms = append(rooms, room)
+		}
+		sort.Slice(rooms, func(i, j int) bool {
+			return rooms[i].LastAccess.After(rooms[j].LastAccess)
+		})
+
 		for _, room := range rooms[job.KeepMin:] {
 			if room.LastAccess.Before(time.Now().Add(-job.TTL)) {
 				delete(w.rooms, room.ID)
