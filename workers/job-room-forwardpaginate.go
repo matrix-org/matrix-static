@@ -47,12 +47,14 @@ func (job RoomForwardPaginateJob) Work(w *Worker) {
 
 		for _, room := range rooms[job.KeepMin:] {
 			if room.LastAccess.Before(time.Now().Add(-job.TTL)) {
+				log.WithField("worker", w.ID).WithField("room_id", room.ID).Info("Removing room")
 				delete(w.rooms, room.ID)
 			}
 		}
-		numRoomsAfter := len(w.rooms)
-		log.WithField("worker", w.ID).WithField("numRooms", numRoomsAfter).Infof("Removed %d rooms", numRoomsBefore-numRoomsAfter)
 	}
+
+	numRoomsAfter := len(w.rooms)
+	log.WithField("worker", w.ID).WithField("numRooms", numRoomsAfter).Infof("Removed %d rooms", numRoomsBefore-numRoomsAfter)
 
 	for _, room := range w.rooms {
 		room.ForwardPaginateRoom()

@@ -33,8 +33,8 @@ type RoomInfo struct {
 }
 
 type Room struct {
-	// each room has a client that is responsible for its state being up to date
-	client *Client
+	// each room has a Client that is responsible for its state being up to date
+	Client *Client
 
 	ID string
 
@@ -57,7 +57,7 @@ func (r *Room) Access() {
 
 // ForwardPaginateRoom queries the API for any events newer than the latest one currently in the timeline and appends them.
 func (r *Room) ForwardPaginateRoom() {
-	r.client.forwardpaginateRoom(r, 0)
+	r.Client.forwardpaginateRoom(r, 0)
 }
 
 func (r *Room) concatBackpagination(oldEvents []gomatrix.Event, newToken string) {
@@ -103,7 +103,7 @@ func (r *Room) findEventIndex(anchor string, backpaginate bool) (int, bool) {
 	}
 
 	if backpaginate {
-		if numNew, _ := r.client.backpaginateRoom(r, 100); numNew > 0 {
+		if numNew, _ := r.Client.backpaginateRoom(r, 100); numNew > 0 {
 			return r.findEventIndex(anchor, false)
 		}
 	}
@@ -124,7 +124,7 @@ func (r *Room) backpaginateIfNeeded(anchorIndex, offset, number int) {
 	length := len(r.eventList)
 	if delta := anchorIndex + offset + number + overcompensateBackpaginationBy; delta >= length {
 		// if no error encountered and zero events then we are likely at the last historical event.
-		if numNew, err := r.client.backpaginateRoom(r, delta-length); err == nil {
+		if numNew, err := r.Client.backpaginateRoom(r, delta-length); err == nil {
 			if numNew == 0 {
 				r.HasReachedHistoricEndOfTimeline = true
 			}
@@ -198,7 +198,7 @@ func (m *Client) NewRoom(roomID string) (*Room, error) {
 	}
 
 	newRoom := &Room{
-		client:                 m,
+		Client:                 m,
 		ID:                     roomID,
 		forwardPaginationToken: resp.Messages.End,
 		backPaginationToken:    resp.Messages.Start,
