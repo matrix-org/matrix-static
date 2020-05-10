@@ -54,10 +54,19 @@ type configVars struct {
 	EnablePrometheusMetrics bool
 	EnablePprof             bool
 
+	LastAccessDiscardDuration time.Duration
+	KeepAtLeastNRooms         int
+
 	LogDir string
 }
 
 func main() {
+	// startup checks
+	if stat, err := os.Stat("./assets"); os.IsNotExist(err) || !stat.IsDir() {
+		log.WithError(err).Error("./assets/ directory is not accessible")
+		return
+	}
+
 	config := configVars{}
 
 	flag.StringVar(&config.ConfigFile, "config-file", "./config.json", "The path to the desired config file.")
@@ -67,6 +76,9 @@ func main() {
 	flag.BoolVar(&config.EnablePrometheusMetrics, "enable-prometheus-metrics", false, "Whether or not to enable the /metrics endpoint.")
 	flag.BoolVar(&config.EnablePprof, "enable-pprof", false, "Whether or not to enable the /debug/pprof endpoints.")
 	flag.StringVar(&config.LogDir, "logger-directory", "", "Where to write the info, warn and error logs to.")
+
+	flag.DurationVar(&config.LastAccessDiscardDuration, "cache-ttl", 30*time.Minute, "")
+	flag.IntVar(&config.KeepAtLeastNRooms, "cache-min-rooms", 10, "")
 
 	flag.Parse()
 
@@ -350,7 +362,7 @@ func main() {
 		port = "8000"
 	}
 
-	go startForwardPaginator(pool)
+	go startForwardPaginator(config, pool)
 	go startPublicRoomListTimer(worldReadableRooms)
 	log.Info("Listening on port " + port)
 
@@ -378,7 +390,7 @@ func startPublicRoomListTimer(worldReadableRooms *mxclient.WorldReadableRooms) {
 
 const LazyForwardPaginateRooms = 2 * time.Minute
 
-func startForwardPaginator(pool *workers.Workers) {
+func startForwardPaginator(config configVars, pool *workers.Workers) {
 	//t := time.NewTicker(LazyForwardPaginateRooms)
 	wg := sync.WaitGroup{}
 	for {
@@ -386,7 +398,11 @@ func startForwardPaginator(pool *workers.Workers) {
 		time.Sleep(LazyForwardPaginateRooms)
 		wg.Add(int(pool.NumWorkers))
 		log.Info("Forward paginating all loaded rooms")
-		pool.JobForAllWorkers(workers.RoomForwardPaginateJob{Wg: &wg})
+		pool.JobForAllWorkers(workers.RoomForwardPaginateJob{
+			Wg:      &wg,
+			TTL:     config.LastAccessDiscardDuration,
+			KeepMin: config.KeepAtLeastNRooms,
+		})
 		wg.Wait()
 	}
 }

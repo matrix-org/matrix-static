@@ -17,4 +17,6 @@
 bin/
 # Dependency directories
 vendor/
+Dockerfile
+.dockerignore
 

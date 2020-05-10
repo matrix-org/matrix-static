@@ -10,6 +10,19 @@ qtc
 go build -o bin/ ./cmd/...
 ```
 
+### Docker
+```shell
+docker build -t matrix-static .
+docker run -v $(pwd)/config.json:/opt/matrix-static/config.json -p 8000:8000 -it matrix-static
+```
+
+or for windows:
+```shell script
+docker run -v %cd%/config.json:/opt/matrix-static/config.json -p 8000:8000 -it matrix-static
+```
+
+and pass any command line arguments to the end of the command.
+
 ### Usage
 First you must create a config, there is a sample json file provided or you can use the helper binary `register-guest` to register a guest on a given homeserver and write an appropriate config file.
 
