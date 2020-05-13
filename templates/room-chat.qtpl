@@ -125,6 +125,21 @@
     {% endswitch %}
 {% endfunc %}
 
+{% func (p *RoomChatPage) renderFileEvent(ev *gomatrix.Event, imageUrl string) %}
+    {% code
+        alt := Str(ev.Content["body"])
+        mxc := mxclient.NewMXCURL(ev.Content["url"].(string), p.MediaBaseURL)
+    %}
+
+    <a href="{%s mxc.ToURL() %}" rel="noopener">
+        {% if imageUrl != "" %}
+            <img class="{%s ev.Content["msgtype"].(string) %}" src="{%s imageUrl %}" alt="{%s alt %}" />
+            <br>
+        {% endif %}
+        <small>Download {% space %} {%s Str(ev.Content["body"]) %}</small>
+    </a>
+{% endfunc %}
+
 {% func (p *RoomChatPage) textForMRoomMessageEvent(ev *gomatrix.Event) %}
     {% switch ev.Content["msgtype"] %}
         {% case "m.image" %}
@@ -135,35 +150,15 @@
                     url = thumbUrl
                 }
 
-                mxc := mxclient.NewMXCURL(url, p.MediaBaseURL)
-                mxcThumbURL := mxc.ToThumbURL(360, 360, "scale")
-                alt := Str(ev.Content["body"])
+                mxcThumbURL := mxclient.NewMXCURL(url, p.MediaBaseURL).ToThumbURL(360, 360, "scale")
             %}
-            <a href="{%s mxc.ToURL() %}" rel="noopener">
-                <img class="m.image" src="{%s mxcThumbURL %}" alt="{%s alt %}" />
-                <br>
-                <sup>{%s Str(ev.Content["body"]) %}</sup>
-            </a>
+            {%= p.renderFileEvent(ev, mxcThumbURL) %}
+        {% case "m.video" %}
+        {% case "m.audio" %}
         {% case "m.file" %}
-            {% code
-                mxc := mxclient.NewMXCURL(Str(ev.Content["url"]), p.MediaBaseURL)
-                mxcThumbURL := mxc.ToThumbURL(360, 360, "scale")
-                alt := Str(ev.Content["body"])
-            %}
-            <a href="{%s mxc.ToURL() %}" rel="noopener">
-                {% if ev.Content["thumbnail_url"] != "" %}
-                    <img class="m.file" src="{%s mxcThumbURL %}" alt="{%s alt %}" />
-                    <br>
-                {% endif %}
-                <sup>{%s Str(ev.Content["body"]) %}</sup>
-            </a>
-            m.file
+            {%= p.renderFileEvent(ev, "") %}
         {% case "m.location" %}
             m.location Event
-        {% case "m.video" %}
-            m.video Event
-        {% case "m.audio" %}
-            m.audio Event
         {% default %} {% comment %}handler for "m.notice", "m.emote", "m.text"{% endcomment %}
             {% code
                 var formattedOk bool
