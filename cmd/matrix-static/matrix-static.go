@@ -110,7 +110,8 @@ func main() {
 	sanitizerFn := sanitizer.InitSanitizer()
 
 	router := gin.New()
-	router.RedirectTrailingSlash = false
+	// these redirects urlencode things like `!` which isn't super pretty but is functional
+	router.RedirectTrailingSlash = true
 
 	if config.EnablePprof {
 		pprof.Register(router, nil)
