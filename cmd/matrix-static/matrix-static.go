@@ -265,7 +265,7 @@ func main() {
 			jobResult := (<-worker.Output).(workers.RoomEventsResp)
 			if jobResult.Err != nil {
 				templates.WritePageTemplate(c.Writer, &templates.RoomErrorPage{
-					Error:    "Some error has occurred",
+					Error:    "Some error has occurred. " + jobResult.Err.Error(),
 					RoomInfo: jobResult.RoomInfo,
 				})
 				return
