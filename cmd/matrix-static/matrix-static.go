@@ -25,6 +25,7 @@ import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/matrix-org/dugong"
+	"github.com/matrix-org/gomatrix"
 	"github.com/matrix-org/matrix-static/mxclient"
 	"github.com/matrix-org/matrix-static/sanitizer"
 	"github.com/matrix-org/matrix-static/templates"
@@ -219,20 +220,29 @@ func main() {
 			resp := (<-worker.Output).(*workers.RoomInitialSyncResp)
 
 			if resp.Err != nil {
+				defer c.Abort()
+
 				if respErr, ok := mxclient.UnwrapRespError(resp.Err); ok {
 					templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
 						ErrType: "Unable to Join Room.",
 						Details: mxclient.TextForRespError(respErr),
 					})
-					c.Abort()
+					return
+				}
+
+				if err, ok := resp.Err.(gomatrix.HTTPError); ok {
+					templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
+						ErrType: "Cannot Load Room.",
+						Details: err.Message,
+					})
 					return
 				}
 
 				templates.WritePageTemplate(c.Writer, &templates.ErrorPage{
 					ErrType: "Cannot Load Room. Internal Server Error.",
-					Error:   err,
+					Error:   resp.Err,
 				})
-				c.Abort()
+
 				return
 			}
 
