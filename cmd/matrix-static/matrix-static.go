@@ -110,7 +110,7 @@ func main() {
 	sanitizerFn := sanitizer.InitSanitizer()
 
 	router := gin.New()
-	// these redirects urlencode things like `!` which isn't super pretty but is functional
+	// Enable redirect to trailing slash if it is a valid route. This applies a urlencoding so will make urls uglier.
 	router.RedirectTrailingSlash = true
 
 	if config.EnablePprof {

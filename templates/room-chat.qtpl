@@ -154,7 +154,9 @@
             %}
             {%= p.renderFileEvent(ev, mxcThumbURL) %}
         {% case "m.video" %}
+            {%= p.renderFileEvent(ev, "") %}
         {% case "m.audio" %}
+            {%= p.renderFileEvent(ev, "") %}
         {% case "m.file" %}
             {%= p.renderFileEvent(ev, "") %}
         {% case "m.location" %}
