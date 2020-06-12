@@ -5,13 +5,23 @@ Matrix Static
 `git clone` or download this repository as an archive and extract then follow below instructions.
 
 ```
-go get github.com/constabulary/gb/...
 go get github.com/valyala/quicktemplate/qtc
 qtc
-gb build
+go build -o bin/ ./cmd/...
 ```
-After this, executables will be in the `bin` directory.
 
+### Docker
+```shell
+docker build -t matrix-static .
+docker run -v $(pwd)/config.json:/opt/matrix-static/config.json -p 8000:8000 -it matrix-static
+```
+
+or for windows:
+```shell script
+docker run -v %cd%/config.json:/opt/matrix-static/config.json -p 8000:8000 -it matrix-static
+```
+
+and pass any command line arguments to the end of the command.
 
 ### Usage
 First you must create a config, there is a sample json file provided or you can use the helper binary `register-guest` to register a guest on a given homeserver and write an appropriate config file.
@@ -36,9 +46,15 @@ Accepts the following command line arguments:
 
 `--enable-prometheus-metrics` if set, enables the `/metrics` endpoint for metrics.
 
-`--num-workers=` to specify the number of worker goroutines to start, defaults to 32
+`--num-workers=` to specify the number of worker goroutines to start, defaults to 32.
 
-`--public-serve-prefix=` to specify the router prefix to use for the user-facing html-serving routes, defaults to `/`
+`--public-serve-prefix=` to specify the router prefix to use for the user-facing html-serving routes, defaults to `/`.
+
+`--logger-directory` to specify where the output logs should go.
+
+`--cache-ttl` to specify how long since last access to keep a room in memory and up to date for, defaults to 30 minutes.
+
+`--cache-min-rooms` to specify the minimum number of rooms to always keep in memory, defaults to 10.
 
 
 

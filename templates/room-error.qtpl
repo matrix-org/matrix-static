@@ -1,0 +1,32 @@
+{% import "github.com/matrix-org/matrix-static/mxclient" %}
+
+
+
+{% code type RoomErrorPage struct {
+    RoomInfo mxclient.RoomInfo
+    Error string
+} %}
+
+
+{% stripspace %}
+{% func (p *RoomErrorPage) Title() %}
+    {%s p.RoomInfo.Name %}{% space %} - Public Room ERROR - Matrix Static
+{% endfunc %}
+
+{% func (p *RoomErrorPage) Head() %}
+{% endfunc %}
+
+{% func (p *RoomErrorPage) Header() %}
+    {%= PrintRoomHeader(p.RoomInfo) %}
+{% endfunc %}
+
+{% func (p *RoomErrorPage) Body() %}
+
+    <div class="errMsg">
+        <h1>{%s p.Error %}</h1>
+    </div>
+
+    <a href="./">Back to Room List</a>
+
+{% endfunc %}
+{% endstripspace %}

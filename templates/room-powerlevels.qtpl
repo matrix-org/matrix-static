@@ -1,0 +1,72 @@
+{% import "github.com/matrix-org/matrix-static/mxclient" %}
+
+
+
+{% code type RoomPowerLevelsPage struct {
+    RoomInfo    mxclient.RoomInfo
+    PowerLevels mxclient.PowerLevels
+} %}
+
+
+{% stripspace %}
+{% func printPLRow(name string, pl mxclient.PowerLevel) %}
+    <tr>
+        <td>{%s name %}</td>
+        <td>{%d pl.Int() %}</td>
+    </tr>
+{% endfunc %}
+
+
+
+{% func (p *RoomPowerLevelsPage) Title() %}
+    {%s p.RoomInfo.Name %}{% space %} - Public Room Powerlevels - Matrix Static
+{% endfunc %}
+
+{% func (p *RoomPowerLevelsPage) Head() %}
+{% endfunc %}
+
+{% func (p *RoomPowerLevelsPage) Header() %}
+    {%= PrintRoomHeader(p.RoomInfo) %}
+{% endfunc %}
+
+{% func (p *RoomPowerLevelsPage) Body() %}
+
+    Room Power Level Requirements
+    <table>
+        {%= printPLRow("Ban", p.PowerLevels.Ban) %}
+        {%= printPLRow("Kick", p.PowerLevels.Kick) %}
+        {%= printPLRow("Redact", p.PowerLevels.Redact) %}
+        {%= printPLRow("User Default", p.PowerLevels.UsersDefault) %}
+        {%= printPLRow("State Default", p.PowerLevels.StateDefault) %}
+        {%= printPLRow("Events Default", p.PowerLevels.EventsDefault) %}
+
+        <tr>
+            <td>Events</td>
+            <td>
+                <table>
+                    {% for Type, pl := range p.PowerLevels.Events %}
+                        {%= printPLRow(Type, pl) %}
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td>Users (hides PL==UsersDefault)</td>
+            <td>
+                <table>
+                    {% for mxid, pl := range p.PowerLevels.Users %}
+                        {% if pl != p.PowerLevels.UsersDefault %}
+                            {%= printPLRow(mxid, pl) %}
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+
+    </table>
+
+    <a href="./{%s p.RoomInfo.RoomID %}">Back to Room</a>
+
+{% endfunc %}
+{% endstripspace %}

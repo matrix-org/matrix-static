@@ -1,13 +1,13 @@
-FROM golang:1.11-alpine
+FROM golang:1.13-alpine
 
-COPY . /src
-WORKDIR /src
-
-RUN apk --update add git
-RUN go get github.com/constabulary/gb/...
+RUN apk --update add git gcc musl-dev
 RUN go get github.com/valyala/quicktemplate/qtc
+
+WORKDIR /src
+COPY . /src
+
 RUN qtc
-RUN gb build
+RUN go build ./cmd/matrix-static
 
 FROM alpine
 
@@ -15,7 +15,7 @@ FROM alpine
 RUN apk --update add ca-certificates && mkdir /opt/matrix-static
 
 WORKDIR /opt/matrix-static/
-COPY --from=0 /src/bin/* /bin/
-COPY --from=0 /src/assets ./assets
+COPY --from=0 /src/matrix-static /bin/
+COPY ./assets/ ./assets
 
-CMD ["matrix-static"]
+ENTRYPOINT matrix-static

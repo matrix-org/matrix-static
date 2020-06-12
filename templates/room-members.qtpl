@@ -1,0 +1,86 @@
+{% import "github.com/matrix-org/matrix-static/mxclient" %}
+
+
+
+{% code type RoomMembersPage struct {
+    RoomInfo mxclient.RoomInfo
+    Members  []mxclient.MemberInfo
+    PageSize int
+    Page     int
+} %}
+
+
+{% stripspace %}
+{% func (p *RoomMembersPage) printMemberRow(Member *mxclient.MemberInfo) %}
+    <tr>
+        <td><a href="{%s p.BaseUrl() %}/{%s Member.MXID %}">{%s Member.MXID %}</a></td>
+        <td>
+            {% if Member.AvatarURL.IsValid() %}
+                <img class="avatar userAvatarMedium" src="{%s Member.AvatarURL.ToThumbURL(48, 48, "crop") %}" alt="{%s Member.MXID %}"  />
+            {% else %}
+                <img class="avatar userAvatarMedium" src="./avatar/{%u Member.GetName() %}" alt="{%s Member.MXID %}" />
+            {% endif %}
+        </td>
+        <td>{%s Member.DisplayName %}</td>
+        <td>{%s Member.PowerLevel.String() %} ({%d Member.PowerLevel.Int() %})</td>
+    </tr>
+{% endfunc %}
+
+
+
+{% func (p *RoomMembersPage) Title() %}
+    {%s p.RoomInfo.Name %}{% space %} - {% space %}{%d p.RoomInfo.NumMembers %}{% space %} members - Public Room Members - Matrix Static
+{% endfunc %}
+
+{% func (p *RoomMembersPage) Head() %}
+{% endfunc %}
+
+{% func (p *RoomMembersPage) Header() %}
+    {%= PrintRoomHeader(p.RoomInfo) %}
+{% endfunc %}
+
+{% func (p *RoomMembersPage) Body() %}
+
+    <div>{%d p.RoomInfo.NumMemberEvents %}{% space %} users have interacted with this room.</div>
+
+    {%= PaginatorCurPage(p) %}
+
+    <table>
+        <thead>
+            <tr>
+                <td>MXID</td>
+                <td>Avatar</td>
+                <td>Display Name</td>
+                <td>Power Level</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for _, Member := range p.Members %}
+                {%= p.printMemberRow(&Member) %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {%= PaginatorFooter(p) %}
+
+{% endfunc %}
+{% endstripspace %}
+
+
+
+{% code
+
+    func (p *RoomMembersPage) CurPage() int {
+        return p.Page
+    }
+    func (p *RoomMembersPage) HasNextPage() bool {
+        return len(p.Members) == p.PageSize
+    }
+    func (p *RoomMembersPage) BaseUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/members"
+    }
+    func (p *RoomMembersPage) BackUrl() string {
+        return RoomBaseUrl(p.RoomInfo.RoomID) + "/"
+    }
+
+%}
