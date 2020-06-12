@@ -46,9 +46,15 @@ Accepts the following command line arguments:
 
 `--enable-prometheus-metrics` if set, enables the `/metrics` endpoint for metrics.
 
-`--num-workers=` to specify the number of worker goroutines to start, defaults to 32
+`--num-workers=` to specify the number of worker goroutines to start, defaults to 32.
 
-`--public-serve-prefix=` to specify the router prefix to use for the user-facing html-serving routes, defaults to `/`
+`--public-serve-prefix=` to specify the router prefix to use for the user-facing html-serving routes, defaults to `/`.
+
+`--logger-directory` to specify where the output logs should go.
+
+`--cache-ttl` to specify how long since last access to keep a room in memory and up to date for, defaults to 30 minutes.
+
+`--cache-min-rooms` to specify the minimum number of rooms to always keep in memory, defaults to 10.
 
 
 
