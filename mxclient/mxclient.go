@@ -17,14 +17,16 @@ package mxclient
 import (
 	"encoding/json"
 	"errors"
-	log "github.com/Sirupsen/logrus"
-	"github.com/matrix-org/gomatrix"
-	"github.com/matrix-org/matrix-static/utils"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/matrix-org/gomatrix"
+	"github.com/matrix-org/matrix-static/utils"
 )
 
 // This is a Truncated RespInitialSync as we only need SOME information from it.
@@ -131,10 +133,16 @@ func NewClient(configPath string) (*Client, error) {
 		return nil, err
 	}
 
-	json.Unmarshal(file, &config)
+	err = json.Unmarshal(file, &config)
+	if err != nil {
+		return nil, fmt.Errorf("config file is not valid JSON: %w", err)
+	}
 
 	if config.HomeServer == "" {
-		return nil, errors.New("no user configuration found")
+		return nil, errors.New("no homeserver specified in config")
+	}
+	if config.AccessToken == "" {
+		return nil, errors.New("no accesstoken specified in config")
 	}
 
 	if config.MediaBaseUrl == "" {
