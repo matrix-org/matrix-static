@@ -10,6 +10,7 @@
         Rooms []gomatrix.PublicRoom
         PageSize int
         Page int
+        Query string
     }
 %}
 
@@ -23,6 +24,10 @@
 
 {% func (p *RoomsPage) Header() %}
     <h1>matrix-static</h1>
+    <form method="GET">
+        <input name="query" placeholder="Search rooms" type="text" value="{%s p.Query %}" />
+        <input type="submit" value="Go!" />
+    </form>
 {% endfunc %}
 
 {% func (p *RoomsPage) printRoomRow(Room gomatrix.PublicRoom) %}
@@ -62,7 +67,7 @@
             <tr>
                 <th>Logo</th>
                 <th>Name & Alias</th>
-                <th>#Members</th>
+                <th>Members</th>
                 <th>Topic</th>
             </tr>
         </thead>
