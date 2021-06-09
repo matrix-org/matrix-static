@@ -81,7 +81,7 @@ func (r *WorldReadableRooms) GetFilteredPage(page, pageSize int, query string) [
 
 	filteredRooms := make([]gomatrix.PublicRoom, 0, pageSize)
 	for _, room := range r.rooms {
-		if len(filteredRooms) > pageSize {
+		if len(filteredRooms) >= pageSize {
 			break
 		}
 
