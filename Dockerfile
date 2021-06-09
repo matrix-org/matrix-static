@@ -18,4 +18,6 @@ WORKDIR /opt/matrix-static/
 COPY --from=0 /src/matrix-static /bin/
 COPY ./assets/ ./assets
 
+EXPOSE 8000
+
 ENTRYPOINT matrix-static
