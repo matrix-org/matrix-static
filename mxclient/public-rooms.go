@@ -85,7 +85,7 @@ func (r *WorldReadableRooms) GetFilteredPage(page, pageSize int, query string) [
 			break
 		}
 
-		if (lowerQuery[0] == '#' && strings.Contains(strings.ToLower(room.CanonicalAlias), lowerQuery)) ||
+		if (strings.HasPrefix(lowerQuery, "#") && strings.Contains(strings.ToLower(room.CanonicalAlias), lowerQuery)) ||
 			strings.Contains(strings.ToLower(room.Name), lowerQuery) ||
 			strings.Contains(strings.ToLower(room.Topic), lowerQuery) {
 			filteredRooms = append(filteredRooms, room)
