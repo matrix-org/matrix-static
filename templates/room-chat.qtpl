@@ -382,5 +382,6 @@
     <hr>
 
     <a href="./">Back to Room List</a>
+    <span style="float: right;">Room Version: {% space %}{%s p.RoomInfo.RoomVersion %}</span>
 {% endfunc %}
 {% endstripspace %}
