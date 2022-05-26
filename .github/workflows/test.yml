@@ -6,7 +6,7 @@ on:
 jobs:
   test:
     name: Build & Test
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -15,7 +15,7 @@ jobs:
         with:
           go-version: '1.13'
 
-      - name: Install QTC
+      - name: Install quicktemplate
         run: go get github.com/valyala/quicktemplate/qtc
 
       - name: Build templates
