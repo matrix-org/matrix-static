@@ -34,8 +34,10 @@ import (
 	"github.com/t3chguy/go-gin-prometheus"
 	"image/png"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -61,6 +63,8 @@ type configVars struct {
 
 	LogDir string
 }
+
+var roomAliasOrIdRegex = regexp.MustCompile(`(?:#\/)?([!#]\S+?:[a-z0-9.]+(?::\d+)?)\??`)
 
 func main() {
 	// startup checks
@@ -167,12 +171,36 @@ func main() {
 	publicRouter.StaticFile("/robots.txt", "./assets/robots.txt")
 
 	publicRouter.GET("/", func(c *gin.Context) {
-		page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
-		templates.WritePageTemplate(c.Writer, &templates.RoomsPage{
-			Rooms:    worldReadableRooms.GetPage(page, PublicRoomsPageSize),
-			PageSize: PublicRoomsPageSize,
-			Page:     page,
-		})
+		query := c.Query("query")
+
+		if query == "" {
+			page := utils.StrToIntDefault(c.DefaultQuery("page", "1"), 1)
+			templates.WritePageTemplate(c.Writer, &templates.RoomsPage{
+				Rooms:    worldReadableRooms.GetPage(page, PublicRoomsPageSize),
+				PageSize: PublicRoomsPageSize,
+				Page:     page,
+			})
+		} else {
+			matches := roomAliasOrIdRegex.FindStringSubmatch(query)
+			if len(matches) == 2 {
+				roomIdentifier := matches[1]
+				escaped := url.QueryEscape(roomIdentifier)
+
+				if roomIdentifier[0] == '!' {
+					c.Redirect(http.StatusTemporaryRedirect, "/room/"+escaped+"/")
+				} else if roomIdentifier[0] == '#' {
+					c.Redirect(http.StatusTemporaryRedirect, "/alias/"+escaped+"/")
+				}
+			} else {
+				// TODO pagination
+				templates.WritePageTemplate(c.Writer, &templates.RoomsPage{
+					Rooms:    worldReadableRooms.GetFilteredPage(1, PublicRoomsPageSize, query),
+					PageSize: PublicRoomsPageSize,
+					Page:     1,
+					Query:    query,
+				})
+			}
+		}
 	})
 
 	roomAliasCache := persistence.NewInMemoryStore(time.Hour)

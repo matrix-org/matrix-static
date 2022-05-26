@@ -100,3 +100,6 @@ span.redacted {
 tr.evHighlight {
     background-color: yellow;
 }
+form {
+    float: right;
+}

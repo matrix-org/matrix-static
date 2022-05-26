@@ -17,6 +17,7 @@ package mxclient
 import (
 	"github.com/matrix-org/gomatrix"
 	"github.com/matrix-org/matrix-static/utils"
+	"strings"
 	"sync"
 )
 
@@ -71,12 +72,29 @@ func (r *WorldReadableRooms) Update() error {
 	return nil
 }
 
-// For future when we support filtering the public room directory (LOCALLY)
-//func (r *WorldReadableRooms) GetFilteredPage(page, pageSize int, query string) []gomatrix.PublicRoom {
-//	r.roomsMutex.RLock()
-//	defer r.roomsMutex.RUnlock()
-//	return nil
-//}
+// GetFilteredPage returns a filtered & paginated slice of the WorldReadableRooms Collection
+func (r *WorldReadableRooms) GetFilteredPage(page, pageSize int, query string) []gomatrix.PublicRoom {
+	r.roomsMutex.RLock()
+	defer r.roomsMutex.RUnlock()
+
+	lowerQuery := strings.ToLower(query)
+
+	filteredRooms := make([]gomatrix.PublicRoom, 0, pageSize)
+	for _, room := range r.rooms {
+		if len(filteredRooms) >= pageSize {
+			break
+		}
+
+		if (strings.HasPrefix(lowerQuery, "#") && strings.Contains(strings.ToLower(room.CanonicalAlias), lowerQuery)) ||
+			strings.Contains(strings.ToLower(room.Name), lowerQuery) ||
+			strings.Contains(strings.ToLower(room.Topic), lowerQuery) {
+			filteredRooms = append(filteredRooms, room)
+		}
+	}
+
+	start, end := utils.CalcPaginationStartEnd(page, pageSize, len(filteredRooms))
+	return filteredRooms[start:end]
+}
 
 // GetPage returns a paginated slice of the WorldReadableRooms Collection
 func (r *WorldReadableRooms) GetPage(page, pageSize int) []gomatrix.PublicRoom {
