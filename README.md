@@ -7,7 +7,7 @@ Matrix Static
 ```
 go get github.com/valyala/quicktemplate/qtc
 qtc
-go build -o bin/ ./cmd/...
+mkdir bin && go build -o bin/ ./cmd/...
 ```
 
 ### Docker
