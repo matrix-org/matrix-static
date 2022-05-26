@@ -40,6 +40,7 @@ type RoomState struct {
 	Topic          string
 	Name           string
 	canonicalAlias string
+	roomVersion    string
 	AvatarURL      MXCURL
 	aliasMap       map[string][]string
 	Aliases        RoomAliases
@@ -100,6 +101,9 @@ func (rs *RoomState) UpdateOnEvent(event *gomatrix.Event, usePrevContent bool) {
 	case "m.room.create":
 		if creator, ok := event.Content["creator"].(string); ok {
 			rs.Creator = creator
+		}
+		if roomVer, ok := event.Content["room_version"].(string); ok {
+			rs.roomVersion = roomVer
 		}
 	case "m.room.join_rules": // We do not (yet) care about m.room.join_rules
 	case "m.room.member":
