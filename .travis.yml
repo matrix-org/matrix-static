@@ -1,9 +1,0 @@
-language: go
-go:
-  - 1.13
-install:
-  - go get github.com/valyala/quicktemplate/qtc
-  - qtc
-script:
-  - go build ./cmd/...
-  - go test ./...

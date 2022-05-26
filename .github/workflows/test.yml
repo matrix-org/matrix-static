@@ -1,0 +1,28 @@
+name: Test
+on:
+  pull_request: { }
+  push:
+    branches: [ develop, master ]
+jobs:
+  test:
+    name: Build & Test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.13'
+
+      - name: Install QTC
+        run: go get github.com/valyala/quicktemplate/qtc
+
+      - name: Build templates
+        run: qtc
+
+      - name: Build
+        run: go build ./cmd/...
+
+      - name: Test
+        run: go test ./...
