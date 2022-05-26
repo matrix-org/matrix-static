@@ -39,6 +39,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -205,6 +206,9 @@ func main() {
 	roomAliasCache := persistence.NewInMemoryStore(time.Hour)
 	publicRouter.GET("/alias/:roomAlias", cache.CachePage(roomAliasCache, time.Hour, func(c *gin.Context) {
 		roomAlias := c.Param("roomAlias")
+		if !strings.HasPrefix(roomAlias, "#") {
+			roomAlias = "#" + roomAlias
+		}
 		resp, err := client.GetRoomDirectoryAlias(roomAlias)
 
 		// TODO better error page
