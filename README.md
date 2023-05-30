@@ -1,6 +1,9 @@
 Matrix Static
 ===========
 
+### No longer maintained
+In favour of https://github.com/matrix-org/matrix-public-archive
+
 ### Installation
 `git clone` or download this repository as an archive and extract then follow below instructions.
 
